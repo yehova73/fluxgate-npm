@@ -1,0 +1,21 @@
+{
+  "name": "llmwatch",
+  "version": "0.0.1",
+  "description": "LLMWatch - Monitor and track LLM token usage and costs",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "npm run build -ws",
+    "dev": "npm run dev:tokentracker && npm run dev:openai && npm run dev:anthropic"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.19.39",
+    "typescript": "^5.3.3"
+  }
+}
