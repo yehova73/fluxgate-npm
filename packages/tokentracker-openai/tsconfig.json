@@ -1,13 +1,14 @@
 {
-  "extends": "../../tsconfig.base.json",
+  "extends": "../../tsconfig.json",
   "include": ["src"],
   "compilerOptions": {
-    "outDir": "./dist",
     "rootDir": "./src",
-    "module": "NodeNext",
-    "moduleResolution": "NodeNext",
     "composite": true,
     "target": "ES2020",
+
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
     "declaration": true,
+    "outDir": "dist"
   }
 }

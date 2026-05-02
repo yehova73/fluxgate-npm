@@ -1,5 +1,7 @@
-import { TokenUsage } from "./types/types.js";
-export declare function createTracker(): {
-    track(): TokenUsage;
-};
-export type { TokenTracker, TokenUsage } from "./types/types.js";
+import { LLMEvent } from "./types/types.js";
+export declare class Tracker {
+    private apiKey;
+    constructor(apiKey: string);
+    record(event: LLMEvent): void;
+}
+export type { LLMEvent } from "./types/types.js";

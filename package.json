@@ -9,7 +9,7 @@
   ],
   "scripts": {
     "build": "npm run build -ws",
-    "dev": "npm run dev:tokentracker && npm run dev:openai && npm run dev:anthropic"
+    "dev": "tsc -b --watch"
   },
   "engines": {
     "node": ">=16.0.0"

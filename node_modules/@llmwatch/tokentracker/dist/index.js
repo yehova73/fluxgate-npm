@@ -1,11 +1,8 @@
-export function createTracker() {
-    return {
-        track() {
-            return {
-                prompt: 0,
-                completion: 0,
-                total: 0,
-            };
-        },
-    };
+export class Tracker {
+    constructor(apiKey) {
+        this.apiKey = apiKey;
+    }
+    record(event) {
+        console.log("LLM EVENT:", event);
+    }
 }

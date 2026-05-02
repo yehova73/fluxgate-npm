@@ -7,3 +7,8 @@ export interface TokenUsage {
 export interface TokenTracker {
   track(input: unknown, output: unknown): TokenUsage;
 }
+
+export type TrackingContext = {
+  feature?: string;
+  user?: string;
+};

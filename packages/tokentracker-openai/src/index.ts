@@ -1,22 +1,25 @@
-import {
-  createTracker,
-  TokenTracker,
-  TokenUsage,
-} from "@llmwatch/tokentracker";
+import { Tracker } from "@llmwatch/tokentracker";
+import type OpenAI from "openai";
+import { TrackingContext } from "./types/types.js";
+import { withOpenAITracking } from "./wrapper/createWrappedClient.js";
 
-export function createOpenAITokenTracker(): TokenTracker {
+type OpenAITracker = {
+  withContext: (ctx: TrackingContext) => OpenAI;
+  client: OpenAI;
+};
+
+export function createOpenAITokenTracker(
+  client: OpenAI,
+  tracker: Tracker,
+): OpenAITracker {
   return {
-    track(input: any, output: any): TokenUsage {
-      const usage = output?.usage;
-      console.log("Token usage:", usage);
-      const tracker = createTracker();
-      console.log("Tracking tokens...", tracker);
-
-      return {
-        prompt: usage?.prompt_tokens ?? 0,
-        completion: usage?.completion_tokens ?? 0,
-        total: usage?.total_tokens ?? 0,
-      };
+    withContext(ctx: TrackingContext) {
+      return withOpenAITracking(client, tracker, ctx);
     },
+
+    // optional: no-context default
+    client: withOpenAITracking(client, tracker),
   };
 }
+
+export type { TrackingContext } from "./types/types.js";

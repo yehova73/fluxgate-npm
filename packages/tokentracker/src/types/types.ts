@@ -1,9 +1,13 @@
-export interface TokenUsage {
-  prompt: number;
-  completion: number;
-  total: number;
-}
-
-export interface TokenTracker {
-  track(input: unknown, output: unknown): TokenUsage;
-}
+export type LLMEvent = {
+  provider: "openai";
+  model: string;
+  latencyMs: number;
+  streaming: boolean;
+  usage?: {
+    prompt: number;
+    completion: number;
+    total: number;
+  };
+  feature?: string;
+  userId?: string;
+};

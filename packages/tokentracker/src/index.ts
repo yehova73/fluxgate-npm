@@ -1,15 +1,11 @@
-import { TokenUsage } from "./types/types.js";
+import { LLMEvent } from "./types/types.js";
 
-export function createTracker() {
-  return {
-    track(): TokenUsage {
-      return {
-        prompt: 0,
-        completion: 0,
-        total: 0,
-      };
-    },
-  };
+export class Tracker {
+  constructor(private apiKey: string) {}
+
+  record(event: LLMEvent): void {
+    console.log("LLM EVENT:", event);
+  }
 }
 
-export type { TokenTracker, TokenUsage } from "./types/types.js";
+export type { LLMEvent } from "./types/types.js";

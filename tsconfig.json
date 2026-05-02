@@ -11,6 +11,6 @@
   "references": [
     { "path": "./packages/tokentracker" },
     { "path": "./packages/tokentracker-openai" },
-    { "path": "./packages/tokentracker-anthropic" }
+    // { "path": "./packages/tokentracker-anthropic" }
   ]
 }
