@@ -5,6 +5,9 @@ export function createOpenAITokenTracker(client, tracker) {
             return withOpenAITracking(client, tracker, ctx);
         },
         // optional: no-context default
-        client: withOpenAITracking(client, tracker),
+        get client() {
+            return withOpenAITracking(client, tracker);
+        },
     };
 }
+export { TrackedStream } from "./wrapper/TrackedStream.js";

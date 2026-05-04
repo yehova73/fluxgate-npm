@@ -1,0 +1,10 @@
+import { Tracker } from "@llmwatch/tokentracker";
+import type OpenAI from "openai";
+import { AiEventMetadata } from "../../../../tokentracker/dist/types/types.js";
+import { WithTracking } from "../../types/types.js";
+import { TrackedStream } from "../TrackedStream.js";
+type OrigCreate = OpenAI["responses"]["create"];
+type Response = OpenAI.Responses.Response;
+type ResponseStreamEvent = OpenAI.Responses.ResponseStreamEvent;
+export declare function createResponsesWrapper(original: OrigCreate, tracker: Tracker, context: AiEventMetadata | undefined): (params: Parameters<OrigCreate>[0]) => Promise<WithTracking<Response> | TrackedStream<ResponseStreamEvent>>;
+export {};

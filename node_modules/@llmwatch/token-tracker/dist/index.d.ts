@@ -1,7 +1,10 @@
-import { LLMEvent } from "./types/types.js";
+import { CreateAiEventResponse, LLMEvent, TokenTrackerConfig } from "./types/types.js";
 export declare class Tracker {
     private apiKey;
-    constructor(apiKey: string);
-    record(event: LLMEvent): void;
+    private endpoint;
+    private timeout;
+    private debug;
+    constructor(config: TokenTrackerConfig);
+    recordEvent(event: LLMEvent): Promise<CreateAiEventResponse | null>;
 }
-export type { LLMEvent } from "./types/types.js";
+export type { LLMEvent, CreateAiEventResponse, TrackedUser, } from "./types/types.js";
