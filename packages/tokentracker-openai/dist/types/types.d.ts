@@ -1,17 +1,7 @@
 import type OpenAI from "openai";
-import type { AiEventStatus } from "../../../tokentracker/dist/types/types.js";
-import type { TrackedStream } from "../wrapper/TrackedStream.js";
-export type TrackLlmResponse = {
-    status: AiEventStatus;
-    cost: number | null;
-    trackingId: string | null;
-    createdAt: string | null;
-    errorMessage?: string;
-};
+import type { WithTracking } from "@llmwatch/tokentracker";
+import type { TrackedStream } from "../wrappers/TrackedStream.js";
 /** Utility: intersects any SDK response type with trackLlmResponse */
-export type WithTracking<T> = T & {
-    trackLlmResponse: TrackLlmResponse;
-};
 type ChatOpts = Parameters<OpenAI["chat"]["completions"]["create"]>[1];
 type CompletionOpts = Parameters<OpenAI["completions"]["create"]>[1];
 type ResponseOpts = Parameters<OpenAI["responses"]["create"]>[1];
@@ -42,18 +32,4 @@ export type TrackedOpenAI = Omit<OpenAI, "chat" | "completions" | "responses" | 
         create(body: OpenAI.EmbeddingCreateParams, options?: EmbeddingOpts): Promise<WithTracking<OpenAI.CreateEmbeddingResponse>>;
     };
 };
-export interface TokenUsage {
-    prompt: number;
-    completion: number;
-    total: number;
-}
-export interface TokenTracker {
-    track(input: unknown, output: unknown): TokenUsage;
-}
-export interface ExtractedUsage {
-    inputTokens: number;
-    outputTokens: number;
-    cachedTokens: number;
-    totalTokens: number;
-}
 export {};

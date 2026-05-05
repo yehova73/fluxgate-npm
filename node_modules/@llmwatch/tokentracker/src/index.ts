@@ -33,7 +33,6 @@ export class Tracker {
     event: LLMEvent,
   ): Promise<CreateAiEventResponse | null> {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), this.timeout);
 
     if (this.debug) {
       console.log(
@@ -42,9 +41,11 @@ export class Tracker {
       );
     }
 
-    console.log("Event to be sent:", JSON.stringify(event, null, 2));
+    if (!event.status) {
+      event.status = "SUCCESS";
+    }
 
-    const response = await fetch(this.endpoint, {
+    const fetchPromise = fetch(this.endpoint, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -55,14 +56,23 @@ export class Tracker {
       signal: controller.signal,
     });
 
-    clearTimeout(timeoutId);
+    const timeoutPromise = new Promise<never>((_, reject) => {
+      setTimeout(() => {
+        controller.abort();
+        reject(new Error(`Request timeout after ${this.timeout}ms`));
+      }, this.timeout);
+    });
+
+    const response = await Promise.race([fetchPromise, timeoutPromise]);
 
     let trackingData: CreateAiEventResponse | null = null;
     try {
       const text = await response.text();
       trackingData = JSON.parse(text) as CreateAiEventResponse;
-    } catch {
-      // ignore parse errors
+    } catch (error) {
+      if (this.debug) {
+        console.error("[llmwatch] Failed to parse response:", error);
+      }
     }
 
     if (this.debug) {
@@ -79,4 +89,11 @@ export type {
   LLMEvent,
   CreateAiEventResponse,
   TrackedUser,
+  AiEventMetadata,
+  TrackLlmResponse,
+  WithTracking,
+  AiEventStatus,
+  AiEventUsage,
+  ExtractedUsage,
+  TokenTrackerConfig,
 } from "./types/types.js";

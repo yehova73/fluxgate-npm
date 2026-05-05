@@ -1,7 +1,5 @@
-import { Tracker } from "@llmwatch/tokentracker";
+import { AiEventMetadata, AiEventStatus, ExtractedUsage, Tracker, TrackLlmResponse } from "@llmwatch/tokentracker";
 import type OpenAI from "openai";
-import { AiEventMetadata, AiEventStatus } from "../../../tokentracker/dist/types/types.js";
-import { ExtractedUsage, TrackLlmResponse } from "../types/types.js";
 export declare function recordUsage(params: {
     tracker: Tracker;
     model: string;

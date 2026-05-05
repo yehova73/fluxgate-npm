@@ -7,8 +7,10 @@
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/index.js",
-      "require": "./dist/index.cjs"
+      "import": "./dist/index.js"
+    },
+    "./types": {
+      "types": "./dist/types.d.ts"
     }
   },
   "type": "module",
@@ -18,7 +20,9 @@
   "scripts": {
     "build": "tsc",
     "dev": "tsc --watch",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "keywords": [
     "llm",
@@ -33,10 +37,12 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "@llmwatch/tokentracker": "workspace:*"
+    "@llmwatch/tokentracker": "*"
+  },
+  "peerDependencies": {
+    "openai": "^6.34.0"
   },
   "devDependencies": {
-    "openai": "^6.34.0",
     "@types/node": "^20.11.0",
     "typescript": "^5.3.3"
   },

@@ -7,4 +7,4 @@ export declare class Tracker {
     constructor(config: TokenTrackerConfig);
     recordEvent(event: LLMEvent): Promise<CreateAiEventResponse | null>;
 }
-export type { LLMEvent, CreateAiEventResponse, TrackedUser, } from "./types/types.js";
+export type { LLMEvent, CreateAiEventResponse, TrackedUser, AiEventMetadata, TrackLlmResponse, WithTracking, AiEventStatus, AiEventUsage, ExtractedUsage, TokenTrackerConfig, } from "./types/types.js";

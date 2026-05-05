@@ -1,7 +1,6 @@
-import { Tracker } from "@llmwatch/tokentracker";
+import { AiEventMetadata, Tracker } from "@llmwatch/tokentracker";
 import type OpenAI from "openai";
-import { withOpenAITracking } from "./wrapper/createWrappedClient.js";
-import { AiEventMetadata } from "../../tokentracker/dist/types/types.js";
+import { withOpenAITracking } from "./wrappers/createWrappedClient.js";
 import { TrackedOpenAI } from "./types/types.js";
 
 type OpenAITracker = {
@@ -25,10 +24,11 @@ export function createOpenAITokenTracker(
   };
 }
 
-export type { AiEventMetadata, TrackedUser } from "../../tokentracker/dist/types/types.js";
 export type {
+  AiEventMetadata,
+  TrackedUser,
   TrackLlmResponse,
   WithTracking,
-  TrackedOpenAI,
-} from "./types/types.js";
-export { TrackedStream } from "./wrapper/TrackedStream.js";
+} from "@llmwatch/tokentracker";
+export * from "./types/types.js";
+export { TrackedStream } from "./wrappers/TrackedStream.js";

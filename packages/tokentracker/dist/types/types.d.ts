@@ -1,10 +1,10 @@
-export type AiEventStatus = "SUCCESS" | "ERROR" | "BLOCKED";
+export type AiEventStatus = "SUCCESS" | "ERROR" | "BLOCKED" | "MAX_TOKENS" | "CONTENT_FILTER" | "RECITATION" | "MALFORMED_REQUEST";
 export type TrackedUser = {
     id: string;
     name?: string;
     email?: string;
     image?: string;
-    monthlyRevenue?: string;
+    monthlyRevenue?: number;
 };
 export type AiEventUsage = {
     inputTokens: number;
@@ -22,12 +22,14 @@ export type AiEventMetadata = {
     user?: string | TrackedUser;
     sessionId?: string;
     conversationId?: string;
-    errorMessage?: string;
-    status?: AiEventStatus;
     [key: string]: unknown;
 };
 export type LLMEvent = {
     usage: AiEventUsage;
+    status?: AiEventStatus | {
+        status: AiEventStatus;
+        errorMessage?: string;
+    };
     metadata?: AiEventMetadata;
 };
 export type CreateAiEventResponse = {
@@ -41,3 +43,19 @@ export interface TokenTrackerConfig {
     debug?: boolean;
     timeout?: number;
 }
+export type TrackLlmResponse = {
+    status: AiEventStatus;
+    cost: number | null;
+    trackingId: string | null;
+    createdAt: string | null;
+    errorMessage?: string;
+};
+export type WithTracking<T> = T & {
+    trackLlmResponse: TrackLlmResponse;
+};
+export type ExtractedUsage = {
+    inputTokens: number;
+    outputTokens: number;
+    cachedTokens: number;
+    totalTokens: number;
+};

@@ -1,12 +1,11 @@
 function normalizeMetadata(context, status, errorMessage) {
-    const { userId, ...rest } = context ?? {};
+    const { user, ...rest } = context ?? {};
     const normalized = { ...rest, status, errorMessage };
-    if (typeof userId === "string") {
-        normalized.userId = userId;
+    if (typeof user === "string") {
+        normalized.user = user;
     }
-    else if (userId != null) {
-        const user = userId;
-        normalized.userId = user.id;
+    else if (user != null) {
+        normalized.user = user.id;
         if (user.name != null)
             normalized.userName = user.name;
         if (user.email != null)
@@ -22,6 +21,10 @@ export async function recordUsage(params) {
     const { context, latencyMs, model, streaming, tracker, usage, status, errorMessage, } = params;
     const trackingData = await tracker.recordEvent({
         metadata: normalizeMetadata(context, status, errorMessage),
+        status: {
+            status,
+            errorMessage,
+        },
         usage: {
             inputTokens: usage.inputTokens,
             outputTokens: usage.outputTokens,
@@ -42,9 +45,20 @@ export async function recordUsage(params) {
     };
 }
 export function finishReasonToStatus(finishReason) {
+    if (!finishReason || finishReason === "stop")
+        return "SUCCESS";
+    // Content blocked
     if (finishReason === "content_filter")
         return "BLOCKED";
-    return "SUCCESS";
+    // Max tokens reached
+    if (finishReason === "length")
+        return "MAX_TOKENS";
+    // Tool/function calls are considered successful
+    if (finishReason === "tool_calls" || finishReason === "function_call") {
+        return "SUCCESS";
+    }
+    // Unknown reasons default to error
+    return "ERROR";
 }
 export function extractResponseStatus(response) {
     if (!response)

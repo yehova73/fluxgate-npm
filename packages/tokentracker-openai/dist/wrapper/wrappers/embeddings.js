@@ -1,5 +1,5 @@
 import { extractEmbeddingUsage } from "../../utils/extractUsage.js";
-import { recordUsage } from "../recordUsage.js";
+import { recordUsage } from "../../utils/recordUsage.js";
 export function createEmbeddingsWrapper(original, tracker, context) {
     return async function wrappedEmbeddingsCreate(params) {
         const start = performance.now();

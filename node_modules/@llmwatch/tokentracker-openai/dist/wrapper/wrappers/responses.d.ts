@@ -1,7 +1,5 @@
-import { Tracker } from "@llmwatch/tokentracker";
+import { AiEventMetadata, Tracker, WithTracking } from "@llmwatch/tokentracker";
 import type OpenAI from "openai";
-import { AiEventMetadata } from "../../../../tokentracker/dist/types/types.js";
-import { WithTracking } from "../../types/types.js";
 import { TrackedStream } from "../TrackedStream.js";
 type OrigCreate = OpenAI["responses"]["create"];
 type Response = OpenAI.Responses.Response;

@@ -17,12 +17,13 @@ export class Tracker {
     }
     async recordEvent(event) {
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), this.timeout);
         if (this.debug) {
             console.log(`[llmwatch] Sending event to ${this.endpoint}:`, JSON.stringify(event, null, 2));
         }
-        console.log("Event to be sent:", JSON.stringify(event, null, 2));
-        const response = await fetch(this.endpoint, {
+        if (!event.status) {
+            event.status = "SUCCESS";
+        }
+        const fetchPromise = fetch(this.endpoint, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -32,14 +33,22 @@ export class Tracker {
             body: JSON.stringify(event),
             signal: controller.signal,
         });
-        clearTimeout(timeoutId);
+        const timeoutPromise = new Promise((_, reject) => {
+            setTimeout(() => {
+                controller.abort();
+                reject(new Error(`Request timeout after ${this.timeout}ms`));
+            }, this.timeout);
+        });
+        const response = await Promise.race([fetchPromise, timeoutPromise]);
         let trackingData = null;
         try {
             const text = await response.text();
             trackingData = JSON.parse(text);
         }
-        catch {
-            // ignore parse errors
+        catch (error) {
+            if (this.debug) {
+                console.error("[llmwatch] Failed to parse response:", error);
+            }
         }
         if (this.debug) {
             console.log(`[llmwatch] Event sent successfully. Status: ${response.status}. Response body: ${response.statusText}`);

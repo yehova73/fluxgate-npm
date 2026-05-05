@@ -1,5 +1,5 @@
 import OpenAI from "openai";
-import { ExtractedUsage } from "../types/types.js";
+import { ExtractedUsage } from "@llmwatch/tokentracker";
 
 export function extractChatUsage(
   usage: OpenAI.Completions.CompletionUsage | null | undefined,

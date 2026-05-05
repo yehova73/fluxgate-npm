@@ -1,4 +1,4 @@
-import { withOpenAITracking } from "./wrapper/createWrappedClient.js";
+import { withOpenAITracking } from "./wrappers/createWrappedClient.js";
 export function createOpenAITokenTracker(client, tracker) {
     return {
         withContext(ctx) {
@@ -10,4 +10,5 @@ export function createOpenAITokenTracker(client, tracker) {
         },
     };
 }
-export { TrackedStream } from "./wrapper/TrackedStream.js";
+export * from "./types/types.js";
+export { TrackedStream } from "./wrappers/TrackedStream.js";

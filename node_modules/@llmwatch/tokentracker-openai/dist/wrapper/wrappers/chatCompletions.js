@@ -1,7 +1,7 @@
 import { extractChatUsage } from "../../utils/extractUsage.js";
 import { isAsyncIterable } from "../../utils/utils.js";
 import { TrackedStream } from "../TrackedStream.js";
-import { finishReasonToStatus, recordUsage } from "../recordUsage.js";
+import { finishReasonToStatus, recordUsage } from "../../utils/recordUsage.js";
 export function createChatWrapper(original, tracker, context) {
     return async function wrappedChatCreate(params) {
         const start = performance.now();

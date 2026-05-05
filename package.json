@@ -7,15 +7,21 @@
   "workspaces": [
     "packages/*"
   ],
+  "license": "MIT",
   "scripts": {
     "build": "npm run build -ws",
-    "dev": "tsc -b --watch"
+    "dev": "tsc -b --watch",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage"
   },
   "engines": {
     "node": ">=16.0.0"
   },
   "devDependencies": {
     "@types/node": "^20.19.39",
-    "typescript": "^5.3.3"
+    "@vitest/coverage-v8": "^2.0.0",
+    "typescript": "^5.3.3",
+    "vitest": "^2.0.0"
   }
 }

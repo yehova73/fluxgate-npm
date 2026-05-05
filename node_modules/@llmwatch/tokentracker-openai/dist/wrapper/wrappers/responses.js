@@ -1,7 +1,7 @@
 import { extractResponseUsage } from "../../utils/extractUsage.js";
 import { isAsyncIterable } from "../../utils/utils.js";
 import { TrackedStream } from "../TrackedStream.js";
-import { extractResponseStatus, recordUsage } from "../recordUsage.js";
+import { extractResponseStatus, recordUsage } from "../../utils/recordUsage.js";
 export function createResponsesWrapper(original, tracker, context) {
     return async function wrappedResponsesCreate(params) {
         const start = performance.now();

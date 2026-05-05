@@ -1,4 +1,4 @@
-import { TrackLlmResponse } from "../types/types.js";
+import { TrackLlmResponse } from "@llmwatch/tokentracker";
 /**
  * Wraps an async iterable and records `trackLlmResponse` once the stream is
  * fully consumed (or errors). Access `stream.trackLlmResponse` after the

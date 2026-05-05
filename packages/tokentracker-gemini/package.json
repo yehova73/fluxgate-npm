@@ -1,0 +1,52 @@
+{
+  "name": "@llmwatch/tokentracker-gemini",
+  "version": "0.0.1",
+  "description": "Token usage tracker for LLMWatch - monitor and report LLM token consumption",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./types": {
+      "types": "./dist/types.d.ts"
+    }
+  },
+  "type": "module",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "keywords": [
+    "llm",
+    "tokens",
+    "tracker",
+    "openai",
+    "claude",
+    "gemini",
+    "monitoring",
+    "costs"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@llmwatch/tokentracker": "*"
+  },
+  "peerDependencies": {
+    "@google/generative-ai": "^0.24.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "typescript": "^5.3.3"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
