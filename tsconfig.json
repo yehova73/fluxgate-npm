@@ -1,17 +1,16 @@
 {
-    "compilerOptions": {
+  "compilerOptions": {
     "target": "ES2020",
     "module": "ESNext",
     "declaration": true,
     "strict": true,
     "esModuleInterop": true,
-    "skipLibCheck": true,
+    "skipLibCheck": true
   },
   "files": [],
   "references": [
     { "path": "./packages/tokentracker" },
     { "path": "./packages/tokentracker-openai" },
     { "path": "./packages/tokentracker-gemini" }
-    // { "path": "./packages/tokentracker-anthropic" }
   ]
 }
