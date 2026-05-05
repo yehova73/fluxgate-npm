@@ -103,6 +103,9 @@ jobs:
       - name: Check TypeScript
         run: npm run typecheck -ws
 
+      - name: Clean untracked files
+        run: git clean -fd
+
       - name: Check for uncommitted changes
         run: |
           if [ -n "$(git status --porcelain)" ]; then
