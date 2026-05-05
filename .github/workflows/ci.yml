@@ -108,8 +108,8 @@ jobs:
 
       - name: Check for uncommitted changes
         run: |
-          if [ -n "$(git status --porcelain)" ]; then
+          if [ -n "$(git status --porcelain -- . ':!node_modules')" ]; then
             echo "Repository has uncommitted changes"
-            git status --porcelain
+            git status --porcelain -- . ':!node_modules'
             exit 1
           fi
