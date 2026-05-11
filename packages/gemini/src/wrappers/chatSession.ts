@@ -68,7 +68,7 @@ export function createSendMessageWrapper(
       errorMessage = `${finishReason}: ${finishMessage}`;
     }
 
-    const trackLlmResponse = await recordUsage({
+    const fluxGateCostTrackingResponse = await recordUsage({
       instance: instance,
       model: modelName,
       latencyMs: performance.now() - start,
@@ -79,7 +79,7 @@ export function createSendMessageWrapper(
       errorMessage,
     });
 
-    return Object.assign(result, { trackLlmResponse });
+    return Object.assign(result, { fluxGateCostTrackingResponse });
   };
 }
 
@@ -141,14 +141,14 @@ export function createSendMessageStreamWrapper(
       },
     );
 
-    // Create result object that exposes trackLlmResponse from the stream
+    // Create result object that exposes fluxGateCostTrackingResponse from the stream
     const streamResult: WithTracking<GenerateContentStreamResult> = {
       response: result.response,
       // TrackedStream implements AsyncIterable but not full AsyncGenerator
       stream: trackedStream as any,
-      // Proxy to get trackLlmResponse from stream after completion
-      get trackLlmResponse() {
-        return trackedStream.trackLlmResponse!;
+      // Proxy to get fluxGateCostTrackingResponse from stream after completion
+      get fluxGateCostTrackingResponse() {
+        return trackedStream.fluxGateCostTrackingResponse!;
       },
     };
 

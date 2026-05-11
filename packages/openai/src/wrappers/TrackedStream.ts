@@ -1,19 +1,19 @@
-import { TrackLlmResponse } from "@fluxgate/sdk";
+import { FluxGateCostTrackingResponse } from "@fluxgate/sdk";
 
 /**
- * Wraps an async iterable and records `trackLlmResponse` once the stream is
- * fully consumed (or errors). Access `stream.trackLlmResponse` after the
+ * Wraps an async iterable and records `fluxGateCostTrackingResponse` once the stream is
+ * fully consumed (or errors). Access `stream.fluxGateCostTrackingResponse` after the
  * `for await` loop completes.
  */
 export class TrackedStream<T> implements AsyncIterable<T> {
-  trackLlmResponse: TrackLlmResponse | undefined;
+  fluxGateCostTrackingResponse: FluxGateCostTrackingResponse | undefined;
 
   constructor(
     private readonly source: AsyncIterable<T>,
     private readonly finalize: (
       lastItem: T | undefined,
       error: Error | undefined,
-    ) => Promise<TrackLlmResponse>,
+    ) => Promise<FluxGateCostTrackingResponse>,
   ) {}
 
   async *[Symbol.asyncIterator](): AsyncGenerator<T> {
@@ -28,7 +28,10 @@ export class TrackedStream<T> implements AsyncIterable<T> {
       streamError = err as Error;
       throw err;
     } finally {
-      this.trackLlmResponse = await this.finalize(last, streamError);
+      this.fluxGateCostTrackingResponse = await this.finalize(
+        last,
+        streamError,
+      );
     }
   }
 }

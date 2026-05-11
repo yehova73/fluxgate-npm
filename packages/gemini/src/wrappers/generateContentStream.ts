@@ -90,15 +90,15 @@ export function createGenerateContentStreamWrapper(
       },
     );
 
-    // Create result object that exposes trackLlmResponse from the stream
+    // Create result object that exposes fluxGateCostTrackingResponse from the stream
     const streamResult: WithTracking<GenerateContentStreamResult> = {
       response: result.response,
       // TrackedStream implements AsyncIterable but not full AsyncGenerator interface
       // Type assertion needed to match GenerateContentStreamResult.stream signature
       stream: trackedStream as any,
-      // Proxy to get trackLlmResponse from stream after completion
-      get trackLlmResponse() {
-        return trackedStream.trackLlmResponse!;
+      // Proxy to get fluxGateCostTrackingResponse from stream after completion
+      get fluxGateCostTrackingResponse() {
+        return trackedStream.fluxGateCostTrackingResponse!;
       },
     };
 

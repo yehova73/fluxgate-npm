@@ -34,7 +34,7 @@ export function createEmbeddingsWrapper(
       throw err;
     }
 
-    const trackLlmResponse = await recordUsage({
+    const fluxGateCostTrackingResponse = await recordUsage({
       instance,
       model: params.model,
       latencyMs: performance.now() - start,
@@ -43,6 +43,6 @@ export function createEmbeddingsWrapper(
       usage: extractEmbeddingUsage(res?.usage),
       status: "SUCCESS",
     });
-    return Object.assign(res, { trackLlmResponse });
+    return Object.assign(res, { fluxGateCostTrackingResponse });
   };
 }

@@ -51,7 +51,7 @@ Manual workflow for releasing packages to npm.
 **Inputs:**
 
 ```
-package: all | tokentracker | tokentracker-openai | tokentracker-gemini
+package: all | sdk | openai | gemini
 version: patch | minor | major
 ```
 

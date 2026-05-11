@@ -1,5 +1,5 @@
 import type { EnhancedGenerateContentResponse } from "@google/generative-ai";
-import { TrackLlmResponse } from "@fluxgate/sdk";
+import { FluxGateCostTrackingResponse } from "@fluxgate/sdk";
 
 /**
  * Wraps a Gemini streaming response to track token usage after completion
@@ -7,14 +7,14 @@ import { TrackLlmResponse } from "@fluxgate/sdk";
 export class TrackedStream<
   T = EnhancedGenerateContentResponse,
 > implements AsyncIterable<T> {
-  trackLlmResponse: TrackLlmResponse | undefined;
+  fluxGateCostTrackingResponse: FluxGateCostTrackingResponse | undefined;
 
   constructor(
     private readonly innerStream: AsyncIterable<T>,
     private readonly onComplete: (
       lastChunk: T | undefined,
       error: Error | undefined,
-    ) => Promise<TrackLlmResponse>,
+    ) => Promise<FluxGateCostTrackingResponse>,
   ) {}
 
   async *[Symbol.asyncIterator](): AsyncIterator<T> {
@@ -30,7 +30,10 @@ export class TrackedStream<
       streamError = err as Error;
       throw err;
     } finally {
-      this.trackLlmResponse = await this.onComplete(lastChunk, streamError);
+      this.fluxGateCostTrackingResponse = await this.onComplete(
+        lastChunk,
+        streamError,
+      );
     }
   }
 }

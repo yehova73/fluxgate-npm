@@ -1,13 +1,13 @@
 # Gemini Examples
 
-This directory contains example code demonstrating various features of the tokentracker-gemini package.
+This directory contains example code demonstrating various features of the @fluxgate/gemini package.
 
 ## Prerequisites
 
 - Node.js >= 18.0.0
 - npm or yarn
 - Google Gemini API key
-- LLMWatch API key
+- FluxGate API key
 
 ## Setup
 
@@ -28,7 +28,7 @@ This directory contains example code demonstrating various features of the token
 
    ```bash
    export GEMINI_API_KEY="your-gemini-api-key"
-   export LLMWATCH_API_KEY="your-llmwatch-api-key"
+   export FLUXGATE_API_KEY="your-fluxgate-api-key"
    ```
 
    To get a Gemini API key, visit: https://makersuite.google.com/app/apikey
@@ -38,7 +38,7 @@ This directory contains example code demonstrating various features of the token
 ### Basic Generation
 
 ```bash
-npx tsx packages/tokentracker-gemini/examples/basic-generation.ts
+npx tsx packages/gemini/examples/basic-generation.ts
 ```
 
 Demonstrates basic text generation with tracking.
@@ -46,7 +46,7 @@ Demonstrates basic text generation with tracking.
 ### Streaming
 
 ```bash
-npx tsx packages/tokentracker-gemini/examples/streaming.ts
+npx tsx packages/gemini/examples/streaming.ts
 ```
 
 Shows how to use streaming responses with automatic tracking.
@@ -54,7 +54,7 @@ Shows how to use streaming responses with automatic tracking.
 ### Chat Session
 
 ```bash
-npx tsx packages/tokentracker-gemini/examples/chat-session.ts
+npx tsx packages/gemini/examples/chat-session.ts
 ```
 
 Multi-turn conversations with context preservation and tracking.
@@ -62,7 +62,7 @@ Multi-turn conversations with context preservation and tracking.
 ### Embeddings
 
 ```bash
-npx tsx packages/tokentracker-gemini/examples/embeddings.ts
+npx tsx packages/gemini/examples/embeddings.ts
 ```
 
 Examples of creating embeddings and calculating semantic similarity.
@@ -110,6 +110,6 @@ All examples work with:
 ## Learn More
 
 - [Package Documentation](../README.md)
-- [Core Tracker](../../tokentracker/README.md)
+- [Core SDK](../../sdk/README.md)
 - [Gemini API Documentation](https://ai.google.dev/docs)
 - [Get API Key](https://makersuite.google.com/app/apikey)

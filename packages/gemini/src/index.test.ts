@@ -1,9 +1,9 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
-import { createGeminiTokenTracker } from "./index.js";
+import { createGeminiCostTracker } from "./index.js";
 import { FluxGate } from "@fluxgate/sdk";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
-describe("createGeminiTokenTracker", () => {
+describe("createGeminiCostTracker", () => {
   let mockModel: ReturnType<GoogleGenerativeAI["getGenerativeModel"]>;
   let mockFluxGate: FluxGate;
 
@@ -19,7 +19,7 @@ describe("createGeminiTokenTracker", () => {
 
   describe("initialization", () => {
     it("should create a tracker with withContext method", () => {
-      const tracker = createGeminiTokenTracker(mockModel, mockFluxGate);
+      const tracker = createGeminiCostTracker(mockModel, mockFluxGate);
 
       expect(tracker).toHaveProperty("withContext");
       expect(tracker).toHaveProperty("model");
@@ -27,7 +27,7 @@ describe("createGeminiTokenTracker", () => {
     });
 
     it("should return wrapped model with context", () => {
-      const tracker = createGeminiTokenTracker(mockModel, mockFluxGate);
+      const tracker = createGeminiCostTracker(mockModel, mockFluxGate);
       const contextModel = tracker.withContext({ feature: "test-feature" });
 
       expect(contextModel).toBeDefined();
@@ -38,7 +38,7 @@ describe("createGeminiTokenTracker", () => {
     });
 
     it("should return wrapped model without context", () => {
-      const tracker = createGeminiTokenTracker(mockModel, mockFluxGate);
+      const tracker = createGeminiCostTracker(mockModel, mockFluxGate);
       const defaultModel = tracker.model;
 
       expect(defaultModel).toBeDefined();
@@ -51,7 +51,7 @@ describe("createGeminiTokenTracker", () => {
 
   describe("context handling", () => {
     it("should accept user context with string user", () => {
-      const tracker = createGeminiTokenTracker(mockModel, mockFluxGate);
+      const tracker = createGeminiCostTracker(mockModel, mockFluxGate);
       const contextModel = tracker.withContext({
         feature: "chat",
         user: "user-123",
@@ -62,7 +62,7 @@ describe("createGeminiTokenTracker", () => {
     });
 
     it("should accept user context with TrackedUser object", () => {
-      const tracker = createGeminiTokenTracker(mockModel, mockFluxGate);
+      const tracker = createGeminiCostTracker(mockModel, mockFluxGate);
       const contextModel = tracker.withContext({
         feature: "chat",
         user: {
@@ -78,7 +78,7 @@ describe("createGeminiTokenTracker", () => {
     });
 
     it("should accept metadata with custom fields", () => {
-      const tracker = createGeminiTokenTracker(mockModel, mockFluxGate);
+      const tracker = createGeminiCostTracker(mockModel, mockFluxGate);
       const contextModel = tracker.withContext({
         feature: "generation",
         step: "content-creation",
@@ -92,7 +92,7 @@ describe("createGeminiTokenTracker", () => {
 
   describe("wrapped model methods", () => {
     it("should have wrapped generateContent method", () => {
-      const tracker = createGeminiTokenTracker(mockModel, mockFluxGate);
+      const tracker = createGeminiCostTracker(mockModel, mockFluxGate);
       const wrappedModel = tracker.model;
 
       expect(wrappedModel.generateContent).toBeDefined();
@@ -100,7 +100,7 @@ describe("createGeminiTokenTracker", () => {
     });
 
     it("should have wrapped generateContentStream method", () => {
-      const tracker = createGeminiTokenTracker(mockModel, mockFluxGate);
+      const tracker = createGeminiCostTracker(mockModel, mockFluxGate);
       const wrappedModel = tracker.model;
 
       expect(wrappedModel.generateContentStream).toBeDefined();
@@ -108,7 +108,7 @@ describe("createGeminiTokenTracker", () => {
     });
 
     it("should have wrapped embedContent method", () => {
-      const tracker = createGeminiTokenTracker(mockModel, mockFluxGate);
+      const tracker = createGeminiCostTracker(mockModel, mockFluxGate);
       const wrappedModel = tracker.model;
 
       expect(wrappedModel.embedContent).toBeDefined();
@@ -116,7 +116,7 @@ describe("createGeminiTokenTracker", () => {
     });
 
     it("should have wrapped startChat method", () => {
-      const tracker = createGeminiTokenTracker(mockModel, mockFluxGate);
+      const tracker = createGeminiCostTracker(mockModel, mockFluxGate);
       const wrappedModel = tracker.model;
 
       expect(wrappedModel.startChat).toBeDefined();
@@ -126,7 +126,7 @@ describe("createGeminiTokenTracker", () => {
 
   describe("multiple contexts", () => {
     it("should allow creating multiple wrapped models with different contexts", () => {
-      const tracker = createGeminiTokenTracker(mockModel, mockFluxGate);
+      const tracker = createGeminiCostTracker(mockModel, mockFluxGate);
 
       const chatContext = tracker.withContext({ feature: "chat" });
       const summaryContext = tracker.withContext({ feature: "summary" });
@@ -139,14 +139,14 @@ describe("createGeminiTokenTracker", () => {
 
   describe("model preservation", () => {
     it("should preserve original model name", () => {
-      const tracker = createGeminiTokenTracker(mockModel, mockFluxGate);
+      const tracker = createGeminiCostTracker(mockModel, mockFluxGate);
       const wrappedModel = tracker.model;
 
       expect(wrappedModel.model).toBe(mockModel.model);
     });
 
     it("should preserve other model properties", () => {
-      const tracker = createGeminiTokenTracker(mockModel, mockFluxGate);
+      const tracker = createGeminiCostTracker(mockModel, mockFluxGate);
       const wrappedModel = tracker.model;
 
       // Should have access to all original model properties

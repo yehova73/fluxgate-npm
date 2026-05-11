@@ -1,12 +1,12 @@
 # Examples
 
-This directory contains example code demonstrating various features of the tokentracker package.
+This directory contains example code demonstrating various features of the @fluxgate/sdk package.
 
 ## Prerequisites
 
 - Node.js >= 18.0.0
 - npm or yarn
-- LLMWatch API key
+- FluxGate API key
 
 ## Setup
 
@@ -25,7 +25,7 @@ This directory contains example code demonstrating various features of the token
 
 3. Set your environment variable:
    ```bash
-   export LLMWATCH_API_KEY="your-api-key"
+   export FLUXGATE_API_KEY="your-api-key"
    ```
 
 ## Running Examples
@@ -56,5 +56,5 @@ This example demonstrates:
 ## Learn More
 
 - [Core Package Documentation](../README.md)
-- [OpenAI Wrapper Examples](../../tokentracker-openai/examples)
-- [Gemini Wrapper Examples](../../tokentracker-gemini/examples)
+- [OpenAI Wrapper Examples](../../openai/examples)
+- [Gemini Wrapper Examples](../../gemini/examples)

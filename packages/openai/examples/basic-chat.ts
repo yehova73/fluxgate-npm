@@ -1,6 +1,6 @@
 import OpenAI from "openai";
 import { FluxGate } from "@fluxgate/sdk";
-import { createOpenAITokenTracker } from "@fluxgate/openai";
+import { createOpenAICostTracker } from "@fluxgate/openai";
 
 async function main() {
   // Initialize OpenAI client
@@ -15,7 +15,7 @@ async function main() {
   });
 
   // Create tracked client
-  const openai = createOpenAITokenTracker(client, fluxgate);
+  const openai = createOpenAICostTracker(client, fluxgate);
 
   console.log("=== Basic Chat Completion ===\n");
 
@@ -34,7 +34,7 @@ async function main() {
     });
 
   console.log("Response:", completion.choices[0].message.content);
-  console.log("\nTracking Data:", completion.trackLlmResponse);
+  console.log("\nTracking Data:", completion.fluxGateCostTrackingResponse);
   console.log("\nUsage:", completion.usage);
 }
 

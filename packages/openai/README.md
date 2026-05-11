@@ -1,32 +1,32 @@
-# @fluxgate/llmtracker-openai
+# @fluxgate/openai
 
-OpenAI SDK wrapper for LLMWatch token tracking. Automatically track token usage, costs, and latency for all OpenAI API calls.
+OpenAI SDK wrapper for FluxGate token tracking. Automatically track token usage, costs, and latency for all OpenAI API calls.
 
 ## 📦 Installation
 
 ```bash
-npm install @fluxgate/llmtracker @fluxgate/llmtracker-openai openai
+npm install @fluxgate/sdk @fluxgate/openai openai
 ```
 
 ## 🚀 Quick Start
 
 ```typescript
 import OpenAI from "openai";
-import { Tracker } from "@fluxgate/llmtracker";
-import { createOpenAITokenTracker } from "@fluxgate/llmtracker-openai";
+import { FluxGate } from "@fluxgate/sdk";
+import { createOpenAICostTracker } from "@fluxgate/openai";
 
 // Initialize OpenAI client
 const client = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-// Initialize LLMWatch tracker
-const tracker = new Tracker({
+// Initialize FluxGate tracker
+const fluxgate = new FluxGate({
   apiKey: process.env.FLUXGATE_API_KEY,
 });
 
 // Create tracked client
-const openai = createOpenAITokenTracker(client, tracker);
+const openai = createOpenAICostTracker(client, fluxgate);
 
 // Use with context
 const response = await openai
@@ -51,14 +51,14 @@ console.log(response.trackLlmResponse);
 
 ## 📖 API Reference
 
-### `createOpenAITokenTracker(client, tracker)`
+### `createOpenAICostTracker(client, tracker)`
 
 Creates a tracked OpenAI client with context support.
 
 **Parameters:**
 
 - `client`: OpenAI client instance
-- `tracker`: LLMWatch Tracker instance
+- `fluxgate`: FluxGate instance
 
 **Returns:** Object with:
 
@@ -81,12 +81,12 @@ All standard OpenAI methods are supported with automatic tracking:
 
 ```typescript
 import OpenAI from "openai";
-import { Tracker } from "@fluxgate/llmtracker";
-import { createOpenAITokenTracker } from "@fluxgate/llmtracker-openai";
+import { FluxGate } from "@fluxgate/sdk";
+import { createOpenAICostTracker } from "@fluxgate/openai";
 
 const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-const tracker = new Tracker({ apiKey: process.env.LLMWATCH_API_KEY });
-const openai = createOpenAITokenTracker(client, tracker);
+const fluxgate = new FluxGate({ apiKey: process.env.FLUXGATE_API_KEY });
+const openai = createOpenAICostTracker(client, fluxgate);
 
 // Non-streaming
 const completion = await openai
@@ -200,7 +200,7 @@ const completion = await openai
 ### Multiple Contexts
 
 ```typescript
-const openai = createOpenAITokenTracker(client, tracker);
+const openai = createOpenAICostTracker(client, tracker);
 
 // Create different contexts for different features
 const chatClient = openai.withContext({ feature: "chat" });
@@ -260,7 +260,7 @@ console.log(stream.trackLlmResponse);
 ### Accessing the TrackedStream
 
 ```typescript
-import { TrackedStream } from "@fluxgate/llmtracker-openai";
+import { TrackedStream } from "@fluxgate/openai";
 
 const stream = await openai.client.chat.completions.create({
   model: "gpt-4",
@@ -324,7 +324,7 @@ import type {
   AiEventMetadata,
   TrackedUser,
   TrackLlmResponse,
-} from "@fluxgate/llmtracker-openai";
+} from "@fluxgate/openai";
 
 // TrackedOpenAI includes all OpenAI methods with tracking
 const openai: TrackedOpenAI = trackedClient.client;
@@ -335,8 +335,8 @@ type Response = WithTracking<OpenAI.Chat.Completions.ChatCompletion>;
 
 ## 🔗 Related Packages
 
-- [@fluxgate/llmtracker](../tokentracker) - Core tracking library
-- [@fluxgate/llmtracker-gemini](../tokentracker-gemini) - Gemini SDK wrapper
+- [@fluxgate/sdk](../sdk) - Core tracking library
+- [@fluxgate/gemini](../gemini) - Gemini SDK wrapper
 
 ## 📖 Examples
 

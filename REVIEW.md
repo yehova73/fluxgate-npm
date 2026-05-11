@@ -1,7 +1,7 @@
-# LLMWatch Monorepo - Complete Review Report
+# FluxGate Monorepo - Complete Review Report
 
 **Date:** May 5, 2026  
-**Project:** LLMWatch Token Tracker Monorepo  
+**Project:** FluxGate Token Tracker Monorepo  
 **Status:** 🟡 Pre-Production (70% Complete)
 
 ---
@@ -32,7 +32,7 @@ Your monorepo is **well-structured and feature-complete** with excellent documen
 
 ### 2. **Core Functionality** ✅
 
-- ✅ Three packages: tokentracker, tokentracker-openai, tokentracker-gemini
+- ✅ Three packages: sdk, openai, gemini
 - ✅ Non-invasive client wrapping pattern
 - ✅ Context-aware metadata tracking
 - ✅ Streaming support with automatic tracking
@@ -161,13 +161,13 @@ Your monorepo is **well-structured and feature-complete** with excellent documen
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/yourusername/llmwatch-npm.git",
-    "directory": "packages/tokentracker"
+    "url": "https://github.com/yourusername/fluxgate-npm.git",
+    "directory": "packages/sdk"
   },
   "bugs": {
-    "url": "https://github.com/yourusername/llmwatch-npm/issues"
+    "url": "https://github.com/yourusername/fluxgate-npm/issues"
   },
-  "homepage": "https://llmwatch.vercel.com"
+  "homepage": "https://fluxgate.app"
 }
 ```
 
@@ -202,12 +202,12 @@ Your monorepo is **well-structured and feature-complete** with excellent documen
 Some packages export types from wrong location:
 
 ```json
-// tokentracker-openai exports:
+// sdk exports:
 "./types": {
   "types": "./dist/types.d.ts"   // ❌ Should be index.d.ts
 }
 
-// tokentracker exports:
+// gemini exports:
 "./types": {
   "types": "./dist/types/types.d.ts"   // ✅ Correct path
 }
@@ -215,9 +215,9 @@ Some packages export types from wrong location:
 
 ### 2. **No .npmignore** (MINOR)
 
-- ✅ tokentracker: Has .npmignore
-- ✅ tokentracker-openai: Has .npmignore
-- ✅ tokentracker-gemini: Has .npmignore
+- ✅ sdk: Has .npmignore
+- ✅ openai: Has .npmignore
+- ✅ gemini: Has .npmignore
 
 Actually, all are present! ✅
 
@@ -355,13 +355,13 @@ Root package.json says `>=16.0.0`, but packages require `>=18.0.0`
 "license": "MIT",
 "repository": {
   "type": "git",
-  "url": "https://github.com/yourusername/llmwatch-npm.git",
-  "directory": "packages/tokentracker"
+  "url": "https://github.com/yourusername/fluxgate-npm.git",
+  "directory": "packages/sdk"
 },
 "bugs": {
-  "url": "https://github.com/yourusername/llmwatch-npm/issues"
+  "url": "https://github.com/yourusername/fluxgate-npm/issues"
 },
-"homepage": "https://llmwatch.vercel.com"
+"homepage": "https://fluxgate.app"
 ```
 
 ### Root Package.json Engine Fix
@@ -441,7 +441,7 @@ npm test
 - ✅ .gitignore - Good
 - ✅ LICENSE - Good
 
-### Package: tokentracker
+### Package: sdk
 
 - ✅ src/index.ts - Excellent
 - ✅ src/index.test.ts - Good (130+ lines)
@@ -451,7 +451,7 @@ npm test
 - ✅ examples/basic.ts - Good
 - ✅ examples/README.md - Good
 
-### Package: tokentracker-openai
+### Package: openai
 
 - ✅ src/index.ts - Excellent
 - ✅ src/wrappers/\* - Excellent implementation
@@ -461,7 +461,7 @@ npm test
 - ✅ examples/\*.ts - Excellent (5 examples)
 - ✅ examples/README.md - Good
 
-### Package: tokentracker-gemini
+### Package: gemini
 
 - ✅ src/index.ts - Excellent
 - ✅ src/wrappers/\* - Excellent implementation

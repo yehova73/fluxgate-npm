@@ -8,7 +8,7 @@ type OpenAITracker = {
   get client(): TrackedOpenAI;
 };
 
-export function createOpenAITokenTracker(
+export function createOpenAICostTracker(
   client: OpenAI,
   instance: FluxGate,
 ): OpenAITracker {
@@ -27,7 +27,7 @@ export function createOpenAITokenTracker(
 export type {
   AiEventMetadata,
   TrackedUser,
-  TrackLlmResponse,
+  FluxGateCostTrackingResponse,
   WithTracking,
 } from "@fluxgate/sdk";
 export * from "./types/types.js";

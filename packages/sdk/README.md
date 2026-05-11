@@ -1,27 +1,27 @@
-# @llmwatch/tokentracker
+# @fluxgate/sdk
 
-Core token tracking functionality for LLMWatch. This package provides the base `Tracker` class that sends usage data to the LLMWatch API.
+Core tracking functionality for FluxGate. This package provides the base `FluxGate` class that sends usage data to the FluxGate API.
 
 ## 📦 Installation
 
 ```bash
-npm install @llmwatch/tokentracker
+npm install @fluxgate/sdk
 ```
 
 ## 🚀 Quick Start
 
 ```typescript
-import { Tracker } from "@llmwatch/tokentracker";
+import { FluxGate } from "@fluxgate/sdk";
 
-const tracker = new Tracker({
-  apiKey: process.env.LLMWATCH_API_KEY,
-  endpoint: "https://llmwatch.vercel.com/api/events", // optional
+const fluxgate = new FluxGate({
+  apiKey: process.env.FLUXGATE_API_KEY,
+  endpoint: "https://fluxgate.app/api/events", // optional
   timeout: 5000, // optional, default: 5000ms
   debug: false, // optional, default: false
 });
 
 // Record a usage event
-const response = await tracker.recordEvent({
+const response = await fluxgate.recordEvent({
   usage: {
     inputTokens: 100,
     outputTokens: 50,
@@ -45,30 +45,30 @@ console.log(response);
 
 ## 📖 API Reference
 
-### `Tracker`
+### `FluxGate`
 
 The main class for tracking LLM usage events.
 
 #### Constructor
 
 ```typescript
-new Tracker(config: TokenTrackerConfig)
+new FluxGate(config: FluxGateConfig)
 ```
 
 **Configuration Options:**
 
-| Option     | Type      | Required | Default                                  | Description                     |
-| ---------- | --------- | -------- | ---------------------------------------- | ------------------------------- |
-| `apiKey`   | `string`  | ✅       | -                                        | Your LLMWatch API key           |
-| `endpoint` | `string`  | ❌       | `https://llmwatch.vercel.com/api/events` | API endpoint URL                |
-| `timeout`  | `number`  | ❌       | `5000`                                   | Request timeout in milliseconds |
-| `debug`    | `boolean` | ❌       | `false`                                  | Enable debug logging            |
+| Option     | Type      | Required | Default                           | Description                     |
+| ---------- | --------- | -------- | --------------------------------- | ------------------------------- |
+| `apiKey`   | `string`  | ✅       | -                                 | Your FluxGate API key           |
+| `endpoint` | `string`  | ❌       | `https://fluxgate.app/api/events` | API endpoint URL                |
+| `timeout`  | `number`  | ❌       | `5000`                            | Request timeout in milliseconds |
+| `debug`    | `boolean` | ❌       | `false`                           | Enable debug logging            |
 
 #### Methods
 
 ##### `recordEvent(event: LLMEvent)`
 
-Records a usage event to LLMWatch.
+Records a usage event to FluxGate.
 
 **Parameters:**
 
@@ -222,9 +222,9 @@ await tracker.recordEvent({
     outputTokens: 50,
   },
 });
-// [llmwatch] TokenTracker initialized { endpoint: '...', timeout: 5000 }
-// [llmwatch] Sending event to ...: { ... }
-// [llmwatch] Event sent successfully. Status: 200
+// [fluxgate] FluxGate initialized { endpoint: '...', timeout: 5000 }
+// [fluxgate] Sending event to ...: { ... }
+// [fluxgate] Event sent successfully. Status: 200
 ```
 
 ### Custom Endpoint
@@ -243,17 +243,17 @@ const tracker = new Tracker({
 
 This package is typically used through provider-specific wrappers:
 
-- [`@llmwatch/tokentracker-openai`](../tokentracker-openai/README.md) - For OpenAI
-- [`@llmwatch/tokentracker-gemini`](../tokentracker-gemini/README.md) - For Google Gemini
+- [`@fluxgate/openai`](../openai/README.md) - For OpenAI
+- [`@fluxgate/gemini`](../gemini/README.md) - For Google Gemini
 
 ### Direct Integration
 
 If you're integrating a custom provider:
 
 ```typescript
-import { Tracker, type LLMEvent } from "@llmwatch/tokentracker";
+import { FluxGate, type LLMEvent } from "@fluxgate/sdk";
 
-const tracker = new Tracker({ apiKey: "your-api-key" });
+const fluxgate = new FluxGate({ apiKey: "your-api-key" });
 
 async function trackMyCustomLLM(prompt: string) {
   const start = performance.now();
@@ -324,14 +324,14 @@ import type {
   AiEventStatus,
   AiEventUsage,
   ExtractedUsage,
-  TokenTrackerConfig,
-} from "@llmwatch/tokentracker";
+  FluxGateConfig,
+} from "@fluxgate/sdk";
 ```
 
 ## 🔗 Related Packages
 
-- [@llmwatch/tokentracker-openai](../tokentracker-openai) - OpenAI SDK wrapper
-- [@llmwatch/tokentracker-gemini](../tokentracker-gemini) - Gemini SDK wrapper
+- [@fluxgate/openai](../openai) - OpenAI SDK wrapper
+- [@fluxgate/gemini](../gemini) - Gemini SDK wrapper
 
 ## 📝 License
 

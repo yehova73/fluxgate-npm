@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
 import { TrackedStream } from "./TrackedStream.js";
-import type { TrackLlmResponse } from "@fluxgate/sdk";
+import type { FluxGateCostTrackingResponse } from "@fluxgate/sdk";
 
 describe("TrackedStream", () => {
   async function* createMockStream<T>(items: T[]): AsyncGenerator<T> {
@@ -30,7 +30,7 @@ describe("TrackedStream", () => {
         cost: 0.001,
         trackingId: "track-123",
         createdAt: "2026-05-05T00:00:00Z",
-      } as TrackLlmResponse);
+      } as FluxGateCostTrackingResponse);
 
       const trackedStream = new TrackedStream(source, finalize);
 
@@ -50,7 +50,7 @@ describe("TrackedStream", () => {
         cost: 0.001,
         trackingId: "track-123",
         createdAt: "2026-05-05T00:00:00Z",
-      } as TrackLlmResponse);
+      } as FluxGateCostTrackingResponse);
 
       const trackedStream = new TrackedStream(source, finalize);
 
@@ -61,10 +61,10 @@ describe("TrackedStream", () => {
       expect(finalize).toHaveBeenCalledWith("c", undefined);
     });
 
-    it("should set trackLlmResponse after stream completes", async () => {
+    it("should set fluxGateCostTrackingResponse after stream completes", async () => {
       const items = [1, 2, 3];
       const source = createMockStream(items);
-      const mockResponse: TrackLlmResponse = {
+      const mockResponse: FluxGateCostTrackingResponse = {
         status: "SUCCESS",
         cost: 0.002,
         trackingId: "track-456",
@@ -74,13 +74,13 @@ describe("TrackedStream", () => {
 
       const trackedStream = new TrackedStream(source, finalize);
 
-      expect(trackedStream.trackLlmResponse).toBeUndefined();
+      expect(trackedStream.fluxGateCostTrackingResponse).toBeUndefined();
 
       for await (const _ of trackedStream) {
         // consume stream
       }
 
-      expect(trackedStream.trackLlmResponse).toEqual(mockResponse);
+      expect(trackedStream.fluxGateCostTrackingResponse).toEqual(mockResponse);
     });
 
     it("should handle empty stream", async () => {
@@ -90,7 +90,7 @@ describe("TrackedStream", () => {
         cost: 0,
         trackingId: "track-789",
         createdAt: "2026-05-05T00:00:00Z",
-      } as TrackLlmResponse);
+      } as FluxGateCostTrackingResponse);
 
       const trackedStream = new TrackedStream(source, finalize);
 
@@ -114,7 +114,7 @@ describe("TrackedStream", () => {
         trackingId: "track-error",
         createdAt: "2026-05-05T00:00:00Z",
         errorMessage: "Stream error",
-      } as TrackLlmResponse);
+      } as FluxGateCostTrackingResponse);
 
       const trackedStream = new TrackedStream(source, finalize);
 
@@ -134,10 +134,10 @@ describe("TrackedStream", () => {
       );
     });
 
-    it("should set trackLlmResponse even when stream errors", async () => {
+    it("should set fluxGateCostTrackingResponse even when stream errors", async () => {
       const items = [1, 2, 3];
       const source = createErrorStream(items, 1);
-      const mockResponse: TrackLlmResponse = {
+      const mockResponse: FluxGateCostTrackingResponse = {
         status: "ERROR",
         cost: null,
         trackingId: "track-error-2",
@@ -156,7 +156,7 @@ describe("TrackedStream", () => {
         // expected error
       }
 
-      expect(trackedStream.trackLlmResponse).toEqual(mockResponse);
+      expect(trackedStream.fluxGateCostTrackingResponse).toEqual(mockResponse);
     });
 
     it("should propagate the error after calling finalize", async () => {
@@ -168,7 +168,7 @@ describe("TrackedStream", () => {
         trackingId: null,
         createdAt: null,
         errorMessage: "Stream error",
-      } as TrackLlmResponse);
+      } as FluxGateCostTrackingResponse);
 
       const trackedStream = new TrackedStream(source, finalize);
 
@@ -191,7 +191,7 @@ describe("TrackedStream", () => {
         cost: 0.003,
         trackingId: "track-multi",
         createdAt: "2026-05-05T00:00:00Z",
-      } as TrackLlmResponse);
+      } as FluxGateCostTrackingResponse);
 
       const trackedStream = new TrackedStream(source, finalize);
 

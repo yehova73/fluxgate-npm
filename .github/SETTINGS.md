@@ -100,9 +100,9 @@ Create `.github/CODEOWNERS`:
 
 ```
 # TypeScript packages
-packages/tokentracker/          @username
-packages/tokentracker-openai/   @username
-packages/tokentracker-gemini/   @username
+packages/sdk/                @username
+packages/openai/              @username
+packages/gemini/              @username
 
 # Configuration
 .github/                        @username

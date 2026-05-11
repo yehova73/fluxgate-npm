@@ -2,7 +2,7 @@ import type OpenAI from "openai";
 import type { WithTracking } from "@fluxgate/sdk";
 import type { TrackedStream } from "../wrappers/TrackedStream.js";
 
-/** Utility: intersects any SDK response type with trackLlmResponse */
+/** Utility: intersects any SDK response type with fluxGateCostTrackingResponse */
 
 // Shorthand for the options parameter shared by all create overloads
 type ChatOpts = Parameters<OpenAI["chat"]["completions"]["create"]>[1];

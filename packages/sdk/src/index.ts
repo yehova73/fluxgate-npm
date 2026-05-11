@@ -89,10 +89,10 @@ export type {
   CreateAiEventResponse,
   TrackedUser,
   AiEventMetadata,
-  TrackLlmResponse,
+  FluxGateCostTrackingResponse,
   WithTracking,
   AiEventStatus,
   AiEventUsage,
   ExtractedUsage,
-  FluxGateConfig as TokenTrackerConfig,
+  FluxGateConfig,
 } from "./types/types.js";

@@ -1,6 +1,6 @@
 import OpenAI from "openai";
 import { FluxGate } from "@fluxgate/sdk";
-import { createOpenAITokenTracker } from "@fluxgate/openai";
+import { createOpenAICostTracker } from "@fluxgate/openai";
 
 async function main() {
   // Initialize OpenAI client
@@ -15,7 +15,7 @@ async function main() {
   });
 
   // Create tracked client
-  const openai = createOpenAITokenTracker(client, fluxgate);
+  const openai = createOpenAICostTracker(client, fluxgate);
 
   console.log("=== Error Handling Example ===\n");
 
@@ -56,7 +56,7 @@ async function main() {
     }
 
     console.log(`\n\nSuccessfully processed ${chunkCount} chunks`);
-    console.log("Tracking Data:", stream.trackLlmResponse);
+    console.log("Tracking Data:", stream.fluxGateCostTrackingResponse);
   } catch (error: any) {
     console.log("\nStream error:", error.message);
   }
@@ -72,7 +72,7 @@ async function main() {
     debug: false, // Disable debug to avoid noise
   });
 
-  const openaiWithBadInstance = createOpenAITokenTracker(
+  const openaiWithBadInstance = createOpenAICostTracker(
     client,
     instanceWithBadEndpoint,
   );
@@ -85,7 +85,7 @@ async function main() {
 
     console.log("Response received:", result.choices[0].message.content);
     console.log("Tracking failed silently, but app continued working");
-    console.log("Tracking Data:", result.trackLlmResponse);
+    console.log("Tracking Data:", result.fluxGateCostTrackingResponse);
   } catch (error: any) {
     console.log("App error:", error.message);
   }

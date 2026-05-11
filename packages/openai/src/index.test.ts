@@ -1,9 +1,9 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
-import { createOpenAITokenTracker } from "./index.js";
+import { createOpenAICostTracker } from "./index.js";
 import { FluxGate } from "@fluxgate/sdk";
 import OpenAI from "openai";
 
-describe("createOpenAITokenTracker", () => {
+describe("createOpenAICostTracker", () => {
   let mockClient: OpenAI;
   let mockFluxgate: FluxGate;
 
@@ -20,7 +20,7 @@ describe("createOpenAITokenTracker", () => {
 
   describe("initialization", () => {
     it("should create a tracker with withContext method", () => {
-      const tracker = createOpenAITokenTracker(mockClient, mockFluxgate);
+      const tracker = createOpenAICostTracker(mockClient, mockFluxgate);
 
       expect(tracker).toHaveProperty("withContext");
       expect(tracker).toHaveProperty("client");
@@ -28,7 +28,7 @@ describe("createOpenAITokenTracker", () => {
     });
 
     it("should return wrapped client with context", () => {
-      const tracker = createOpenAITokenTracker(mockClient, mockFluxgate);
+      const tracker = createOpenAICostTracker(mockClient, mockFluxgate);
       const contextClient = tracker.withContext({ feature: "test-feature" });
 
       expect(contextClient).toBeDefined();
@@ -37,7 +37,7 @@ describe("createOpenAITokenTracker", () => {
     });
 
     it("should return wrapped client without context", () => {
-      const tracker = createOpenAITokenTracker(mockClient, mockFluxgate);
+      const tracker = createOpenAICostTracker(mockClient, mockFluxgate);
       const defaultClient = tracker.client;
 
       expect(defaultClient).toBeDefined();
@@ -48,7 +48,7 @@ describe("createOpenAITokenTracker", () => {
 
   describe("context handling", () => {
     it("should accept user context with string user", () => {
-      const tracker = createOpenAITokenTracker(mockClient, mockFluxgate);
+      const tracker = createOpenAICostTracker(mockClient, mockFluxgate);
       const contextClient = tracker.withContext({
         feature: "chat",
         user: "user-123",
@@ -59,7 +59,7 @@ describe("createOpenAITokenTracker", () => {
     });
 
     it("should accept user context with TrackedUser object", () => {
-      const tracker = createOpenAITokenTracker(mockClient, mockFluxgate);
+      const tracker = createOpenAICostTracker(mockClient, mockFluxgate);
       const contextClient = tracker.withContext({
         feature: "chat",
         user: {
@@ -75,7 +75,7 @@ describe("createOpenAITokenTracker", () => {
     });
 
     it("should accept metadata with custom fields", () => {
-      const tracker = createOpenAITokenTracker(mockClient, mockFluxgate);
+      const tracker = createOpenAICostTracker(mockClient, mockFluxgate);
       const contextClient = tracker.withContext({
         feature: "chat",
         step: "generation",
@@ -89,7 +89,7 @@ describe("createOpenAITokenTracker", () => {
 
   describe("wrapped client methods", () => {
     it("should have wrapped chat.completions.create method", () => {
-      const tracker = createOpenAITokenTracker(mockClient, mockFluxgate);
+      const tracker = createOpenAICostTracker(mockClient, mockFluxgate);
       const wrappedClient = tracker.client;
 
       expect(wrappedClient.chat.completions.create).toBeDefined();
@@ -97,7 +97,7 @@ describe("createOpenAITokenTracker", () => {
     });
 
     it("should have wrapped completions.create method", () => {
-      const tracker = createOpenAITokenTracker(mockClient, mockFluxgate);
+      const tracker = createOpenAICostTracker(mockClient, mockFluxgate);
       const wrappedClient = tracker.client;
 
       expect(wrappedClient.completions.create).toBeDefined();
@@ -105,7 +105,7 @@ describe("createOpenAITokenTracker", () => {
     });
 
     it("should have wrapped embeddings.create method", () => {
-      const tracker = createOpenAITokenTracker(mockClient, mockFluxgate);
+      const tracker = createOpenAICostTracker(mockClient, mockFluxgate);
       const wrappedClient = tracker.client;
 
       expect(wrappedClient.embeddings.create).toBeDefined();
@@ -113,7 +113,7 @@ describe("createOpenAITokenTracker", () => {
     });
 
     it("should have wrapped responses.create method", () => {
-      const tracker = createOpenAITokenTracker(mockClient, mockFluxgate);
+      const tracker = createOpenAICostTracker(mockClient, mockFluxgate);
       const wrappedClient = tracker.client;
 
       expect(wrappedClient.responses.create).toBeDefined();
@@ -123,7 +123,7 @@ describe("createOpenAITokenTracker", () => {
 
   describe("multiple contexts", () => {
     it("should allow creating multiple wrapped clients with different contexts", () => {
-      const tracker = createOpenAITokenTracker(mockClient, mockFluxgate);
+      const tracker = createOpenAICostTracker(mockClient, mockFluxgate);
 
       const chatContext = tracker.withContext({ feature: "chat" });
       const summaryContext = tracker.withContext({ feature: "summary" });

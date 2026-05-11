@@ -1,6 +1,6 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { FluxGate } from "@fluxgate/sdk";
-import { createGeminiTokenTracker } from "@fluxgate/gemini";
+import { createGeminiCostTracker } from "@fluxgate/gemini";
 
 async function main() {
   // Initialize Gemini
@@ -16,7 +16,7 @@ async function main() {
   });
 
   // Create tracked model
-  const gemini = createGeminiTokenTracker(model, fluxgate);
+  const gemini = createGeminiCostTracker(model, fluxgate);
 
   console.log("=== Chat Session Example ===\n");
 
@@ -51,7 +51,7 @@ async function main() {
   console.log("User: What is machine learning?\n");
   const result1 = await chat.sendMessage("What is machine learning?");
   console.log("Assistant:", result1.response.text());
-  console.log("\nTracking 1:", result1.trackLlmResponse);
+  console.log("\nTracking 1:", result1.fluxGateCostTrackingResponse);
 
   console.log("\n" + "=".repeat(50) + "\n");
 
@@ -59,7 +59,7 @@ async function main() {
   console.log("User: Can you give me a simple example?\n");
   const result2 = await chat.sendMessage("Can you give me a simple example?");
   console.log("Assistant:", result2.response.text());
-  console.log("\nTracking 2:", result2.trackLlmResponse);
+  console.log("\nTracking 2:", result2.fluxGateCostTrackingResponse);
 
   console.log("\n" + "=".repeat(50) + "\n");
 
@@ -75,7 +75,7 @@ async function main() {
   }
 
   const response3 = await result3.response;
-  console.log("\n\nTracking 3:", result3.trackLlmResponse);
+  console.log("\n\nTracking 3:", result3.fluxGateCostTrackingResponse);
   console.log("Usage:", response3.usageMetadata);
 }
 

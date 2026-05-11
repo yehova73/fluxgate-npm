@@ -9,7 +9,7 @@ type GeminiTracker = {
   get model(): TrackedGenerativeModel;
 };
 
-export function createGeminiTokenTracker(
+export function createGeminiCostTracker(
   model: GenerativeModel,
   instance: FluxGate,
 ): GeminiTracker {
@@ -28,7 +28,7 @@ export function createGeminiTokenTracker(
 export type {
   AiEventMetadata,
   TrackedUser,
-  TrackLlmResponse,
+  FluxGateCostTrackingResponse,
   WithTracking,
 } from "@fluxgate/sdk";
 export * from "./types/types.js";

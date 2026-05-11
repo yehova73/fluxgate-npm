@@ -1,6 +1,6 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { FluxGate } from "@fluxgate/sdk";
-import { createGeminiTokenTracker } from "@fluxgate/gemini";
+import { createGeminiCostTracker } from "@fluxgate/gemini";
 
 async function main() {
   // Initialize Gemini with embedding model
@@ -16,7 +16,7 @@ async function main() {
   });
 
   // Create tracked model
-  const gemini = createGeminiTokenTracker(model, fluxgate);
+  const gemini = createGeminiCostTracker(model, fluxgate);
 
   console.log("=== Embeddings Example ===\n");
 
@@ -30,7 +30,7 @@ async function main() {
 
   console.log("Embedding dimensions:", result.embedding.values.length);
   console.log("First 10 values:", result.embedding.values.slice(0, 10));
-  console.log("\nTracking Data:", result.trackLlmResponse);
+  console.log("\nTracking Data:", result.fluxGateCostTrackingResponse);
 
   console.log("\n" + "=".repeat(50) + "\n");
 
@@ -54,7 +54,7 @@ async function main() {
       return {
         text,
         embedding: result.embedding.values,
-        tracking: result.trackLlmResponse,
+        fluxGateCostTrackingResponse: result.fluxGateCostTrackingResponse,
       };
     }),
   );

@@ -47,7 +47,7 @@ export function createGenerateContentWrapper(
       errorMessage = `${finishReason}: ${finishMessage}`;
     }
 
-    const trackLlmResponse = await recordUsage({
+    const fluxGateCostTrackingResponse = await recordUsage({
       instance,
       model: modelName,
       latencyMs: performance.now() - start,
@@ -58,6 +58,6 @@ export function createGenerateContentWrapper(
       errorMessage,
     });
 
-    return Object.assign(result, { trackLlmResponse });
+    return Object.assign(result, { fluxGateCostTrackingResponse });
   };
 }

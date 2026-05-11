@@ -1,6 +1,6 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { FluxGate } from "@fluxgate/sdk";
-import { createGeminiTokenTracker } from "@fluxgate/gemini";
+import { createGeminiCostTracker } from "@fluxgate/gemini";
 
 async function main() {
   // Initialize Gemini
@@ -16,7 +16,7 @@ async function main() {
   });
 
   // Create tracked model
-  const gemini = createGeminiTokenTracker(model, fluxgate);
+  const gemini = createGeminiCostTracker(model, fluxgate);
 
   console.log("=== Streaming Generation ===\n");
 
@@ -43,7 +43,7 @@ async function main() {
 
   // Access full response and tracking data
   const response = await result.response;
-  console.log("Tracking Data:", result.trackLlmResponse);
+  console.log("Tracking Data:", result.fluxGateCostTrackingResponse);
   console.log("Usage Metadata:", response.usageMetadata);
 }
 

@@ -8,38 +8,38 @@ Monitor and track LLM token usage and costs across multiple providers with simpl
 
 This monorepo contains three packages:
 
-| Package                                                       | Version | Description                 |
-| ------------------------------------------------------------- | ------- | --------------------------- |
-| [@fluxgate/llmtracker](./packages/tokentracker)               | 0.0.1   | Core tracking functionality |
-| [@fluxgate/llmtracker-openai](./packages/tokentracker-openai) | 0.0.1   | OpenAI SDK wrapper          |
-| [@fluxgate/llmtracker-gemini](./packages/tokentracker-gemini) | 0.0.1   | Google Gemini SDK wrapper   |
+| Package                               | Version | Description                 |
+| ------------------------------------- | ------- | --------------------------- |
+| [@fluxgate/sdk](./packages/sdk)       | 0.0.1   | Core tracking functionality |
+| [@fluxgate/openai](./packages/openai) | 0.0.1   | OpenAI SDK wrapper          |
+| [@fluxgate/gemini](./packages/gemini) | 0.0.1   | Google Gemini SDK wrapper   |
 
 ## 🚀 Quick Start
 
 ### OpenAI Example
 
 ```bash
-npm install @fluxgate/llmtracker @fluxgate/llmtracker-openai openai
+npm install @fluxgate/sdk @fluxgate/openai openai
 ```
 
 ```typescript
 import OpenAI from "openai";
-import { Tracker } from "@fluxgate/llmtracker";
-import { createOpenAITokenTracker } from "@fluxgate/llmtracker-openai";
+import { FluxGate } from "@fluxgate/sdk";
+import { createOpenAICostTracker } from "@fluxgate/openai";
 
 // Initialize OpenAI client
 const client = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-// Initialize tracker
-const tracker = new Tracker({
-  apiKey: process.env.LLMWATCH_API_KEY,
+// Initialize FluxGate
+const fluxgate = new FluxGate({
+  apiKey: process.env.FLUXGATE_API_KEY,
   endpoint: "https://fluxgate.app/api/events",
 });
 
 // Wrap client with tracking
-const trackedClient = createOpenAITokenTracker(client, tracker);
+const trackedClient = createOpenAICostTracker(client, fluxgate);
 
 // Use with context
 const response = await trackedClient
@@ -56,22 +56,22 @@ console.log(response.trackLlmResponse);
 ### Gemini Example
 
 ```bash
-npm install @fluxgate/llmtracker @fluxgate/llmtracker-gemini @google/generative-ai
+npm install @fluxgate/sdk @fluxgate/gemini @google/generative-ai
 ```
 
 ```typescript
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import { Tracker } from "@fluxgate/llmtracker";
-import { createGeminiTokenTracker } from "@fluxgate/llmtracker-gemini";
+import { FluxGate } from "@fluxgate/sdk";
+import { createGeminiCostTracker } from "@fluxgate/gemini";
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 const model = genAI.getGenerativeModel({ model: "gemini-pro" });
 
-const tracker = new Tracker({
-  apiKey: process.env.LLMWATCH_API_KEY,
+const fluxgate = new FluxGate({
+  apiKey: process.env.FLUXGATE_API_KEY,
 });
 
-const trackedModel = createGeminiTokenTracker(model, tracker);
+const trackedModel = createGeminiCostTracker(model, fluxgate);
 
 const result = await trackedModel
   .withContext({ feature: "content-gen" })
@@ -91,9 +91,9 @@ console.log(result.trackLlmResponse);
 
 ## 📖 Documentation
 
-- [Core Tracker Documentation](./packages/tokentracker/README.md)
-- [OpenAI Wrapper Documentation](./packages/tokentracker-openai/README.md)
-- [Gemini Wrapper Documentation](./packages/tokentracker-gemini/README.md)
+- [Core Tracker Documentation](./packages/sdk/README.md)
+- [OpenAI Wrapper Documentation](./packages/openai/README.md)
+- [Gemini Wrapper Documentation](./packages/gemini/README.md)
 
 ## 🛠️ Development
 
@@ -120,11 +120,11 @@ npm run dev
 ## 📂 Project Structure
 
 ```
-llmwatch-npm/
+fluxgate-npm/
 ├── packages/
-│   ├── tokentracker/          # Core tracking functionality
-│   ├── tokentracker-openai/   # OpenAI SDK wrapper
-│   └── tokentracker-gemini/   # Gemini SDK wrapper
+│   ├── sdk/                   # Core tracking functionality
+│   ├── openai/                # OpenAI SDK wrapper
+│   └── gemini/                # Gemini SDK wrapper
 ├── vitest.config.ts           # Test configuration
 └── tsconfig.json              # Root TypeScript config
 ```
@@ -145,9 +145,9 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 🔗 Links
 
-- [Website](https://llmwatch.vercel.com)
-- [Documentation](https://llmwatch.vercel.com/docs)
-- [Issues](https://github.com/yourusername/llmwatch-npm/issues)
+- [Website](https://fluxgate.app)
+- [Documentation](https://fluxgate.app/docs)
+- [Issues](https://github.com/yourusername/fluxgate-npm/issues)
 
 ## 💡 Support
 

@@ -1,31 +1,31 @@
-# @llmwatch/tokentracker-gemini
+# @fluxgate/gemini
 
-Google Gemini SDK wrapper for LLMWatch token tracking. Automatically track token usage, costs, and latency for all Gemini API calls.
+Google Gemini SDK wrapper for FluxGate token tracking. Automatically track token usage, costs, and latency for all Gemini API calls.
 
 ## 📦 Installation
 
 ```bash
-npm install @llmwatch/tokentracker @llmwatch/tokentracker-gemini @google/generative-ai
+npm install @fluxgate/sdk @fluxgate/gemini @google/generative-ai
 ```
 
 ## 🚀 Quick Start
 
 ```typescript
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import { Tracker } from "@llmwatch/tokentracker";
-import { createGeminiTokenTracker } from "@llmwatch/tokentracker-gemini";
+import { FluxGate } from "@fluxgate/sdk";
+import { createGeminiCostTracker } from "@fluxgate/gemini";
 
 // Initialize Gemini
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 const model = genAI.getGenerativeModel({ model: "gemini-pro" });
 
-// Initialize LLMWatch tracker
-const tracker = new Tracker({
-  apiKey: process.env.LLMWATCH_API_KEY,
+// Initialize FluxGate tracker
+const fluxgate = new FluxGate({
+  apiKey: process.env.FLUXGATE_API_KEY,
 });
 
 // Create tracked model
-const gemini = createGeminiTokenTracker(model, tracker);
+const gemini = createGeminiCostTracker(model, fluxgate);
 
 // Use with context
 const result = await gemini
@@ -48,14 +48,14 @@ console.log(result.trackLlmResponse);
 
 ## 📖 API Reference
 
-### `createGeminiTokenTracker(model, tracker)`
+### `createGeminiCostTracker(model, tracker)`
 
 Creates a tracked Gemini model with context support.
 
 **Parameters:**
 
 - `model`: GenerativeModel instance
-- `tracker`: LLMWatch Tracker instance
+- `fluxgate`: FluxGate instance
 
 **Returns:** Object with:
 
@@ -77,13 +77,13 @@ All standard Gemini methods are supported with automatic tracking:
 
 ```typescript
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import { Tracker } from "@llmwatch/tokentracker";
-import { createGeminiTokenTracker } from "@llmwatch/tokentracker-gemini";
+import { FluxGate } from "@fluxgate/sdk";
+import { createGeminiCostTracker } from "@fluxgate/gemini";
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 const model = genAI.getGenerativeModel({ model: "gemini-pro" });
-const tracker = new Tracker({ apiKey: process.env.LLMWATCH_API_KEY });
-const gemini = createGeminiTokenTracker(model, tracker);
+const fluxgate = new FluxGate({ apiKey: process.env.FLUXGATE_API_KEY });
+const gemini = createGeminiCostTracker(model, fluxgate);
 
 // Generate content
 const result = await gemini
@@ -198,7 +198,7 @@ console.log(result.trackLlmResponse);
 ### Multiple Contexts
 
 ```typescript
-const gemini = createGeminiTokenTracker(model, tracker);
+const gemini = createGeminiCostTracker(model, tracker);
 
 // Create different contexts for different features
 const contentModel = gemini.withContext({ feature: "content" });
@@ -220,7 +220,7 @@ import fs from "fs";
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 const model = genAI.getGenerativeModel({ model: "gemini-pro-vision" });
-const gemini = createGeminiTokenTracker(model, tracker);
+const gemini = createGeminiCostTracker(model, tracker);
 
 const imageData = fs.readFileSync("./image.jpg");
 const base64Image = imageData.toString("base64");
@@ -272,7 +272,7 @@ const model = genAI.getGenerativeModel({
   ],
 });
 
-const gemini = createGeminiTokenTracker(model, tracker);
+const gemini = createGeminiCostTracker(model, tracker);
 
 const result = await gemini
   .withContext({ feature: "safe-content" })
@@ -296,7 +296,7 @@ const model = genAI.getGenerativeModel({
   },
 });
 
-const gemini = createGeminiTokenTracker(model, tracker);
+const gemini = createGeminiCostTracker(model, tracker);
 
 const result = await gemini
   .withContext({ feature: "creative-writing" })
@@ -349,7 +349,7 @@ import type {
   AiEventMetadata,
   TrackedUser,
   TrackLlmResponse,
-} from "@llmwatch/tokentracker-gemini";
+} from "@fluxgate/gemini";
 
 // TrackedGenerativeModel includes all Gemini methods with tracking
 const model: TrackedGenerativeModel = gemini.model;
@@ -360,8 +360,8 @@ type Response = WithTracking<GenerateContentResult>;
 
 ## 🔗 Related Packages
 
-- [@llmwatch/tokentracker](../tokentracker) - Core tracking library
-- [@llmwatch/tokentracker-openai](../tokentracker-openai) - OpenAI SDK wrapper
+- [@fluxgate/sdk](../sdk) - Core tracking library
+- [@fluxgate/openai](../openai) - OpenAI SDK wrapper
 
 ## 📖 Examples
 

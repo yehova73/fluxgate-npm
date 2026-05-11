@@ -83,7 +83,7 @@ export function createResponsesWrapper(
 
     const response = res as Response;
     const { status, errorMessage } = extractResponseStatus(response);
-    const trackLlmResponse = await recordUsage({
+    const fluxGateCostTrackingResponse = await recordUsage({
       instance,
       model: params.model ?? "",
       latencyMs: performance.now() - start,
@@ -93,6 +93,6 @@ export function createResponsesWrapper(
       status,
       errorMessage,
     });
-    return Object.assign(response, { trackLlmResponse });
+    return Object.assign(response, { fluxGateCostTrackingResponse });
   };
 }

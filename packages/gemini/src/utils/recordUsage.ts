@@ -2,7 +2,7 @@ import {
   AiEventMetadata,
   AiEventStatus,
   TrackedUser,
-  TrackLlmResponse,
+  FluxGateCostTrackingResponse,
   ExtractedUsage,
   FluxGate,
 } from "@fluxgate/sdk";
@@ -35,7 +35,7 @@ export async function recordUsage(params: {
   usage: ExtractedUsage;
   status: AiEventStatus;
   errorMessage?: string;
-}): Promise<TrackLlmResponse> {
+}): Promise<FluxGateCostTrackingResponse> {
   const {
     context,
     latencyMs,

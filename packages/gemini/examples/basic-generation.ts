@@ -1,6 +1,6 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { FluxGate } from "@fluxgate/sdk";
-import { createGeminiTokenTracker } from "@fluxgate/gemini";
+import { createGeminiCostTracker } from "@fluxgate/gemini";
 
 async function main() {
   // Initialize Gemini
@@ -16,7 +16,7 @@ async function main() {
   });
 
   // Create tracked model
-  const gemini = createGeminiTokenTracker(model, fluxgate);
+  const gemini = createGeminiCostTracker(model, fluxgate);
 
   console.log("=== Basic Text Generation ===\n");
 
@@ -29,7 +29,7 @@ async function main() {
     .generateContent("Explain quantum computing in simple terms");
 
   console.log("Response:", result.response.text());
-  console.log("\nTracking Data:", result.trackLlmResponse);
+  console.log("\nTracking Data:", result.fluxGateCostTrackingResponse);
   console.log("\nUsage Metadata:", result.response.usageMetadata);
 }
 

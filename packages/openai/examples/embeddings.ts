@@ -1,6 +1,6 @@
 import OpenAI from "openai";
 import { FluxGate } from "@fluxgate/sdk";
-import { createOpenAITokenTracker } from "@fluxgate/openai";
+import { createOpenAICostTracker } from "@fluxgate/openai";
 
 async function main() {
   // Initialize OpenAI client
@@ -15,7 +15,7 @@ async function main() {
   });
 
   // Create tracked client
-  const openai = createOpenAITokenTracker(client, fluxgate);
+  const openai = createOpenAICostTracker(client, fluxgate);
 
   console.log("=== Embeddings Example ===\n");
 
@@ -32,7 +32,7 @@ async function main() {
 
   console.log("Embedding dimensions:", embedding.data[0].embedding.length);
   console.log("First 10 values:", embedding.data[0].embedding.slice(0, 10));
-  console.log("\nTracking Data:", embedding.trackLlmResponse);
+  console.log("\nTracking Data:", embedding.fluxGateCostTrackingResponse);
   console.log("\nUsage:", embedding.usage);
 
   console.log("\n=== Multiple Embeddings ===\n");
@@ -52,7 +52,7 @@ async function main() {
     });
 
   console.log("Number of embeddings created:", multiEmbeddings.data.length);
-  console.log("Tracking Data:", multiEmbeddings.trackLlmResponse);
+  console.log("Tracking Data:", multiEmbeddings.fluxGateCostTrackingResponse);
   console.log("Total tokens used:", multiEmbeddings.usage.total_tokens);
 }
 

@@ -1,13 +1,13 @@
 # OpenAI Examples
 
-This directory contains example code demonstrating various features of the tokentracker-openai package.
+This directory contains example code demonstrating various features of the @fluxgate/openai package.
 
 ## Prerequisites
 
 - Node.js >= 18.0.0
 - npm or yarn
 - OpenAI API key
-- LLMWatch API key
+- FluxGate API key
 
 ## Setup
 
@@ -27,7 +27,7 @@ This directory contains example code demonstrating various features of the token
 3. Set your environment variables:
    ```bash
    export OPENAI_API_KEY="your-openai-api-key"
-   export LLMWATCH_API_KEY="your-llmwatch-api-key"
+   export FLUXGATE_API_KEY="your-fluxgate-api-key"
    ```
 
 ## Running Examples
@@ -35,7 +35,7 @@ This directory contains example code demonstrating various features of the token
 ### Basic Chat
 
 ```bash
-npx tsx packages/tokentracker-openai/examples/basic-chat.ts
+npx tsx packages/openai/examples/basic-chat.ts
 ```
 
 Demonstrates basic chat completions with tracking.
@@ -43,7 +43,7 @@ Demonstrates basic chat completions with tracking.
 ### Streaming
 
 ```bash
-npx tsx packages/tokentracker-openai/examples/streaming.ts
+npx tsx packages/openai/examples/streaming.ts
 ```
 
 Shows how to use streaming responses with automatic tracking.
@@ -51,7 +51,7 @@ Shows how to use streaming responses with automatic tracking.
 ### Embeddings
 
 ```bash
-npx tsx packages/tokentracker-openai/examples/embeddings.ts
+npx tsx packages/openai/examples/embeddings.ts
 ```
 
 Examples of creating embeddings with tracking for semantic search.
@@ -59,7 +59,7 @@ Examples of creating embeddings with tracking for semantic search.
 ### Error Handling
 
 ```bash
-npx tsx packages/tokentracker-openai/examples/error-handling.ts
+npx tsx packages/openai/examples/error-handling.ts
 ```
 
 Demonstrates error tracking and graceful degradation.
@@ -67,7 +67,7 @@ Demonstrates error tracking and graceful degradation.
 ### Multiple Contexts
 
 ```bash
-npx tsx packages/tokentracker-openai/examples/multiple-contexts.ts
+npx tsx packages/openai/examples/multiple-contexts.ts
 ```
 
 Shows how to use different contexts for different features in your app.
@@ -105,5 +105,5 @@ Each example automatically tracks:
 ## Learn More
 
 - [Package Documentation](../README.md)
-- [Core Tracker](../../tokentracker/README.md)
+- [Core SDK](../../sdk/README.md)
 - [OpenAI API Documentation](https://platform.openai.com/docs/api-reference)

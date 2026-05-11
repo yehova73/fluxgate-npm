@@ -55,7 +55,7 @@ export function createChatWrapper(
     }
 
     const completion = res as ChatCompletion;
-    const trackLlmResponse = await recordUsage({
+    const fluxGateCostTrackingResponse = await recordUsage({
       instance,
       model: params.model,
       latencyMs: performance.now() - start,
@@ -64,6 +64,6 @@ export function createChatWrapper(
       usage: extractChatUsage(completion?.usage),
       status: finishReasonToStatus(completion?.choices?.[0]?.finish_reason),
     });
-    return Object.assign(completion, { trackLlmResponse });
+    return Object.assign(completion, { fluxGateCostTrackingResponse });
   };
 }

@@ -64,7 +64,7 @@ export interface FluxGateConfig {
   timeout?: number;
 }
 
-export type TrackLlmResponse = {
+export type FluxGateCostTrackingResponse = {
   status: AiEventStatus;
   cost: number | null;
   trackingId: string | null;
@@ -72,7 +72,9 @@ export type TrackLlmResponse = {
   errorMessage?: string;
 };
 
-export type WithTracking<T> = T & { trackLlmResponse: TrackLlmResponse };
+export type WithTracking<T> = T & {
+  fluxGateCostTrackingResponse: FluxGateCostTrackingResponse;
+};
 
 export type ExtractedUsage = {
   inputTokens: number;

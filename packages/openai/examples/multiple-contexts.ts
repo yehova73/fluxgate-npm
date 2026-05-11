@@ -1,6 +1,6 @@
 import OpenAI from "openai";
 import { FluxGate } from "@fluxgate/sdk";
-import { createOpenAITokenTracker } from "@fluxgate/openai";
+import { createOpenAICostTracker } from "@fluxgate/openai";
 
 async function main() {
   // Initialize OpenAI client
@@ -15,7 +15,7 @@ async function main() {
   });
 
   // Create tracked client
-  const openai = createOpenAITokenTracker(client, fluxgate);
+  const openai = createOpenAICostTracker(client, fluxgate);
 
   console.log("=== Multiple Contexts Example ===\n");
   console.log("Simulating different features in the same app\n");
@@ -39,7 +39,7 @@ async function main() {
   });
 
   console.log("Response:", chatResponse.choices[0].message.content);
-  console.log("Tracking:", chatResponse.trackLlmResponse);
+  console.log("Tracking:", chatResponse.fluxGateCostTrackingResponse);
   console.log();
 
   // Context 2: Code generation feature
@@ -62,7 +62,7 @@ async function main() {
   });
 
   console.log("Response:", codeResponse.choices[0].message.content);
-  console.log("Tracking:", codeResponse.trackLlmResponse);
+  console.log("Tracking:", codeResponse.fluxGateCostTrackingResponse);
   console.log();
 
   // Context 3: Document summarization feature
@@ -89,7 +89,7 @@ async function main() {
   });
 
   console.log("Response:", summaryResponse.choices[0].message.content);
-  console.log("Tracking:", summaryResponse.trackLlmResponse);
+  console.log("Tracking:", summaryResponse.fluxGateCostTrackingResponse);
   console.log();
 
   // Context 4: Embeddings for search
@@ -109,7 +109,7 @@ async function main() {
     "Embedding created with dimensions:",
     embeddingResponse.data[0].embedding.length,
   );
-  console.log("Tracking:", embeddingResponse.trackLlmResponse);
+  console.log("Tracking:", embeddingResponse.fluxGateCostTrackingResponse);
   console.log();
 
   // Context 5: Streaming content generation
@@ -137,12 +137,12 @@ async function main() {
     process.stdout.write(chunk.choices[0]?.delta?.content || "");
   }
 
-  console.log("\n\nTracking:", stream.trackLlmResponse);
+  console.log("\n\nTracking:", stream.fluxGateCostTrackingResponse);
   console.log();
 
   console.log("=".repeat(60));
   console.log("\nAll 5 features tracked separately with their own context!");
-  console.log("Check your LLMWatch dashboard to see the breakdown by feature.");
+  console.log("Check your FluxGate dashboard to see the breakdown by feature.");
 }
 
 main().catch(console.error);

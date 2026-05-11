@@ -41,7 +41,7 @@ export function createEmbedContentWrapper(
     }
 
     // Embeddings don't produce output tokens, just consume input
-    const trackLlmResponse = await recordUsage({
+    const fluxGateCostTrackingResponse = await recordUsage({
       instance,
       model: modelName,
       latencyMs: performance.now() - start,
@@ -56,6 +56,6 @@ export function createEmbedContentWrapper(
       status: "SUCCESS",
     });
 
-    return Object.assign(result, { trackLlmResponse });
+    return Object.assign(result, { fluxGateCostTrackingResponse });
   };
 }

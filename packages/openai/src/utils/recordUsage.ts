@@ -3,7 +3,7 @@ import {
   AiEventStatus,
   ExtractedUsage,
   FluxGate,
-  TrackLlmResponse,
+  FluxGateCostTrackingResponse,
 } from "@fluxgate/sdk";
 import type OpenAI from "openai";
 
@@ -39,7 +39,7 @@ export async function recordUsage(params: {
   usage: ExtractedUsage;
   status: AiEventStatus;
   errorMessage?: string;
-}): Promise<TrackLlmResponse> {
+}): Promise<FluxGateCostTrackingResponse> {
   const {
     context,
     latencyMs,
