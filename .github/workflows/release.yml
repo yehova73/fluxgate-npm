@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       package:
-        description: "Package to release (all, tokentracker, tokentracker-openai, tokentracker-gemini)"
+        description: "Package to release (all, sdk, openai, gemini)"
         required: true
         default: "all"
       version:

@@ -1,4 +1,4 @@
-# LLMWatch Token Tracker
+# FluxGate LLM Cost Tracker
 
 Monitor and track LLM token usage and costs across multiple providers with simple, non-invasive wrappers.
 
@@ -8,24 +8,24 @@ Monitor and track LLM token usage and costs across multiple providers with simpl
 
 This monorepo contains three packages:
 
-| Package                                                         | Version | Description                 |
-| --------------------------------------------------------------- | ------- | --------------------------- |
-| [@llmwatch/tokentracker](./packages/tokentracker)               | 0.0.1   | Core tracking functionality |
-| [@llmwatch/tokentracker-openai](./packages/tokentracker-openai) | 0.0.1   | OpenAI SDK wrapper          |
-| [@llmwatch/tokentracker-gemini](./packages/tokentracker-gemini) | 0.0.1   | Google Gemini SDK wrapper   |
+| Package                                                       | Version | Description                 |
+| ------------------------------------------------------------- | ------- | --------------------------- |
+| [@fluxgate/llmtracker](./packages/tokentracker)               | 0.0.1   | Core tracking functionality |
+| [@fluxgate/llmtracker-openai](./packages/tokentracker-openai) | 0.0.1   | OpenAI SDK wrapper          |
+| [@fluxgate/llmtracker-gemini](./packages/tokentracker-gemini) | 0.0.1   | Google Gemini SDK wrapper   |
 
 ## 🚀 Quick Start
 
 ### OpenAI Example
 
 ```bash
-npm install @llmwatch/tokentracker @llmwatch/tokentracker-openai openai
+npm install @fluxgate/llmtracker @fluxgate/llmtracker-openai openai
 ```
 
 ```typescript
 import OpenAI from "openai";
-import { Tracker } from "@llmwatch/tokentracker";
-import { createOpenAITokenTracker } from "@llmwatch/tokentracker-openai";
+import { Tracker } from "@fluxgate/llmtracker";
+import { createOpenAITokenTracker } from "@fluxgate/llmtracker-openai";
 
 // Initialize OpenAI client
 const client = new OpenAI({
@@ -35,7 +35,7 @@ const client = new OpenAI({
 // Initialize tracker
 const tracker = new Tracker({
   apiKey: process.env.LLMWATCH_API_KEY,
-  endpoint: "https://llmwatch.vercel.com/api/events",
+  endpoint: "https://fluxgate.app/api/events",
 });
 
 // Wrap client with tracking
@@ -56,13 +56,13 @@ console.log(response.trackLlmResponse);
 ### Gemini Example
 
 ```bash
-npm install @llmwatch/tokentracker @llmwatch/tokentracker-gemini @google/generative-ai
+npm install @fluxgate/llmtracker @fluxgate/llmtracker-gemini @google/generative-ai
 ```
 
 ```typescript
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import { Tracker } from "@llmwatch/tokentracker";
-import { createGeminiTokenTracker } from "@llmwatch/tokentracker-gemini";
+import { Tracker } from "@fluxgate/llmtracker";
+import { createGeminiTokenTracker } from "@fluxgate/llmtracker-gemini";
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 const model = genAI.getGenerativeModel({ model: "gemini-pro" });
@@ -151,4 +151,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 💡 Support
 
-For support, email support@llmwatch.com or open an issue on GitHub.
+For support, email support@fluxgate.tracker or open an issue on GitHub.

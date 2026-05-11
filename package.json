@@ -1,7 +1,7 @@
 {
-  "name": "llmwatch",
+  "name": "fluxgate",
   "version": "0.0.1",
-  "description": "LLMWatch - Monitor and track LLM token usage and costs",
+  "description": "Fluxgate - Monitor and track LLM token usage and costs",
   "private": true,
   "type": "module",
   "workspaces": [
