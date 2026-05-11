@@ -1,5 +1,7 @@
 # FluxGate LLM Cost Tracker
 
+![Status: In Development](https://img.shields.io/badge/status-in%20development-orange)
+
 Monitor and track LLM token usage and costs across multiple providers with simple, non-invasive wrappers.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -147,7 +149,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 - [Website](https://fluxgate.app)
 - [Documentation](https://fluxgate.app/docs)
-- [Issues](https://github.com/yourusername/fluxgate-npm/issues)
+- [Issues](https://github.com/yehova73/fluxgate-npm/issues)
 
 ## 💡 Support
 

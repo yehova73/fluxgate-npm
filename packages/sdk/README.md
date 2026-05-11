@@ -1,5 +1,7 @@
 # @fluxgate/sdk
 
+![Status: In Development](https://img.shields.io/badge/status-in%20development-orange)
+
 Core tracking functionality for FluxGate. This package provides the base `FluxGate` class that sends usage data to the FluxGate API.
 
 ## 📦 Installation

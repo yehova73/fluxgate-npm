@@ -1,5 +1,7 @@
 # @fluxgate/gemini
 
+![Status: In Development](https://img.shields.io/badge/status-in%20development-orange)
+
 Google Gemini SDK wrapper for FluxGate token tracking. Automatically track token usage, costs, and latency for all Gemini API calls.
 
 ## 📦 Installation

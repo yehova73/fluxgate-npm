@@ -1,6 +1,7 @@
 {
   "name": "@fluxgate/sdk",
-  "version": "0.0.1",
+  "version": "0.0.2-dev.0",
+  "description": "Core tracking SDK for FluxGate token usage, latency, and cost monitoring.",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
@@ -32,12 +33,23 @@
     "monitoring",
     "costs"
   ],
-  "author": "",
+  "author": "FluxGate Team",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yehova73/fluxgate-npm.git",
+    "directory": "packages/sdk"
+  },
+  "bugs": {
+    "url": "https://github.com/yehova73/fluxgate-npm/issues"
+  },
+  "homepage": "https://fluxgate.app",
+  "publishConfig": {
+    "access": "public"
+  },
   "devDependencies": {
     "@types/node": "^20.11.0",
-    "typescript": "^5.3.3",
-    "openai": "^6.34.0"
+    "typescript": "^5.3.3"
   },
   "type": "module",
   "engines": {

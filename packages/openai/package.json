@@ -1,6 +1,7 @@
 {
   "name": "@fluxgate/openai",
   "version": "0.0.1",
+  "description": "OpenAI wrapper for FluxGate token usage, latency, and cost monitoring.",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
@@ -9,7 +10,7 @@
       "import": "./dist/index.js"
     },
     "./types": {
-      "types": "./dist/types.d.ts"
+      "types": "./dist/types/types.d.ts"
     }
   },
   "type": "module",
@@ -33,10 +34,22 @@
     "monitoring",
     "costs"
   ],
-  "author": "",
+  "author": "FluxGate Team",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yehova73/fluxgate-npm.git",
+    "directory": "packages/openai"
+  },
+  "bugs": {
+    "url": "https://github.com/yehova73/fluxgate-npm/issues"
+  },
+  "homepage": "https://fluxgate.app",
+  "publishConfig": {
+    "access": "public"
+  },
   "dependencies": {
-    "@fluxgate/sdk": "*"
+    "@fluxgate/sdk": "^0.0.1"
   },
   "peerDependencies": {
     "openai": "^6.34.0"

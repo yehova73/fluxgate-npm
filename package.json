@@ -2,14 +2,14 @@
   "name": "fluxgate",
   "version": "0.0.1",
   "description": "Fluxgate - Monitor and track LLM token usage and costs",
-  "private": true,
   "type": "module",
+  "private": true,
   "workspaces": [
     "packages/*"
   ],
   "license": "MIT",
   "scripts": {
-    "build": "npm run build -ws",
+    "build": "npm run build --workspaces",
     "dev": "tsc -b --watch",
     "test": "vitest run",
     "test:watch": "vitest",

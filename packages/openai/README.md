@@ -1,5 +1,7 @@
 # @fluxgate/openai
 
+![Status: In Development](https://img.shields.io/badge/status-in%20development-orange)
+
 OpenAI SDK wrapper for FluxGate token tracking. Automatically track token usage, costs, and latency for all OpenAI API calls.
 
 ## 📦 Installation
