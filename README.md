@@ -10,11 +10,12 @@ Monitor and track LLM token usage and costs across multiple providers with simpl
 
 This monorepo contains three packages:
 
-| Package                               | Version | Description                 |
-| ------------------------------------- | ------- | --------------------------- |
-| [@fluxgate/sdk](./packages/sdk)       | 0.0.1   | Core tracking functionality |
-| [@fluxgate/openai](./packages/openai) | 0.0.1   | OpenAI SDK wrapper          |
-| [@fluxgate/gemini](./packages/gemini) | 0.0.1   | Google Gemini SDK wrapper   |
+| Package                                     | Version     | Description                 |
+| ------------------------------------------- | ----------- | --------------------------- |
+| [@fluxgate/sdk](./packages/sdk)             | 0.0.2-dev.0 | Core tracking functionality |
+| [@fluxgate/openai](./packages/openai)       | 0.0.1       | OpenAI SDK wrapper          |
+| [@fluxgate/gemini](./packages/gemini)       | 0.0.1       | Google Gemini SDK wrapper   |
+| [@fluxgate/anthropic](./packages/anthropic) | 0.0.1       | Anthropic SDK wrapper       |
 
 ## 🚀 Quick Start
 
@@ -51,7 +52,7 @@ const response = await trackedClient
     messages: [{ role: "user", content: "Hello!" }],
   });
 
-console.log(response.trackLlmResponse);
+console.log(response.fluxGateCostTrackingResponse);
 // { status: "SUCCESS", cost: 0.001, trackingId: "...", createdAt: "..." }
 ```
 
@@ -79,7 +80,7 @@ const result = await trackedModel
   .withContext({ feature: "content-gen" })
   .generateContent("Tell me a joke");
 
-console.log(result.trackLlmResponse);
+console.log(result.fluxGateCostTrackingResponse);
 ```
 
 ## 🎯 Features
@@ -89,13 +90,14 @@ console.log(result.trackLlmResponse);
 - 📊 **Comprehensive**: Tracks tokens, costs, latency, and errors
 - 🌊 **Stream support**: Works with streaming responses
 - 🎯 **Type-safe**: Full TypeScript support with proper types
-- 🚀 **Multiple providers**: OpenAI, Gemini (Anthropic coming soon)
+- 🚀 **Multiple providers**: OpenAI, Gemini, Anthropic
 
 ## 📖 Documentation
 
 - [Core Tracker Documentation](./packages/sdk/README.md)
 - [OpenAI Wrapper Documentation](./packages/openai/README.md)
 - [Gemini Wrapper Documentation](./packages/gemini/README.md)
+- [Anthropic Wrapper Documentation](./packages/anthropic/README.md)
 
 ## 🛠️ Development
 
@@ -126,7 +128,8 @@ fluxgate-npm/
 ├── packages/
 │   ├── sdk/                   # Core tracking functionality
 │   ├── openai/                # OpenAI SDK wrapper
-│   └── gemini/                # Gemini SDK wrapper
+│   ├── gemini/                # Gemini SDK wrapper
+│   └── anthropic/             # Anthropic SDK wrapper
 ├── vitest.config.ts           # Test configuration
 └── tsconfig.json              # Root TypeScript config
 ```

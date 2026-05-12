@@ -3,7 +3,7 @@ import type OpenAI from "openai";
 import { withOpenAITracking } from "./wrappers/createWrappedClient.js";
 import { TrackedOpenAI } from "./types/types.js";
 
-type OpenAITracker = {
+export type OpenAITracker = {
   withContext: (ctx: AiEventMetadata) => TrackedOpenAI;
   get client(): TrackedOpenAI;
 };
@@ -29,6 +29,7 @@ export type {
   TrackedUser,
   FluxGateCostTrackingResponse,
   WithTracking,
+  AiEventStatus,
 } from "@fluxgate/sdk";
 export * from "./types/types.js";
 export { TrackedStream } from "./wrappers/TrackedStream.js";

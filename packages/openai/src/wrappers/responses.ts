@@ -66,7 +66,12 @@ export function createResponsesWrapper(
                 status: "ERROR" as AiEventStatus,
                 errorMessage: streamError.message,
               }
-            : extractResponseStatus(response);
+            : !completedEvent
+              ? {
+                  status: "ERROR" as AiEventStatus,
+                  errorMessage: "Stream ended without a response.completed event",
+                }
+              : extractResponseStatus(response);
           return recordUsage({
             instance,
             model: params.model?.toString() ?? "",
@@ -85,7 +90,7 @@ export function createResponsesWrapper(
     const { status, errorMessage } = extractResponseStatus(response);
     const fluxGateCostTrackingResponse = await recordUsage({
       instance,
-      model: params.model ?? "",
+      model: params.model?.toString() ?? "",
       latencyMs: performance.now() - start,
       streaming: false,
       context,

@@ -94,7 +94,7 @@ describe("FluxGate", () => {
           headers: expect.objectContaining({
             "Content-Type": "application/json",
             Authorization: `Bearer ${mockApiKey}`,
-            "User-Agent": "@fluxgate/sdk/0.0.1",
+            "User-Agent": "@fluxgate/sdk/0.0.2-dev.0",
           }),
           body: JSON.stringify(event),
         }),
@@ -200,7 +200,9 @@ describe("FluxGate", () => {
         },
       };
 
-      await expect(shortTimeoutTracker.recordEvent(event)).rejects.toThrow();
+      await expect(
+        shortTimeoutTracker.recordEvent(event),
+      ).resolves.toHaveProperty("status", "ERROR");
     });
 
     it("should include complex metadata in the event", async () => {

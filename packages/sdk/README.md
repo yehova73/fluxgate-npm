@@ -148,11 +148,11 @@ interface CreateAiEventResponse {
 ### Basic Usage
 
 ```typescript
-const tracker = new Tracker({
+const fluxgate = new FluxGate({
   apiKey: "your-api-key",
 });
 
-await tracker.recordEvent({
+await fluxgate.recordEvent({
   usage: {
     inputTokens: 100,
     outputTokens: 50,
@@ -164,7 +164,7 @@ await tracker.recordEvent({
 ### With Full Metadata
 
 ```typescript
-await tracker.recordEvent({
+await fluxgate.recordEvent({
   usage: {
     inputTokens: 200,
     outputTokens: 150,
@@ -195,7 +195,7 @@ await tracker.recordEvent({
 ### Error Tracking
 
 ```typescript
-await tracker.recordEvent({
+await fluxgate.recordEvent({
   usage: {
     inputTokens: 100,
     outputTokens: 0,
@@ -213,12 +213,12 @@ await tracker.recordEvent({
 ### With Debug Mode
 
 ```typescript
-const tracker = new Tracker({
+const fluxgate = new FluxGate({
   apiKey: "your-api-key",
   debug: true, // Logs all events to console
 });
 
-await tracker.recordEvent({
+await fluxgate.recordEvent({
   usage: {
     inputTokens: 100,
     outputTokens: 50,
@@ -226,13 +226,13 @@ await tracker.recordEvent({
 });
 // [fluxgate] FluxGate initialized { endpoint: '...', timeout: 5000 }
 // [fluxgate] Sending event to ...: { ... }
-// [fluxgate] Event sent successfully. Status: 200
+// [fluxgate] Event sent successfully. Status: 200. Response: { "id": "evt_...", ... }
 ```
 
 ### Custom Endpoint
 
 ```typescript
-const tracker = new Tracker({
+const fluxgate = new FluxGate({
   apiKey: "your-api-key",
   endpoint: "https://your-custom-domain.com/api/track",
   timeout: 10000,
@@ -247,6 +247,7 @@ This package is typically used through provider-specific wrappers:
 
 - [`@fluxgate/openai`](../openai/README.md) - For OpenAI
 - [`@fluxgate/gemini`](../gemini/README.md) - For Google Gemini
+- [`@fluxgate/anthropic`](../anthropic/README.md) - For Anthropic
 
 ### Direct Integration
 
@@ -263,7 +264,7 @@ async function trackMyCustomLLM(prompt: string) {
   try {
     const response = await myCustomLLM.generate(prompt);
 
-    await tracker.recordEvent({
+    await fluxgate.recordEvent({
       usage: {
         inputTokens: response.inputTokens,
         outputTokens: response.outputTokens,
@@ -279,7 +280,7 @@ async function trackMyCustomLLM(prompt: string) {
 
     return response;
   } catch (error) {
-    await tracker.recordEvent({
+    await fluxgate.recordEvent({
       usage: {
         inputTokens: 0,
         outputTokens: 0,
@@ -321,7 +322,7 @@ import type {
   CreateAiEventResponse,
   TrackedUser,
   AiEventMetadata,
-  TrackLlmResponse,
+  FluxGateCostTrackingResponse,
   WithTracking,
   AiEventStatus,
   AiEventUsage,

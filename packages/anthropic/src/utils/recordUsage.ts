@@ -1,9 +1,9 @@
 import {
   AiEventMetadata,
   AiEventStatus,
-  FluxGateCostTrackingResponse,
   ExtractedUsage,
   FluxGate,
+  FluxGateCostTrackingResponse,
 } from "@fluxgate/sdk";
 
 function normalizeMetadata(
@@ -20,6 +20,32 @@ function normalizeMetadata(
   }
 
   return normalized;
+}
+
+export function stopReasonToStatus(
+  stopReason: string | null | undefined,
+): AiEventStatus {
+  if (
+    !stopReason ||
+    stopReason === "end_turn" ||
+    stopReason === "stop_sequence"
+  ) {
+    return "SUCCESS";
+  }
+
+  if (stopReason === "max_tokens") {
+    return "MAX_TOKENS";
+  }
+
+  if (stopReason === "content_filter") {
+    return "BLOCKED";
+  }
+
+  if (stopReason === "tool_use") {
+    return "SUCCESS";
+  }
+
+  return "ERROR";
 }
 
 export async function recordUsage(params: {
@@ -54,65 +80,25 @@ export async function recordUsage(params: {
       outputTokens: usage.outputTokens,
       cachedTokens: usage.cachedTokens,
       model,
-      provider: "google",
-      latencyInMs: latencyMs,
       isStreamed: streaming,
+      latencyInMs: latencyMs,
+      provider: "anthropic",
       streamingDurationInMs: streaming ? latencyMs : undefined,
     },
   });
 
   return {
     status,
+    errorMessage,
     cost: trackingData?.cost ?? null,
     trackingId: trackingData?.id ?? null,
     createdAt: trackingData?.createdAt ?? null,
-    errorMessage,
   };
 }
 
-export function finishReasonToStatus(
-  finishReason: string | undefined,
-): AiEventStatus {
-  if (!finishReason || finishReason === "STOP") return "SUCCESS";
-
-  // Content blocked by safety filters
-  if (
-    finishReason === "SAFETY" ||
-    finishReason === "BLOCKLIST" ||
-    finishReason === "PROHIBITED_CONTENT" ||
-    finishReason === "SPII"
-  ) {
-    return "BLOCKED";
-  }
-
-  // Max tokens reached
-  if (finishReason === "MAX_TOKENS") return "MAX_TOKENS";
-
-  // Copyright recitation
-  if (finishReason === "RECITATION") {
-    return "RECITATION";
-  }
-
-  // Language/content filter
-  if (finishReason === "LANGUAGE") {
-    return "CONTENT_FILTER";
-  }
-
-  // Malformed request
-  if (finishReason === "MALFORMED_FUNCTION_CALL") {
-    return "MALFORMED_REQUEST";
-  }
-
-  // "other" and unspecified are valid completions, not errors
-  if (finishReason === "OTHER" || finishReason === "FINISH_REASON_UNSPECIFIED") {
-    return "SUCCESS";
-  }
-
-  // Image safety is a blocked outcome
-  if (finishReason === "IMAGE_SAFETY") {
-    return "BLOCKED";
-  }
-
-  // Other unrecognized reasons
-  return "ERROR";
+export function extractResponseStatus(stopReason: string | null | undefined): {
+  status: AiEventStatus;
+  errorMessage?: string;
+} {
+  return { status: stopReasonToStatus(stopReason) };
 }

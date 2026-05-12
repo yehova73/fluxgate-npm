@@ -39,7 +39,7 @@ const result = await gemini
 
 // Access tracking data
 console.log(result.response.text());
-console.log(result.trackLlmResponse);
+console.log(result.fluxGateCostTrackingResponse);
 // {
 //   status: "SUCCESS",
 //   cost: 0.0002,
@@ -93,7 +93,7 @@ const result = await gemini
   .generateContent("Write a poem about coding");
 
 console.log(result.response.text());
-console.log(result.trackLlmResponse);
+console.log(result.fluxGateCostTrackingResponse);
 ```
 
 ### Streaming Generation
@@ -111,7 +111,7 @@ for await (const chunk of result.stream) {
 
 // Access tracking data after stream completes
 const response = await result.response;
-console.log("\n\nTracking:", result.trackLlmResponse);
+console.log("\n\nTracking:", result.fluxGateCostTrackingResponse);
 ```
 
 ### Chat Sessions
@@ -135,11 +135,11 @@ const chat = gemini
 // Send messages
 const result1 = await chat.sendMessage("What is machine learning?");
 console.log(result1.response.text());
-console.log(result1.trackLlmResponse);
+console.log(result1.fluxGateCostTrackingResponse);
 
 const result2 = await chat.sendMessage("Can you give me an example?");
 console.log(result2.response.text());
-console.log(result2.trackLlmResponse);
+console.log(result2.fluxGateCostTrackingResponse);
 ```
 
 ### Streaming Chat
@@ -154,8 +154,33 @@ for await (const chunk of result.stream) {
 }
 
 const response = await result.response;
-console.log("\n\nTracking:", result.trackLlmResponse);
+console.log("\n\nTracking:", result.fluxGateCostTrackingResponse);
 ```
+
+### Updating Chat Session Context
+
+Use `withTracking()` on a `TrackedChatSession` to change or extend context mid-conversation:
+
+```typescript
+const chat = gemini
+  .withContext({ feature: "chatbot", user: "user-123" })
+  .startChat();
+
+// Upgrade context for a specific message (merged with existing context)
+const premiumChat = chat.withTracking({
+  feature: "premium-chatbot",
+  user: {
+    id: "user-123",
+    name: "Jane Smith",
+    monthlyRevenue: 49.99,
+  },
+});
+
+const result = await premiumChat.sendMessage("Help me with a complex task");
+console.log(result.fluxGateCostTrackingResponse);
+```
+
+New context keys override matching keys from the original context; unmatched keys are preserved.
 
 ### Embeddings
 
@@ -165,7 +190,7 @@ const result = await gemini
   .embedContent("The quick brown fox jumps over the lazy dog");
 
 console.log(result.embedding.values);
-console.log(result.trackLlmResponse);
+console.log(result.fluxGateCostTrackingResponse);
 ```
 
 ### Without Context (Default)
@@ -173,7 +198,7 @@ console.log(result.trackLlmResponse);
 ```typescript
 // Use model property for default tracking without metadata
 const result = await gemini.model.generateContent("Hello!");
-console.log(result.trackLlmResponse);
+console.log(result.fluxGateCostTrackingResponse);
 ```
 
 ### Rich User Context
@@ -194,13 +219,13 @@ const result = await gemini
   })
   .generateContent("Create a marketing strategy");
 
-console.log(result.trackLlmResponse);
+console.log(result.fluxGateCostTrackingResponse);
 ```
 
 ### Multiple Contexts
 
 ```typescript
-const gemini = createGeminiCostTracker(model, tracker);
+const gemini = createGeminiCostTracker(model, fluxgate);
 
 // Create different contexts for different features
 const contentModel = gemini.withContext({ feature: "content" });
@@ -222,7 +247,7 @@ import fs from "fs";
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 const model = genAI.getGenerativeModel({ model: "gemini-pro-vision" });
-const gemini = createGeminiCostTracker(model, tracker);
+const gemini = createGeminiCostTracker(model, fluxgate);
 
 const imageData = fs.readFileSync("./image.jpg");
 const base64Image = imageData.toString("base64");
@@ -240,7 +265,7 @@ const result = await gemini
   ]);
 
 console.log(result.response.text());
-console.log(result.trackLlmResponse);
+console.log(result.fluxGateCostTrackingResponse);
 ```
 
 ### Error Tracking
@@ -281,7 +306,7 @@ const result = await gemini
   .generateContent("Your prompt");
 
 // If blocked by safety settings, status will be "BLOCKED"
-console.log(result.trackLlmResponse);
+console.log(result.fluxGateCostTrackingResponse);
 ```
 
 ### Generation Config
@@ -307,10 +332,10 @@ const result = await gemini
 
 ## 📊 Tracking Data Structure
 
-Each response includes a `trackLlmResponse` property:
+Each response includes a `fluxGateCostTrackingResponse` property:
 
 ```typescript
-interface TrackLlmResponse {
+interface FluxGateCostTrackingResponse {
   status: AiEventStatus;
   cost: number | null;
   trackingId: string | null;
@@ -350,13 +375,13 @@ import type {
   WithTracking,
   AiEventMetadata,
   TrackedUser,
-  TrackLlmResponse,
+  FluxGateCostTrackingResponse,
 } from "@fluxgate/gemini";
 
 // TrackedGenerativeModel includes all Gemini methods with tracking
 const model: TrackedGenerativeModel = gemini.model;
 
-// WithTracking adds trackLlmResponse to any type
+// WithTracking adds fluxGateCostTrackingResponse to any type
 type Response = WithTracking<GenerateContentResult>;
 ```
 

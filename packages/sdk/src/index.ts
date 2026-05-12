@@ -49,7 +49,7 @@ export class FluxGate {
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${this.apiKey}`,
-        "User-Agent": "@fluxgate/sdk/0.0.1",
+        "User-Agent": "@fluxgate/sdk/0.0.2-dev.0",
       },
       body: JSON.stringify(event),
       signal: controller.signal,
@@ -62,7 +62,21 @@ export class FluxGate {
       }, this.timeout);
     });
 
-    const response = await Promise.race([fetchPromise, timeoutPromise]);
+    let response: Response;
+    try {
+      response = await Promise.race([fetchPromise, timeoutPromise]);
+    } catch (err) {
+      if (this.debug) {
+        console.error("[fluxgate] Network error sending event:", err);
+      }
+      return {
+        cost: 0,
+        createdAt: new Date().toISOString(),
+        id: "error-" + Math.random().toString(36).substring(2, 15),
+        status: "ERROR",
+      };
+      // throw err;
+    }
 
     let trackingData: CreateAiEventResponse | null = null;
     try {
@@ -76,7 +90,7 @@ export class FluxGate {
 
     if (this.debug) {
       console.log(
-        `[fluxgate] Event sent successfully. Status: ${response.status}. Response body: ${response.statusText}`,
+        `[fluxgate] Event sent successfully. Status: ${response.status}. Response: ${JSON.stringify(trackingData)}`,
       );
     }
 

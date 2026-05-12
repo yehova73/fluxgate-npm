@@ -17,12 +17,14 @@
   "files": [
     "dist"
   ],
+  "sideEffects": false,
   "scripts": {
     "build": "tsc",
     "dev": "tsc --watch",
+    "prepublishOnly": "npm run build",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run",
-    "test:watch": "vitest"
+    "test": "vitest run --root ../../",
+    "test:watch": "vitest --root ../../"
   },
   "keywords": [
     "llm",
@@ -49,7 +51,7 @@
     "access": "public"
   },
   "dependencies": {
-    "@fluxgate/sdk": "^0.0.1"
+    "@fluxgate/sdk": "^0.0.2-dev.0"
   },
   "peerDependencies": {
     "openai": "^6.34.0"

@@ -42,7 +42,7 @@ const response = await openai
   });
 
 // Access tracking data
-console.log(response.trackLlmResponse);
+console.log(response.fluxGateCostTrackingResponse);
 // {
 //   status: "SUCCESS",
 //   cost: 0.0015,
@@ -102,7 +102,7 @@ const completion = await openai
   });
 
 console.log(completion.choices[0].message.content);
-console.log(completion.trackLlmResponse);
+console.log(completion.fluxGateCostTrackingResponse);
 ```
 
 ### Streaming Responses
@@ -121,7 +121,7 @@ for await (const chunk of stream) {
 }
 
 // Access tracking data after stream completes
-console.log(stream.trackLlmResponse);
+console.log(stream.fluxGateCostTrackingResponse);
 ```
 
 ### Embeddings
@@ -135,7 +135,7 @@ const embedding = await openai
   });
 
 console.log(embedding.data[0].embedding);
-console.log(embedding.trackLlmResponse);
+console.log(embedding.fluxGateCostTrackingResponse);
 ```
 
 ### Completions (Legacy)
@@ -150,7 +150,7 @@ const completion = await openai
   });
 
 console.log(completion.choices[0].text);
-console.log(completion.trackLlmResponse);
+console.log(completion.fluxGateCostTrackingResponse);
 ```
 
 ### Responses API
@@ -159,12 +159,12 @@ console.log(completion.trackLlmResponse);
 const response = await openai
   .withContext({ feature: "reasoning" })
   .responses.create({
-    model: "gpt-4",
-    messages: [{ role: "user", content: "Explain quantum computing" }],
+    model: "gpt-4o",
+    input: "Explain quantum computing",
   });
 
-console.log(response.output);
-console.log(response.trackLlmResponse);
+console.log(response.output_text);
+console.log(response.fluxGateCostTrackingResponse);
 ```
 
 ### Without Context (Default)
@@ -202,7 +202,7 @@ const completion = await openai
 ### Multiple Contexts
 
 ```typescript
-const openai = createOpenAICostTracker(client, tracker);
+const openai = createOpenAICostTracker(client, fluxgate);
 
 // Create different contexts for different features
 const chatClient = openai.withContext({ feature: "chat" });
@@ -255,7 +255,7 @@ try {
 }
 
 // Tracking data includes error information
-console.log(stream.trackLlmResponse);
+console.log(stream.fluxGateCostTrackingResponse);
 // { status: "ERROR", errorMessage: "...", ... }
 ```
 
@@ -277,16 +277,16 @@ if (stream instanceof TrackedStream) {
   }
 
   // Access tracking after completion
-  const tracking = stream.trackLlmResponse;
+  const tracking = stream.fluxGateCostTrackingResponse;
 }
 ```
 
 ## 📊 Tracking Data Structure
 
-Each response includes a `trackLlmResponse` property:
+Each response includes a `fluxGateCostTrackingResponse` property:
 
 ```typescript
-interface TrackLlmResponse {
+interface FluxGateCostTrackingResponse {
   status: AiEventStatus;
   cost: number | null;
   trackingId: string | null;
@@ -325,13 +325,13 @@ import type {
   WithTracking,
   AiEventMetadata,
   TrackedUser,
-  TrackLlmResponse,
+  FluxGateCostTrackingResponse,
 } from "@fluxgate/openai";
 
 // TrackedOpenAI includes all OpenAI methods with tracking
 const openai: TrackedOpenAI = trackedClient.client;
 
-// WithTracking adds trackLlmResponse to any type
+// WithTracking adds fluxGateCostTrackingResponse to any type
 type Response = WithTracking<OpenAI.Chat.Completions.ChatCompletion>;
 ```
 

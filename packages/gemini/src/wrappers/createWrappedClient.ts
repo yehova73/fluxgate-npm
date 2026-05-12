@@ -14,7 +14,10 @@ export function withGeminiTracking(
   const modelName = model.model.replace("models/", "");
 
   // Create wrapped model without mutating original
-  const wrappedModel = Object.create(model) as GenerativeModel;
+  const wrappedModel = Object.create(
+    Object.getPrototypeOf(model),
+    Object.getOwnPropertyDescriptors(model),
+  );
 
   wrappedModel.generateContent = createGenerateContentWrapper(
     model.generateContent.bind(model),

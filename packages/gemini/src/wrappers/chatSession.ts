@@ -4,31 +4,16 @@ import type {
   GenerateContentStreamResult,
 } from "@google/generative-ai";
 import { AiEventMetadata, WithTracking, FluxGate } from "@fluxgate/sdk";
-import { extractGeminiUsage } from "../utils/extractUsage.js";
+import type { WithStreamTracking } from "../types/types.js";
+import {
+  extractGeminiUsage,
+  extractGeminiUsageFromChunk,
+} from "../utils/extractUsage.js";
 import { finishReasonToStatus, recordUsage } from "../utils/recordUsage.js";
 import { TrackedStream } from "./TrackedStream.js";
 
 type OrigSendMessage = ChatSession["sendMessage"];
 type OrigSendMessageStream = ChatSession["sendMessageStream"];
-
-function extractStreamUsage(lastChunk: any) {
-  if (!lastChunk?.usageMetadata) {
-    return {
-      inputTokens: 0,
-      outputTokens: 0,
-      cachedTokens: 0,
-      totalTokens: 0,
-    };
-  }
-
-  const usage = lastChunk.usageMetadata;
-  return {
-    inputTokens: usage.promptTokenCount ?? 0,
-    outputTokens: usage.candidatesTokenCount ?? 0,
-    cachedTokens: usage.cachedContentTokenCount ?? 0,
-    totalTokens: usage.totalTokenCount ?? 0,
-  };
-}
 
 export function createSendMessageWrapper(
   original: OrigSendMessage,
@@ -91,7 +76,7 @@ export function createSendMessageStreamWrapper(
 ) {
   return async function wrappedSendMessageStream(
     request: Parameters<OrigSendMessageStream>[0],
-  ): Promise<WithTracking<GenerateContentStreamResult>> {
+  ): Promise<WithStreamTracking<GenerateContentStreamResult>> {
     const start = performance.now();
 
     let result: GenerateContentStreamResult;
@@ -104,7 +89,7 @@ export function createSendMessageStreamWrapper(
         latencyMs: performance.now() - start,
         streaming: true,
         context,
-        usage: extractStreamUsage(undefined),
+        usage: extractGeminiUsage(undefined),
         status: "ERROR",
         errorMessage: (err as Error).message,
       });
@@ -134,7 +119,7 @@ export function createSendMessageStreamWrapper(
           latencyMs: performance.now() - start,
           streaming: true,
           context,
-          usage: extractStreamUsage(lastChunk),
+          usage: extractGeminiUsageFromChunk(lastChunk),
           status,
           errorMessage,
         });
@@ -142,13 +127,13 @@ export function createSendMessageStreamWrapper(
     );
 
     // Create result object that exposes fluxGateCostTrackingResponse from the stream
-    const streamResult: WithTracking<GenerateContentStreamResult> = {
+    const streamResult: WithStreamTracking<GenerateContentStreamResult> = {
       response: result.response,
       // TrackedStream implements AsyncIterable but not full AsyncGenerator
-      stream: trackedStream as any,
-      // Proxy to get fluxGateCostTrackingResponse from stream after completion
+      stream: trackedStream as unknown as GenerateContentStreamResult["stream"],
+      // Available after stream is fully consumed
       get fluxGateCostTrackingResponse() {
-        return trackedStream.fluxGateCostTrackingResponse!;
+        return trackedStream.fluxGateCostTrackingResponse;
       },
     };
 
@@ -163,13 +148,9 @@ export interface TrackedChatSession extends ChatSession {
 
   sendMessageStream(
     request: Parameters<OrigSendMessageStream>[0],
-  ): Promise<WithTracking<GenerateContentStreamResult>>;
+  ): Promise<WithStreamTracking<GenerateContentStreamResult>>;
 
   withTracking(context: AiEventMetadata): TrackedChatSession;
-  __originalMethods?: {
-    sendMessage: OrigSendMessage;
-    sendMessageStream: OrigSendMessageStream;
-  };
 }
 
 export function wrapChatSession(
@@ -178,31 +159,23 @@ export function wrapChatSession(
   modelName: string,
   context: AiEventMetadata | undefined,
 ): TrackedChatSession {
-  const trackedSession = session as TrackedChatSession;
-
-  if (!trackedSession.__originalMethods) {
-    trackedSession.__originalMethods = {
-      sendMessage: session.sendMessage.bind(session),
-      sendMessageStream: session.sendMessageStream.bind(session),
-    };
-  }
+  const trackedSession = Object.create(session) as TrackedChatSession;
 
   trackedSession.sendMessage = createSendMessageWrapper(
-    trackedSession.__originalMethods.sendMessage,
+    session.sendMessage.bind(session),
     instance,
     modelName,
     context,
   ) as TrackedChatSession["sendMessage"];
 
   trackedSession.sendMessageStream = createSendMessageStreamWrapper(
-    trackedSession.__originalMethods.sendMessageStream,
+    session.sendMessageStream.bind(session),
     instance,
     modelName,
     context,
   ) as TrackedChatSession["sendMessageStream"];
 
   trackedSession.withTracking = (newContext: AiEventMetadata) => {
-    // Merge contexts: newContext overrides existing context properties
     const mergedContext = context ? { ...context, ...newContext } : newContext;
     return wrapChatSession(session, instance, modelName, mergedContext);
   };

@@ -1,34 +1,14 @@
 import type {
   GenerativeModel,
   GenerateContentStreamResult,
-  EnhancedGenerateContentResponse,
 } from "@google/generative-ai";
-import { AiEventMetadata, FluxGate, WithTracking } from "@fluxgate/sdk";
+import { AiEventMetadata, FluxGate } from "@fluxgate/sdk";
+import type { WithStreamTracking } from "../types/types.js";
+import { extractGeminiUsageFromChunk } from "../utils/extractUsage.js";
 import { TrackedStream } from "./TrackedStream.js";
 import { finishReasonToStatus, recordUsage } from "../utils/recordUsage.js";
 
 type OrigGenerateContentStream = GenerativeModel["generateContentStream"];
-
-function extractStreamUsage(
-  lastChunk: EnhancedGenerateContentResponse | undefined,
-) {
-  if (!lastChunk?.usageMetadata) {
-    return {
-      inputTokens: 0,
-      outputTokens: 0,
-      cachedTokens: 0,
-      totalTokens: 0,
-    };
-  }
-
-  const usage = lastChunk.usageMetadata;
-  return {
-    inputTokens: usage.promptTokenCount ?? 0,
-    outputTokens: usage.candidatesTokenCount ?? 0,
-    cachedTokens: usage.cachedContentTokenCount ?? 0,
-    totalTokens: usage.totalTokenCount ?? 0,
-  };
-}
 
 export function createGenerateContentStreamWrapper(
   original: OrigGenerateContentStream,
@@ -38,7 +18,7 @@ export function createGenerateContentStreamWrapper(
 ) {
   return async function wrappedGenerateContentStream(
     request: Parameters<OrigGenerateContentStream>[0],
-  ): Promise<WithTracking<GenerateContentStreamResult>> {
+  ): Promise<WithStreamTracking<GenerateContentStreamResult>> {
     const start = performance.now();
 
     let result: GenerateContentStreamResult;
@@ -51,7 +31,7 @@ export function createGenerateContentStreamWrapper(
         latencyMs: performance.now() - start,
         streaming: true,
         context,
-        usage: extractStreamUsage(undefined),
+        usage: extractGeminiUsageFromChunk(undefined),
         status: "ERROR",
         errorMessage: (err as Error).message,
       });
@@ -83,7 +63,7 @@ export function createGenerateContentStreamWrapper(
           latencyMs: performance.now() - start,
           streaming: true,
           context,
-          usage: extractStreamUsage(lastChunk),
+          usage: extractGeminiUsageFromChunk(lastChunk),
           status,
           errorMessage,
         });
@@ -91,14 +71,14 @@ export function createGenerateContentStreamWrapper(
     );
 
     // Create result object that exposes fluxGateCostTrackingResponse from the stream
-    const streamResult: WithTracking<GenerateContentStreamResult> = {
+    const streamResult: WithStreamTracking<GenerateContentStreamResult> = {
       response: result.response,
       // TrackedStream implements AsyncIterable but not full AsyncGenerator interface
       // Type assertion needed to match GenerateContentStreamResult.stream signature
-      stream: trackedStream as any,
-      // Proxy to get fluxGateCostTrackingResponse from stream after completion
+      stream: trackedStream as unknown as GenerateContentStreamResult["stream"],
+      // Available after stream is fully consumed
       get fluxGateCostTrackingResponse() {
-        return trackedStream.fluxGateCostTrackingResponse!;
+        return trackedStream.fluxGateCostTrackingResponse;
       },
     };
 

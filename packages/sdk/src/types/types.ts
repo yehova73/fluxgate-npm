@@ -52,6 +52,7 @@ export type CreateAiEventResponse = {
   id: string;
   createdAt: string;
   cost: number | null;
+  status: "SUCCESS" | "ERROR";
 };
 
 export interface FluxGateConfig {

@@ -5,7 +5,11 @@ import type {
   GenerativeModel,
 } from "@google/generative-ai";
 import type { TrackedChatSession } from "../wrappers/chatSession.js";
-import { WithTracking } from "../index.js";
+import type { FluxGateCostTrackingResponse, WithTracking } from "@fluxgate/sdk";
+
+export type WithStreamTracking<T> = T & {
+  fluxGateCostTrackingResponse: FluxGateCostTrackingResponse | undefined;
+};
 
 export type TrackedGenerativeModel = Omit<
   GenerativeModel,
@@ -17,7 +21,7 @@ export type TrackedGenerativeModel = Omit<
 
   generateContentStream(
     request: Parameters<GenerativeModel["generateContentStream"]>[0],
-  ): Promise<WithTracking<GenerateContentStreamResult>>;
+  ): Promise<WithStreamTracking<GenerateContentStreamResult>>;
 
   embedContent(
     request: Parameters<GenerativeModel["embedContent"]>[0],

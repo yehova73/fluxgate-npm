@@ -9,22 +9,15 @@ import type OpenAI from "openai";
 
 function normalizeMetadata(
   context: AiEventMetadata | undefined,
-  status: AiEventStatus,
-  errorMessage: string | undefined,
 ): AiEventMetadata {
   const { user, ...rest } = context ?? {};
 
-  const normalized: AiEventMetadata = { ...rest, status, errorMessage };
+  const normalized: AiEventMetadata = { ...rest };
 
   if (typeof user === "string") {
     normalized.user = user;
   } else if (user != null) {
-    normalized.user = user.id;
-    if (user.name != null) normalized.userName = user.name;
-    if (user.email != null) normalized.userEmail = user.email;
-    if (user.image != null) normalized.userImage = user.image;
-    if (user.monthlyRevenue != null)
-      normalized.userMonthlyRevenue = user.monthlyRevenue;
+    normalized.user = user;
   }
 
   return normalized;
@@ -52,7 +45,7 @@ export async function recordUsage(params: {
   } = params;
 
   const trackingData = await instance.recordEvent({
-    metadata: normalizeMetadata(context, status, errorMessage),
+    metadata: normalizeMetadata(context),
     status: {
       status,
       errorMessage,
@@ -113,6 +106,12 @@ export function extractResponseStatus(
     response.incomplete_details?.reason === "content_filter"
   ) {
     return { status: "BLOCKED" };
+  }
+  if (
+    response.status === "incomplete" &&
+    response.incomplete_details?.reason === "max_output_tokens"
+  ) {
+    return { status: "MAX_TOKENS" };
   }
   return { status: "SUCCESS" };
 }

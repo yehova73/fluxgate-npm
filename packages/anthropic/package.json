@@ -1,7 +1,7 @@
 {
-  "name": "@fluxgate/gemini",
+  "name": "@fluxgate/anthropic",
   "version": "0.0.1",
-  "description": "Google Gemini wrapper for FluxGate token usage, latency, and cost monitoring.",
+  "description": "Anthropic wrapper for FluxGate token usage, latency, and cost monitoring.",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
@@ -30,8 +30,8 @@
     "llm",
     "tokens",
     "tracker",
-    "gemini",
-    "google",
+    "anthropic",
+    "claude",
     "monitoring",
     "costs"
   ],
@@ -40,7 +40,7 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/yehova73/fluxgate-npm.git",
-    "directory": "packages/gemini"
+    "directory": "packages/anthropic"
   },
   "bugs": {
     "url": "https://github.com/yehova73/fluxgate-npm/issues"
@@ -53,7 +53,7 @@
     "@fluxgate/sdk": "^0.0.2-dev.0"
   },
   "peerDependencies": {
-    "@google/generative-ai": "^0.24.1"
+    "@anthropic-ai/sdk": "^0.50.0"
   },
   "devDependencies": {
     "@types/node": "^20.11.0",
