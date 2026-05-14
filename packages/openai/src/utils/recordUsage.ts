@@ -14,7 +14,9 @@ export function detectProvider(baseURL: string): string {
     if (hostname.endsWith(".azure.com")) return "azure";
     if (hostname === "api.groq.com") return "groq";
     if (hostname === "api.together.xyz") return "together";
-    if (hostname === "openrouter.ai" || hostname === "api.openrouter.ai") return "openrouter";
+    if (hostname === "api.x.ai") return "xai";
+    if (hostname === "openrouter.ai" || hostname === "api.openrouter.ai")
+      return "openrouter";
     if (hostname === "api.mistral.ai") return "mistral";
     if (hostname === "generativelanguage.googleapis.com") return "google";
     return hostname;
