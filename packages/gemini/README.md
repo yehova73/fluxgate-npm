@@ -7,27 +7,26 @@ Google Gemini SDK wrapper for FluxGate token tracking. Automatically track token
 ## 📦 Installation
 
 ```bash
-npm install @fluxgate/sdk @fluxgate/gemini @google/generative-ai
+npm install @fluxgate/sdk @fluxgate/gemini @google/genai
 ```
 
 ## 🚀 Quick Start
 
 ```typescript
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { GoogleGenAI } from "@google/genai";
 import { FluxGate } from "@fluxgate/sdk";
 import { createGeminiCostTracker } from "@fluxgate/gemini";
 
 // Initialize Gemini
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
 // Initialize FluxGate tracker
 const fluxgate = new FluxGate({
   apiKey: process.env.FLUXGATE_API_KEY,
 });
 
-// Create tracked model
-const gemini = createGeminiCostTracker(model, fluxgate);
+// Create tracked client (pass ai instance + model name)
+const gemini = createGeminiCostTracker(ai, "gemini-2.5-flash", fluxgate);
 
 // Use with context
 const result = await gemini
@@ -35,10 +34,10 @@ const result = await gemini
     feature: "content-generation",
     user: "user-123",
   })
-  .generateContent("Explain quantum computing in simple terms");
+  .generateContent({ contents: "Explain quantum computing in simple terms" });
 
 // Access tracking data
-console.log(result.response.text());
+console.log(result.text);
 console.log(result.fluxGateCostTrackingResponse);
 // {
 //   status: "SUCCESS",
@@ -50,19 +49,20 @@ console.log(result.fluxGateCostTrackingResponse);
 
 ## 📖 API Reference
 
-### `createGeminiCostTracker(model, tracker)`
+### `createGeminiCostTracker(ai, modelName, fluxgate)`
 
-Creates a tracked Gemini model with context support.
+Creates a tracked Gemini client with context support.
 
 **Parameters:**
 
-- `model`: GenerativeModel instance
-- `fluxgate`: FluxGate instance
+- `ai`: `GoogleGenAI` instance from `@google/genai`
+- `modelName`: Model name string (e.g. `"gemini-2.5-flash"`)
+- `fluxgate`: `FluxGate` instance
 
 **Returns:** Object with:
 
-- `withContext(metadata)`: Returns tracked model with context
-- `model`: Default tracked model (no context)
+- `withContext(metadata)`: Returns tracked client with context
+- `client`: Default tracked client (no context)
 
 ### Tracked Methods
 
@@ -78,40 +78,39 @@ All standard Gemini methods are supported with automatic tracking:
 ### Text Generation
 
 ```typescript
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { GoogleGenAI } from "@google/genai";
 import { FluxGate } from "@fluxgate/sdk";
 import { createGeminiCostTracker } from "@fluxgate/gemini";
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 const fluxgate = new FluxGate({ apiKey: process.env.FLUXGATE_API_KEY });
-const gemini = createGeminiCostTracker(model, fluxgate);
+const gemini = createGeminiCostTracker(ai, "gemini-2.5-flash", fluxgate);
 
 // Generate content
 const result = await gemini
   .withContext({ feature: "content-gen", user: "user-123" })
-  .generateContent("Write a poem about coding");
+  .generateContent({ contents: "Write a poem about coding" });
 
-console.log(result.response.text());
+console.log(result.text);
 console.log(result.fluxGateCostTrackingResponse);
 ```
 
 ### Streaming Generation
 
 ```typescript
-const result = await gemini
+const stream = await gemini
   .withContext({ feature: "streaming-gen" })
-  .generateContentStream("Tell me a long story about space exploration");
+  .generateContentStream({
+    contents: "Tell me a long story about space exploration",
+  });
 
 // Stream the response
-for await (const chunk of result.stream) {
-  const chunkText = chunk.text();
-  process.stdout.write(chunkText);
+for await (const chunk of stream) {
+  process.stdout.write(chunk.text ?? "");
 }
 
 // Access tracking data after stream completes
-const response = await result.response;
-console.log("\n\nTracking:", result.fluxGateCostTrackingResponse);
+console.log("\n\nTracking:", stream.fluxGateCostTrackingResponse);
 ```
 
 ### Chat Sessions
@@ -133,12 +132,16 @@ const chat = gemini
   });
 
 // Send messages
-const result1 = await chat.sendMessage("What is machine learning?");
-console.log(result1.response.text());
+const result1 = await chat.sendMessage({
+  message: "What is machine learning?",
+});
+console.log(result1.text);
 console.log(result1.fluxGateCostTrackingResponse);
 
-const result2 = await chat.sendMessage("Can you give me an example?");
-console.log(result2.response.text());
+const result2 = await chat.sendMessage({
+  message: "Can you give me an example?",
+});
+console.log(result2.text);
 console.log(result2.fluxGateCostTrackingResponse);
 ```
 
@@ -147,19 +150,20 @@ console.log(result2.fluxGateCostTrackingResponse);
 ```typescript
 const chat = gemini.withContext({ feature: "streaming-chat" }).startChat();
 
-const result = await chat.sendMessageStream("Explain neural networks");
+const stream = await chat.sendMessageStream({
+  message: "Explain neural networks",
+});
 
-for await (const chunk of result.stream) {
-  process.stdout.write(chunk.text());
+for await (const chunk of stream) {
+  process.stdout.write(chunk.text ?? "");
 }
 
-const response = await result.response;
-console.log("\n\nTracking:", result.fluxGateCostTrackingResponse);
+console.log("\n\nTracking:", stream.fluxGateCostTrackingResponse);
 ```
 
 ### Updating Chat Session Context
 
-Use `withTracking()` on a `TrackedChatSession` to change or extend context mid-conversation:
+Use `withTracking()` on a `TrackedChat` to change or extend context mid-conversation:
 
 ```typescript
 const chat = gemini
@@ -176,7 +180,9 @@ const premiumChat = chat.withTracking({
   },
 });
 
-const result = await premiumChat.sendMessage("Help me with a complex task");
+const result = await premiumChat.sendMessage({
+  message: "Help me with a complex task",
+});
 console.log(result.fluxGateCostTrackingResponse);
 ```
 
@@ -187,17 +193,17 @@ New context keys override matching keys from the original context; unmatched key
 ```typescript
 const result = await gemini
   .withContext({ feature: "embeddings" })
-  .embedContent("The quick brown fox jumps over the lazy dog");
+  .embedContent({ contents: "The quick brown fox jumps over the lazy dog" });
 
-console.log(result.embedding.values);
+console.log(result.embeddings?.[0]?.values);
 console.log(result.fluxGateCostTrackingResponse);
 ```
 
 ### Without Context (Default)
 
 ```typescript
-// Use model property for default tracking without metadata
-const result = await gemini.model.generateContent("Hello!");
+// Use client property for default tracking without metadata
+const result = await gemini.client.generateContent({ contents: "Hello!" });
 console.log(result.fluxGateCostTrackingResponse);
 ```
 

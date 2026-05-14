@@ -1,42 +1,43 @@
 import type {
-  GenerativeModel,
-  GenerateContentResult,
-} from "@google/generative-ai";
+  GoogleGenAI,
+  GenerateContentParameters,
+  GenerateContentResponse,
+} from "@google/genai";
 import { AiEventMetadata, WithTracking, FluxGate } from "@fluxgate/sdk";
 import { extractGeminiUsage } from "../utils/extractUsage.js";
 import { finishReasonToStatus, recordUsage } from "../utils/recordUsage.js";
 
-type OrigGenerateContent = GenerativeModel["generateContent"];
-
 export function createGenerateContentWrapper(
-  original: OrigGenerateContent,
+  ai: GoogleGenAI,
   instance: FluxGate,
-  modelName: string,
   context: AiEventMetadata | undefined,
 ) {
   return async function wrappedGenerateContent(
-    request: Parameters<OrigGenerateContent>[0],
-  ): Promise<WithTracking<GenerateContentResult>> {
+    request: GenerateContentParameters,
+  ): Promise<WithTracking<GenerateContentResponse>> {
     const start = performance.now();
+    const { model } = request;
+    const serviceTier = request.config?.serviceTier;
 
-    let result: GenerateContentResult;
+    let result: GenerateContentResponse;
     try {
-      result = await original(request);
+      result = await ai.models.generateContent(request);
     } catch (err) {
       await recordUsage({
         instance,
-        model: modelName,
+        model,
         latencyMs: performance.now() - start,
         streaming: false,
         context,
         usage: extractGeminiUsage(undefined),
         status: "ERROR",
         errorMessage: (err as Error).message,
+        serviceTier,
       });
       throw err;
     }
 
-    const candidate = result.response?.candidates?.[0];
+    const candidate = result.candidates?.[0];
     const finishReason = candidate?.finishReason;
     const finishMessage = candidate?.finishMessage;
     const status = finishReasonToStatus(finishReason);
@@ -49,13 +50,14 @@ export function createGenerateContentWrapper(
 
     const fluxGateCostTrackingResponse = await recordUsage({
       instance,
-      model: modelName,
+      model,
       latencyMs: performance.now() - start,
       streaming: false,
       context,
       usage: extractGeminiUsage(result),
       status,
       errorMessage,
+      serviceTier,
     });
 
     return Object.assign(result, { fluxGateCostTrackingResponse });

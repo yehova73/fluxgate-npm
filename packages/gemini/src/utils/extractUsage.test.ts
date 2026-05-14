@@ -1,20 +1,18 @@
 import { describe, it, expect } from "vitest";
 import { extractGeminiUsage } from "./extractUsage.js";
-import type { GenerateContentResult } from "@google/generative-ai";
+import type { GenerateContentResponse } from "@google/genai";
 
 describe("extractGeminiUsage", () => {
   describe("valid usage data", () => {
     it("should extract usage from complete result", () => {
       const result = {
-        response: {
-          usageMetadata: {
-            promptTokenCount: 100,
-            candidatesTokenCount: 50,
-            cachedContentTokenCount: 20,
-            totalTokenCount: 170,
-          },
+        usageMetadata: {
+          promptTokenCount: 100,
+          candidatesTokenCount: 50,
+          cachedContentTokenCount: 20,
+          totalTokenCount: 170,
         },
-      } as GenerateContentResult;
+      } as GenerateContentResponse;
 
       const usage = extractGeminiUsage(result);
 
@@ -28,14 +26,12 @@ describe("extractGeminiUsage", () => {
 
     it("should handle missing cached token count", () => {
       const result = {
-        response: {
-          usageMetadata: {
-            promptTokenCount: 100,
-            candidatesTokenCount: 50,
-            totalTokenCount: 150,
-          },
+        usageMetadata: {
+          promptTokenCount: 100,
+          candidatesTokenCount: 50,
+          totalTokenCount: 150,
         },
-      } as GenerateContentResult;
+      } as GenerateContentResponse;
 
       const usage = extractGeminiUsage(result);
 
@@ -49,15 +45,13 @@ describe("extractGeminiUsage", () => {
 
     it("should handle zero tokens", () => {
       const result = {
-        response: {
-          usageMetadata: {
-            promptTokenCount: 0,
-            candidatesTokenCount: 0,
-            cachedContentTokenCount: 0,
-            totalTokenCount: 0,
-          },
+        usageMetadata: {
+          promptTokenCount: 0,
+          candidatesTokenCount: 0,
+          cachedContentTokenCount: 0,
+          totalTokenCount: 0,
         },
-      } as GenerateContentResult;
+      } as GenerateContentResponse;
 
       const usage = extractGeminiUsage(result);
 
@@ -82,23 +76,8 @@ describe("extractGeminiUsage", () => {
       });
     });
 
-    it("should return zero values when response is missing", () => {
-      const result = {} as GenerateContentResult;
-
-      const usage = extractGeminiUsage(result);
-
-      expect(usage).toEqual({
-        inputTokens: 0,
-        outputTokens: 0,
-        cachedTokens: 0,
-        totalTokens: 0,
-      });
-    });
-
     it("should return zero values when usageMetadata is missing", () => {
-      const result = {
-        response: {},
-      } as GenerateContentResult;
+      const result = {} as GenerateContentResponse;
 
       const usage = extractGeminiUsage(result);
 
@@ -112,12 +91,10 @@ describe("extractGeminiUsage", () => {
 
     it("should handle partial usage metadata", () => {
       const result = {
-        response: {
-          usageMetadata: {
-            promptTokenCount: 100,
-          } as any,
-        },
-      } as GenerateContentResult;
+        usageMetadata: {
+          promptTokenCount: 100,
+        } as any,
+      } as GenerateContentResponse;
 
       const usage = extractGeminiUsage(result);
 
@@ -131,15 +108,13 @@ describe("extractGeminiUsage", () => {
 
     it("should handle undefined values in metadata", () => {
       const result = {
-        response: {
-          usageMetadata: {
-            promptTokenCount: undefined,
-            candidatesTokenCount: undefined,
-            cachedContentTokenCount: undefined,
-            totalTokenCount: undefined,
-          } as any,
-        },
-      } as GenerateContentResult;
+        usageMetadata: {
+          promptTokenCount: undefined,
+          candidatesTokenCount: undefined,
+          cachedContentTokenCount: undefined,
+          totalTokenCount: undefined,
+        } as any,
+      } as GenerateContentResponse;
 
       const usage = extractGeminiUsage(result);
 
@@ -155,15 +130,13 @@ describe("extractGeminiUsage", () => {
   describe("edge cases", () => {
     it("should handle very large token counts", () => {
       const result = {
-        response: {
-          usageMetadata: {
-            promptTokenCount: 1000000,
-            candidatesTokenCount: 500000,
-            cachedContentTokenCount: 100000,
-            totalTokenCount: 1600000,
-          },
+        usageMetadata: {
+          promptTokenCount: 1000000,
+          candidatesTokenCount: 500000,
+          cachedContentTokenCount: 100000,
+          totalTokenCount: 1600000,
         },
-      } as GenerateContentResult;
+      } as GenerateContentResponse;
 
       const usage = extractGeminiUsage(result);
 
@@ -177,15 +150,13 @@ describe("extractGeminiUsage", () => {
 
     it("should handle only cached tokens", () => {
       const result = {
-        response: {
-          usageMetadata: {
-            promptTokenCount: 0,
-            candidatesTokenCount: 0,
-            cachedContentTokenCount: 100,
-            totalTokenCount: 100,
-          },
+        usageMetadata: {
+          promptTokenCount: 0,
+          candidatesTokenCount: 0,
+          cachedContentTokenCount: 100,
+          totalTokenCount: 100,
         },
-      } as GenerateContentResult;
+      } as GenerateContentResponse;
 
       const usage = extractGeminiUsage(result);
 

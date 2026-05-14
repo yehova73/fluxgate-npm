@@ -1,13 +1,12 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { GoogleGenAI, ServiceTier } from "@google/genai";
 import { FluxGate } from "@fluxgate/sdk";
 import { createGeminiCostTracker } from "@fluxgate/gemini";
 
 async function main() {
   // Initialize Gemini
-  const genAI = new GoogleGenerativeAI(
-    process.env.GEMINI_API_KEY || "your-gemini-api-key",
-  );
-  const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+  const ai = new GoogleGenAI({
+    apiKey: process.env.GEMINI_API_KEY || "your-gemini-api-key",
+  });
 
   // Initialize FluxGate instance
   const fluxgate = new FluxGate({
@@ -15,8 +14,8 @@ async function main() {
     debug: true,
   });
 
-  // Create tracked model
-  const gemini = createGeminiCostTracker(model, fluxgate);
+  // Create tracked client
+  const gemini = createGeminiCostTracker(ai, fluxgate);
 
   console.log("=== Basic Text Generation ===\n");
 
@@ -26,11 +25,15 @@ async function main() {
       feature: "example-generation",
       user: "demo-user",
     })
-    .generateContent("Explain quantum computing in simple terms");
+    .generateContent({
+      model: "gemini-2.5-flash",
+      config: { serviceTier: ServiceTier.PRIORITY },
+      contents: "Explain quantum computing in simple terms",
+    });
 
-  console.log("Response:", result.response.text());
+  console.log("Response:", result.text);
   console.log("\nTracking Data:", result.fluxGateCostTrackingResponse);
-  console.log("\nUsage Metadata:", result.response.usageMetadata);
+  console.log("\nUsage Metadata:", result.usageMetadata);
 }
 
 main().catch(console.error);

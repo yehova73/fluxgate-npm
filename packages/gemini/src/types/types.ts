@@ -1,35 +1,43 @@
 import type {
   EmbedContentResponse,
-  GenerateContentResult,
-  GenerateContentStreamResult,
-  GenerativeModel,
-} from "@google/generative-ai";
-import type { TrackedChatSession } from "../wrappers/chatSession.js";
+  GenerateContentResponse,
+  GenerateContentParameters,
+  EmbedContentParameters,
+  CreateChatParameters,
+  SendMessageParameters,
+  Content,
+} from "@google/genai";
+import type { TrackedChat } from "../wrappers/chatSession.js";
+import type { TrackedStream } from "../wrappers/TrackedStream.js";
 import type { FluxGateCostTrackingResponse, WithTracking } from "@fluxgate/sdk";
 
 export type WithStreamTracking<T> = T & {
   fluxGateCostTrackingResponse: FluxGateCostTrackingResponse | undefined;
 };
 
-export type TrackedGenerativeModel = Omit<
-  GenerativeModel,
-  "generateContent" | "generateContentStream" | "embedContent" | "startChat"
-> & {
+export type TrackedGeminiClient = {
   generateContent(
-    request: Parameters<GenerativeModel["generateContent"]>[0],
-  ): Promise<WithTracking<GenerateContentResult>>;
+    request: GenerateContentParameters,
+  ): Promise<WithTracking<GenerateContentResponse>>;
 
   generateContentStream(
-    request: Parameters<GenerativeModel["generateContentStream"]>[0],
-  ): Promise<WithStreamTracking<GenerateContentStreamResult>>;
+    request: GenerateContentParameters,
+  ): Promise<TrackedStream<GenerateContentResponse>>;
 
   embedContent(
-    request: Parameters<GenerativeModel["embedContent"]>[0],
+    request: EmbedContentParameters,
   ): Promise<WithTracking<EmbedContentResponse>>;
 
-  startChat(
-    request?: Parameters<GenerativeModel["startChat"]>[0],
-  ): TrackedChatSession;
+  startChat(params: CreateChatParameters): TrackedChat;
 };
 
-export type { TrackedChatSession };
+export type {
+  TrackedChat,
+  EmbedContentResponse,
+  GenerateContentResponse,
+  GenerateContentParameters,
+  EmbedContentParameters,
+  CreateChatParameters,
+  SendMessageParameters,
+  Content,
+};

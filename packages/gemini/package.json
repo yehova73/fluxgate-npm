@@ -53,7 +53,7 @@
     "@fluxgate/sdk": "^0.0.2-dev.0"
   },
   "peerDependencies": {
-    "@google/generative-ai": "^0.24.1"
+    "@google/genai": "^2.0.0"
   },
   "devDependencies": {
     "@types/node": "^20.11.0",

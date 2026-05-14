@@ -1,11 +1,11 @@
-import type { EnhancedGenerateContentResponse } from "@google/generative-ai";
+import type { GenerateContentResponse } from "@google/genai";
 import { FluxGateCostTrackingResponse } from "@fluxgate/sdk";
 
 /**
  * Wraps a Gemini streaming response to track token usage after completion
  */
 export class TrackedStream<
-  T = EnhancedGenerateContentResponse,
+  T = GenerateContentResponse,
 > implements AsyncIterable<T> {
   fluxGateCostTrackingResponse: FluxGateCostTrackingResponse | undefined;
 

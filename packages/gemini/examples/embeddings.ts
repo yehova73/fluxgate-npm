@@ -1,13 +1,12 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { GoogleGenAI } from "@google/genai";
 import { FluxGate } from "@fluxgate/sdk";
 import { createGeminiCostTracker } from "@fluxgate/gemini";
 
 async function main() {
   // Initialize Gemini with embedding model
-  const genAI = new GoogleGenerativeAI(
-    process.env.GEMINI_API_KEY || "your-gemini-api-key",
-  );
-  const model = genAI.getGenerativeModel({ model: "embedding-001" });
+  const ai = new GoogleGenAI({
+    apiKey: process.env.GEMINI_API_KEY || "your-gemini-api-key",
+  });
 
   // Initialize FluxGate instance
   const fluxgate = new FluxGate({
@@ -15,8 +14,8 @@ async function main() {
     debug: true,
   });
 
-  // Create tracked model
-  const gemini = createGeminiCostTracker(model, fluxgate);
+  // Create tracked client
+  const gemini = createGeminiCostTracker(ai, fluxgate);
 
   console.log("=== Embeddings Example ===\n");
 
@@ -26,10 +25,14 @@ async function main() {
       feature: "semantic-search",
       user: "demo-user",
     })
-    .embedContent("The quick brown fox jumps over the lazy dog");
+    .embedContent({
+      model: "text-embedding-004",
+      contents: "The quick brown fox jumps over the lazy dog",
+    });
 
-  console.log("Embedding dimensions:", result.embedding.values.length);
-  console.log("First 10 values:", result.embedding.values.slice(0, 10));
+  const values = result.embeddings?.[0]?.values ?? [];
+  console.log("Embedding dimensions:", values.length);
+  console.log("First 10 values:", values.slice(0, 10));
   console.log("\nTracking Data:", result.fluxGateCostTrackingResponse);
 
   console.log("\n" + "=".repeat(50) + "\n");
@@ -50,10 +53,10 @@ async function main() {
           feature: "batch-embeddings",
           step: `text-${index}`,
         })
-        .embedContent(text);
+        .embedContent({ model: "text-embedding-004", contents: text });
       return {
         text,
-        embedding: result.embedding.values,
+        embedding: result.embeddings?.[0]?.values ?? [],
         fluxGateCostTrackingResponse: result.fluxGateCostTrackingResponse,
       };
     }),

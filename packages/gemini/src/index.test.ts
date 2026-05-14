@@ -1,15 +1,14 @@
-import { describe, it, expect, beforeEach, vi } from "vitest";
+import { describe, it, expect, beforeEach } from "vitest";
 import { createGeminiCostTracker } from "./index.js";
 import { FluxGate } from "@fluxgate/sdk";
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { GoogleGenAI } from "@google/genai";
 
 describe("createGeminiCostTracker", () => {
-  let mockModel: ReturnType<GoogleGenerativeAI["getGenerativeModel"]>;
+  let mockAi: GoogleGenAI;
   let mockFluxGate: FluxGate;
 
   beforeEach(() => {
-    const genAI = new GoogleGenerativeAI("test-key");
-    mockModel = genAI.getGenerativeModel({ model: "gemini-pro" });
+    mockAi = new GoogleGenAI({ apiKey: "test-key" });
 
     mockFluxGate = new FluxGate({
       apiKey: "tracker-key",
@@ -19,51 +18,51 @@ describe("createGeminiCostTracker", () => {
 
   describe("initialization", () => {
     it("should create a tracker with withContext method", () => {
-      const tracker = createGeminiCostTracker(mockModel, mockFluxGate);
+      const tracker = createGeminiCostTracker(mockAi, mockFluxGate);
 
       expect(tracker).toHaveProperty("withContext");
-      expect(tracker).toHaveProperty("model");
+      expect(tracker).toHaveProperty("client");
       expect(typeof tracker.withContext).toBe("function");
     });
 
-    it("should return wrapped model with context", () => {
-      const tracker = createGeminiCostTracker(mockModel, mockFluxGate);
-      const contextModel = tracker.withContext({ feature: "test-feature" });
+    it("should return wrapped client with context", () => {
+      const tracker = createGeminiCostTracker(mockAi, mockFluxGate);
+      const contextClient = tracker.withContext({ feature: "test-feature" });
 
-      expect(contextModel).toBeDefined();
-      expect(contextModel.generateContent).toBeDefined();
-      expect(contextModel.generateContentStream).toBeDefined();
-      expect(contextModel.embedContent).toBeDefined();
-      expect(contextModel.startChat).toBeDefined();
+      expect(contextClient).toBeDefined();
+      expect(contextClient.generateContent).toBeDefined();
+      expect(contextClient.generateContentStream).toBeDefined();
+      expect(contextClient.embedContent).toBeDefined();
+      expect(contextClient.startChat).toBeDefined();
     });
 
-    it("should return wrapped model without context", () => {
-      const tracker = createGeminiCostTracker(mockModel, mockFluxGate);
-      const defaultModel = tracker.model;
+    it("should return wrapped client without context", () => {
+      const tracker = createGeminiCostTracker(mockAi, mockFluxGate);
+      const defaultClient = tracker.client;
 
-      expect(defaultModel).toBeDefined();
-      expect(defaultModel.generateContent).toBeDefined();
-      expect(defaultModel.generateContentStream).toBeDefined();
-      expect(defaultModel.embedContent).toBeDefined();
-      expect(defaultModel.startChat).toBeDefined();
+      expect(defaultClient).toBeDefined();
+      expect(defaultClient.generateContent).toBeDefined();
+      expect(defaultClient.generateContentStream).toBeDefined();
+      expect(defaultClient.embedContent).toBeDefined();
+      expect(defaultClient.startChat).toBeDefined();
     });
   });
 
   describe("context handling", () => {
     it("should accept user context with string user", () => {
-      const tracker = createGeminiCostTracker(mockModel, mockFluxGate);
-      const contextModel = tracker.withContext({
+      const tracker = createGeminiCostTracker(mockAi, mockFluxGate);
+      const contextClient = tracker.withContext({
         feature: "chat",
         user: "user-123",
         sessionId: "session-456",
       });
 
-      expect(contextModel).toBeDefined();
+      expect(contextClient).toBeDefined();
     });
 
     it("should accept user context with TrackedUser object", () => {
-      const tracker = createGeminiCostTracker(mockModel, mockFluxGate);
-      const contextModel = tracker.withContext({
+      const tracker = createGeminiCostTracker(mockAi, mockFluxGate);
+      const contextClient = tracker.withContext({
         feature: "chat",
         user: {
           id: "user-123",
@@ -74,59 +73,59 @@ describe("createGeminiCostTracker", () => {
         conversationId: "conv-789",
       });
 
-      expect(contextModel).toBeDefined();
+      expect(contextClient).toBeDefined();
     });
 
     it("should accept metadata with custom fields", () => {
-      const tracker = createGeminiCostTracker(mockModel, mockFluxGate);
-      const contextModel = tracker.withContext({
+      const tracker = createGeminiCostTracker(mockAi, mockFluxGate);
+      const contextClient = tracker.withContext({
         feature: "generation",
         step: "content-creation",
         customField: "custom value",
         anotherField: 123,
       });
 
-      expect(contextModel).toBeDefined();
+      expect(contextClient).toBeDefined();
     });
   });
 
-  describe("wrapped model methods", () => {
+  describe("wrapped client methods", () => {
     it("should have wrapped generateContent method", () => {
-      const tracker = createGeminiCostTracker(mockModel, mockFluxGate);
-      const wrappedModel = tracker.model;
+      const tracker = createGeminiCostTracker(mockAi, mockFluxGate);
+      const wrappedClient = tracker.client;
 
-      expect(wrappedModel.generateContent).toBeDefined();
-      expect(typeof wrappedModel.generateContent).toBe("function");
+      expect(wrappedClient.generateContent).toBeDefined();
+      expect(typeof wrappedClient.generateContent).toBe("function");
     });
 
     it("should have wrapped generateContentStream method", () => {
-      const tracker = createGeminiCostTracker(mockModel, mockFluxGate);
-      const wrappedModel = tracker.model;
+      const tracker = createGeminiCostTracker(mockAi, mockFluxGate);
+      const wrappedClient = tracker.client;
 
-      expect(wrappedModel.generateContentStream).toBeDefined();
-      expect(typeof wrappedModel.generateContentStream).toBe("function");
+      expect(wrappedClient.generateContentStream).toBeDefined();
+      expect(typeof wrappedClient.generateContentStream).toBe("function");
     });
 
     it("should have wrapped embedContent method", () => {
-      const tracker = createGeminiCostTracker(mockModel, mockFluxGate);
-      const wrappedModel = tracker.model;
+      const tracker = createGeminiCostTracker(mockAi, mockFluxGate);
+      const wrappedClient = tracker.client;
 
-      expect(wrappedModel.embedContent).toBeDefined();
-      expect(typeof wrappedModel.embedContent).toBe("function");
+      expect(wrappedClient.embedContent).toBeDefined();
+      expect(typeof wrappedClient.embedContent).toBe("function");
     });
 
     it("should have wrapped startChat method", () => {
-      const tracker = createGeminiCostTracker(mockModel, mockFluxGate);
-      const wrappedModel = tracker.model;
+      const tracker = createGeminiCostTracker(mockAi, mockFluxGate);
+      const wrappedClient = tracker.client;
 
-      expect(wrappedModel.startChat).toBeDefined();
-      expect(typeof wrappedModel.startChat).toBe("function");
+      expect(wrappedClient.startChat).toBeDefined();
+      expect(typeof wrappedClient.startChat).toBe("function");
     });
   });
 
   describe("multiple contexts", () => {
-    it("should allow creating multiple wrapped models with different contexts", () => {
-      const tracker = createGeminiCostTracker(mockModel, mockFluxGate);
+    it("should allow creating multiple wrapped clients with different contexts", () => {
+      const tracker = createGeminiCostTracker(mockAi, mockFluxGate);
 
       const chatContext = tracker.withContext({ feature: "chat" });
       const summaryContext = tracker.withContext({ feature: "summary" });
@@ -134,24 +133,6 @@ describe("createGeminiCostTracker", () => {
       expect(chatContext).toBeDefined();
       expect(summaryContext).toBeDefined();
       expect(chatContext).not.toBe(summaryContext);
-    });
-  });
-
-  describe("model preservation", () => {
-    it("should preserve original model name", () => {
-      const tracker = createGeminiCostTracker(mockModel, mockFluxGate);
-      const wrappedModel = tracker.model;
-
-      expect(wrappedModel.model).toBe(mockModel.model);
-    });
-
-    it("should preserve other model properties", () => {
-      const tracker = createGeminiCostTracker(mockModel, mockFluxGate);
-      const wrappedModel = tracker.model;
-
-      // Should have access to all original model properties
-      expect(wrappedModel.generationConfig).toBe(mockModel.generationConfig);
-      expect(wrappedModel.safetySettings).toBe(mockModel.safetySettings);
     });
   });
 });

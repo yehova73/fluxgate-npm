@@ -1,52 +1,24 @@
-import type { GenerativeModel } from "@google/generative-ai";
+import type { GoogleGenAI } from "@google/genai";
 import { AiEventMetadata, FluxGate } from "@fluxgate/sdk";
-import { TrackedGenerativeModel } from "../types/types.js";
+import { TrackedGeminiClient } from "../types/types.js";
 import { createGenerateContentWrapper } from "./generateContent.js";
 import { createGenerateContentStreamWrapper } from "./generateContentStream.js";
 import { createEmbedContentWrapper } from "./embedContent.js";
 import { createStartChatWrapper } from "./startChat.js";
 
 export function withGeminiTracking(
-  model: GenerativeModel,
+  ai: GoogleGenAI,
   instance: FluxGate,
   context?: AiEventMetadata,
-): TrackedGenerativeModel {
-  const modelName = model.model.replace("models/", "");
-
-  // Create wrapped model without mutating original
-  const wrappedModel = Object.create(
-    Object.getPrototypeOf(model),
-    Object.getOwnPropertyDescriptors(model),
-  );
-
-  wrappedModel.generateContent = createGenerateContentWrapper(
-    model.generateContent.bind(model),
-    instance,
-    modelName,
-    context,
-  );
-
-  wrappedModel.generateContentStream = createGenerateContentStreamWrapper(
-    model.generateContentStream.bind(model),
-    instance,
-    modelName,
-    context,
-  );
-
-  wrappedModel.embedContent = createEmbedContentWrapper(
-    model.embedContent.bind(model),
-    instance,
-    modelName,
-    context,
-  );
-
-  wrappedModel.startChat = createStartChatWrapper(
-    model.startChat.bind(model),
-    instance,
-    modelName,
-    context,
-  );
-
-  // Type assertion needed because wrapped functions have enhanced return types
-  return wrappedModel as unknown as TrackedGenerativeModel;
+): TrackedGeminiClient {
+  return {
+    generateContent: createGenerateContentWrapper(ai, instance, context),
+    generateContentStream: createGenerateContentStreamWrapper(
+      ai,
+      instance,
+      context,
+    ),
+    embedContent: createEmbedContentWrapper(ai, instance, context),
+    startChat: createStartChatWrapper(ai, instance, context),
+  };
 }

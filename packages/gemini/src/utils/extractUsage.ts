@@ -1,13 +1,10 @@
-import type {
-  EnhancedGenerateContentResponse,
-  GenerateContentResult,
-} from "@google/generative-ai";
+import type { GenerateContentResponse } from "@google/genai";
 import { ExtractedUsage } from "@fluxgate/sdk";
 
 export function extractGeminiUsage(
-  result: GenerateContentResult | undefined,
+  result: GenerateContentResponse | undefined,
 ): ExtractedUsage {
-  if (!result?.response?.usageMetadata) {
+  if (!result?.usageMetadata) {
     return {
       inputTokens: 0,
       outputTokens: 0,
@@ -16,7 +13,7 @@ export function extractGeminiUsage(
     };
   }
 
-  const usage = result.response.usageMetadata;
+  const usage = result.usageMetadata;
 
   return {
     inputTokens: usage.promptTokenCount ?? 0,
@@ -26,8 +23,9 @@ export function extractGeminiUsage(
   };
 }
 
+// For streaming, each chunk is also a GenerateContentResponse
 export function extractGeminiUsageFromChunk(
-  chunk: EnhancedGenerateContentResponse | undefined,
+  chunk: GenerateContentResponse | undefined,
 ): ExtractedUsage {
   if (!chunk?.usageMetadata) {
     return {

@@ -24,12 +24,14 @@ async function main() {
       feature: "example-chat",
       user: "demo-user",
     })
-    .messages.create({
-      model: "claude-3-5-sonnet-20241022",
-      max_tokens: 1024,
-      messages: [{ role: "user", content: "What is TypeScript?" }],
-    });
-
+    .messages.create(
+      {
+        model: "claude-3-5-sonnet-20241022",
+        max_tokens: 1024,
+        messages: [{ role: "user", content: "What is TypeScript?" }],
+      },
+      {},
+    );
   console.log(
     "Response:",
     message.content[0].type === "text"

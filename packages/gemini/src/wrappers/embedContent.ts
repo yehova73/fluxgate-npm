@@ -1,30 +1,29 @@
 import type {
-  GenerativeModel,
+  GoogleGenAI,
+  EmbedContentParameters,
   EmbedContentResponse,
-} from "@google/generative-ai";
+} from "@google/genai";
 import { AiEventMetadata, WithTracking, FluxGate } from "@fluxgate/sdk";
 import { recordUsage } from "../utils/recordUsage.js";
 
-type OrigEmbedContent = GenerativeModel["embedContent"];
-
 export function createEmbedContentWrapper(
-  original: OrigEmbedContent,
+  ai: GoogleGenAI,
   instance: FluxGate,
-  modelName: string,
   context: AiEventMetadata | undefined,
 ) {
   return async function wrappedEmbedContent(
-    request: Parameters<OrigEmbedContent>[0],
+    request: EmbedContentParameters,
   ): Promise<WithTracking<EmbedContentResponse>> {
     const start = performance.now();
+    const { model } = request;
 
     let result: EmbedContentResponse;
     try {
-      result = await original(request);
+      result = await ai.models.embedContent(request);
     } catch (err) {
       await recordUsage({
         instance,
-        model: modelName,
+        model,
         latencyMs: performance.now() - start,
         streaming: false,
         context,
@@ -43,7 +42,7 @@ export function createEmbedContentWrapper(
     // Embeddings don't produce output tokens, just consume input
     const fluxGateCostTrackingResponse = await recordUsage({
       instance,
-      model: modelName,
+      model,
       latencyMs: performance.now() - start,
       streaming: false,
       context,

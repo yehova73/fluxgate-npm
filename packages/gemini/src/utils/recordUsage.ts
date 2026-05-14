@@ -31,6 +31,7 @@ export async function recordUsage(params: {
   usage: ExtractedUsage;
   status: AiEventStatus;
   errorMessage?: string;
+  serviceTier?: string | null;
 }): Promise<FluxGateCostTrackingResponse> {
   const {
     context,
@@ -41,10 +42,14 @@ export async function recordUsage(params: {
     usage,
     status,
     errorMessage,
+    serviceTier,
   } = params;
 
+  const metadata = normalizeMetadata(context);
+  if (serviceTier != null) metadata.service_tier = serviceTier;
+
   const trackingData = await instance.recordEvent({
-    metadata: normalizeMetadata(context),
+    metadata,
     status: {
       status,
       errorMessage,
@@ -104,7 +109,10 @@ export function finishReasonToStatus(
   }
 
   // "other" and unspecified are valid completions, not errors
-  if (finishReason === "OTHER" || finishReason === "FINISH_REASON_UNSPECIFIED") {
+  if (
+    finishReason === "OTHER" ||
+    finishReason === "FINISH_REASON_UNSPECIFIED"
+  ) {
     return "SUCCESS";
   }
 

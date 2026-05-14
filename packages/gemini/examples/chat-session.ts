@@ -1,13 +1,12 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { GoogleGenAI } from "@google/genai";
 import { FluxGate } from "@fluxgate/sdk";
 import { createGeminiCostTracker } from "@fluxgate/gemini";
 
 async function main() {
   // Initialize Gemini
-  const genAI = new GoogleGenerativeAI(
-    process.env.GEMINI_API_KEY || "your-gemini-api-key",
-  );
-  const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+  const ai = new GoogleGenAI({
+    apiKey: process.env.GEMINI_API_KEY || "your-gemini-api-key",
+  });
 
   // Initialize FluxGate instance
   const fluxgate = new FluxGate({
@@ -15,8 +14,8 @@ async function main() {
     debug: true,
   });
 
-  // Create tracked model
-  const gemini = createGeminiCostTracker(model, fluxgate);
+  // Create tracked client
+  const gemini = createGeminiCostTracker(ai, fluxgate);
 
   console.log("=== Chat Session Example ===\n");
 
@@ -28,6 +27,7 @@ async function main() {
       conversationId: "conv-123",
     })
     .startChat({
+      model: "gemini-2.5-flash",
       history: [
         {
           role: "user",
@@ -42,23 +42,27 @@ async function main() {
           ],
         },
       ],
-      generationConfig: {
+      config: {
         maxOutputTokens: 100,
       },
     });
 
   // First message
   console.log("User: What is machine learning?\n");
-  const result1 = await chat.sendMessage("What is machine learning?");
-  console.log("Assistant:", result1.response.text());
+  const result1 = await chat.sendMessage({
+    message: "What is machine learning?",
+  });
+  console.log("Assistant:", result1.text);
   console.log("\nTracking 1:", result1.fluxGateCostTrackingResponse);
 
   console.log("\n" + "=".repeat(50) + "\n");
 
   // Second message (continues the conversation)
   console.log("User: Can you give me a simple example?\n");
-  const result2 = await chat.sendMessage("Can you give me a simple example?");
-  console.log("Assistant:", result2.response.text());
+  const result2 = await chat.sendMessage({
+    message: "Can you give me a simple example?",
+  });
+  console.log("Assistant:", result2.text);
   console.log("\nTracking 2:", result2.fluxGateCostTrackingResponse);
 
   console.log("\n" + "=".repeat(50) + "\n");
@@ -66,17 +70,16 @@ async function main() {
   // Streaming message in chat
   console.log("User: Tell me more about neural networks\n");
   console.log("Assistant: ");
-  const result3 = await chat.sendMessageStream(
-    "Tell me more about neural networks",
-  );
+  const stream = await chat.sendMessageStream({
+    message: "Tell me more about neural networks",
+  });
 
-  for await (const chunk of result3.stream) {
-    process.stdout.write(chunk.text());
+  for await (const chunk of stream) {
+    process.stdout.write(chunk.text ?? "");
   }
 
-  const response3 = await result3.response;
-  console.log("\n\nTracking 3:", result3.fluxGateCostTrackingResponse);
-  console.log("Usage:", response3.usageMetadata);
+  console.log("\n\nTracking 3:", stream.fluxGateCostTrackingResponse);
+  console.log("History length:", chat.getHistory().length);
 }
 
 main().catch(console.error);
