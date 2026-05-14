@@ -12,6 +12,7 @@ export function createCompletionsWrapper(
   original: OrigCreate,
   instance: FluxGate,
   context: AiEventMetadata | undefined,
+  provider: string,
 ) {
   return async function wrappedCompletionsCreate(
     params: Parameters<OrigCreate>[0],
@@ -32,6 +33,7 @@ export function createCompletionsWrapper(
         usage: extractChatUsage(undefined),
         status: "ERROR",
         errorMessage: (err as Error).message,
+        provider,
       });
       throw err;
     }
@@ -49,6 +51,7 @@ export function createCompletionsWrapper(
             ? "ERROR"
             : finishReasonToStatus(lastChunk?.choices?.[0]?.finish_reason),
           errorMessage: streamError?.message,
+          provider,
         }),
       );
     }
@@ -62,6 +65,7 @@ export function createCompletionsWrapper(
       context,
       usage: extractChatUsage(completion?.usage),
       status: finishReasonToStatus(completion?.choices?.[0]?.finish_reason),
+      provider,
     });
     return Object.assign(completion, { fluxGateCostTrackingResponse });
   };

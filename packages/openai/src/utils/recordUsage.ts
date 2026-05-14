@@ -7,6 +7,22 @@ import {
 } from "@fluxgate/sdk";
 import type OpenAI from "openai";
 
+export function detectProvider(baseURL: string): string {
+  try {
+    const { hostname } = new URL(baseURL);
+    if (hostname === "api.openai.com") return "openai";
+    if (hostname.endsWith(".azure.com")) return "azure";
+    if (hostname === "api.groq.com") return "groq";
+    if (hostname === "api.together.xyz") return "together";
+    if (hostname === "openrouter.ai" || hostname === "api.openrouter.ai") return "openrouter";
+    if (hostname === "api.mistral.ai") return "mistral";
+    if (hostname === "generativelanguage.googleapis.com") return "google";
+    return hostname;
+  } catch {
+    return "openai";
+  }
+}
+
 function normalizeMetadata(
   context: AiEventMetadata | undefined,
 ): AiEventMetadata {
@@ -32,6 +48,8 @@ export async function recordUsage(params: {
   usage: ExtractedUsage;
   status: AiEventStatus;
   errorMessage?: string;
+  provider: string;
+  serviceTier?: string | null;
 }): Promise<FluxGateCostTrackingResponse> {
   const {
     context,
@@ -42,10 +60,15 @@ export async function recordUsage(params: {
     usage,
     status,
     errorMessage,
+    provider,
+    serviceTier,
   } = params;
 
+  const metadata = normalizeMetadata(context);
+  if (serviceTier != null) metadata.service_tier = serviceTier;
+
   const trackingData = await instance.recordEvent({
-    metadata: normalizeMetadata(context),
+    metadata,
     status: {
       status,
       errorMessage,
@@ -57,7 +80,7 @@ export async function recordUsage(params: {
       model,
       isStreamed: streaming,
       latencyInMs: latencyMs,
-      provider: "openai",
+      provider,
       streamingDurationInMs: streaming ? latencyMs : undefined,
     },
   });

@@ -10,6 +10,7 @@ export function createEmbeddingsWrapper(
   original: OrigCreate,
   instance: FluxGate,
   context: AiEventMetadata | undefined,
+  provider: string,
 ) {
   return async function wrappedEmbeddingsCreate(
     params: Parameters<OrigCreate>[0],
@@ -30,6 +31,7 @@ export function createEmbeddingsWrapper(
         usage: extractEmbeddingUsage(undefined),
         status: "ERROR",
         errorMessage: (err as Error).message,
+        provider,
       });
       throw err;
     }
@@ -42,6 +44,7 @@ export function createEmbeddingsWrapper(
       context,
       usage: extractEmbeddingUsage(res?.usage),
       status: "SUCCESS",
+      provider,
     });
     return Object.assign(res, { fluxGateCostTrackingResponse });
   };

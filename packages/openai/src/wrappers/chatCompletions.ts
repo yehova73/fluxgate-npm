@@ -13,6 +13,7 @@ export function createChatWrapper(
   original: OrigCreate,
   instance: FluxGate,
   context: AiEventMetadata | undefined,
+  provider: string,
 ) {
   return async function wrappedChatCreate(
     params: Parameters<OrigCreate>[0],
@@ -33,6 +34,8 @@ export function createChatWrapper(
         usage: extractChatUsage(undefined),
         status: "ERROR",
         errorMessage: (err as Error).message,
+        provider,
+        serviceTier: params.service_tier,
       });
       throw err;
     }
@@ -50,6 +53,8 @@ export function createChatWrapper(
             ? "ERROR"
             : finishReasonToStatus(lastChunk?.choices?.[0]?.finish_reason),
           errorMessage: streamError?.message,
+          provider,
+          serviceTier: lastChunk?.service_tier ?? params.service_tier,
         }),
       );
     }
@@ -63,6 +68,8 @@ export function createChatWrapper(
       context,
       usage: extractChatUsage(completion?.usage),
       status: finishReasonToStatus(completion?.choices?.[0]?.finish_reason),
+      provider,
+      serviceTier: completion?.service_tier ?? params.service_tier,
     });
     return Object.assign(completion, { fluxGateCostTrackingResponse });
   };

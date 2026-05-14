@@ -25,6 +25,7 @@ async function main() {
       feature: "example-chat",
       user: "demo-user",
     })
+
     .chat.completions.create({
       model: "gpt-3.5-turbo",
       messages: [

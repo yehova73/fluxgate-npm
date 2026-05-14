@@ -18,6 +18,7 @@ export function createResponsesWrapper(
   original: OrigCreate,
   instance: FluxGate,
   context: AiEventMetadata | undefined,
+  provider: string,
 ) {
   return async function wrappedResponsesCreate(
     params: Parameters<OrigCreate>[0],
@@ -38,6 +39,8 @@ export function createResponsesWrapper(
         usage: extractResponseUsage(undefined),
         status: "ERROR",
         errorMessage: (err as Error).message,
+        provider,
+        serviceTier: params.service_tier,
       });
       throw err;
     }
@@ -69,7 +72,8 @@ export function createResponsesWrapper(
             : !completedEvent
               ? {
                   status: "ERROR" as AiEventStatus,
-                  errorMessage: "Stream ended without a response.completed event",
+                  errorMessage:
+                    "Stream ended without a response.completed event",
                 }
               : extractResponseStatus(response);
           return recordUsage({
@@ -81,6 +85,8 @@ export function createResponsesWrapper(
             usage: extractResponseUsage(response?.usage),
             status,
             errorMessage,
+            provider,
+            serviceTier: response?.service_tier ?? params.service_tier,
           });
         },
       );
@@ -97,6 +103,8 @@ export function createResponsesWrapper(
       usage: extractResponseUsage(response?.usage),
       status,
       errorMessage,
+      provider,
+      serviceTier: response?.service_tier ?? params.service_tier,
     });
     return Object.assign(response, { fluxGateCostTrackingResponse });
   };

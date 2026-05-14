@@ -6,79 +6,27 @@ import {
 } from "@fluxgate/sdk";
 import type Anthropic from "@anthropic-ai/sdk";
 import type {
-  Message,
-  RawMessageStreamEvent,
-} from "@anthropic-ai/sdk/resources/messages";
+  BetaMessage,
+  BetaRawMessageStreamEvent,
+} from "@anthropic-ai/sdk/resources/beta/messages/messages";
 import { extractAnthropicUsage } from "../utils/extractUsage.js";
 import { isAsyncIterable } from "../utils/utils.js";
 import { TrackedStream } from "./TrackedStream.js";
 import { extractResponseStatus, recordUsage } from "../utils/recordUsage.js";
-import { TrackedAnthropic } from "../types/types.js";
-import { createCompletionsWrapper } from "./completions.js";
-import { createBetaMessagesWrapper } from "./betaMessages.js";
 
-type OrigCreate = Anthropic["messages"]["create"];
+type OrigCreate = Anthropic["beta"]["messages"]["create"];
 
-export function withAnthropicTracking(
-  client: Anthropic,
-  instance: FluxGate,
-  context?: AiEventMetadata,
-): TrackedAnthropic {
-  const wrappedClient = Object.create(
-    Object.getPrototypeOf(client),
-    Object.getOwnPropertyDescriptors(client),
-  );
-
-  wrappedClient.messages = Object.create(
-    Object.getPrototypeOf(client.messages),
-    Object.getOwnPropertyDescriptors(client.messages),
-  );
-
-  wrappedClient.messages.create = createMessagesWrapper(
-    client.messages.create.bind(client.messages),
-    instance,
-    context,
-  ) as unknown as typeof client.messages.create;
-
-  wrappedClient.completions = Object.create(
-    Object.getPrototypeOf(client.completions),
-    Object.getOwnPropertyDescriptors(client.completions),
-  );
-
-  wrappedClient.completions.create = createCompletionsWrapper(
-    client.completions.create.bind(client.completions),
-    instance,
-    context,
-  ) as unknown as typeof client.completions.create;
-
-  wrappedClient.beta = Object.create(
-    Object.getPrototypeOf(client.beta),
-    Object.getOwnPropertyDescriptors(client.beta),
-  );
-
-  wrappedClient.beta.messages = Object.create(
-    Object.getPrototypeOf(client.beta.messages),
-    Object.getOwnPropertyDescriptors(client.beta.messages),
-  );
-
-  wrappedClient.beta.messages.create = createBetaMessagesWrapper(
-    client.beta.messages.create.bind(client.beta.messages),
-    instance,
-    context,
-  ) as unknown as typeof client.beta.messages.create;
-
-  return wrappedClient as unknown as TrackedAnthropic;
-}
-
-export function createMessagesWrapper(
+export function createBetaMessagesWrapper(
   original: OrigCreate,
   instance: FluxGate,
   context: AiEventMetadata | undefined,
 ) {
-  return async function wrappedMessagesCreate(
+  return async function wrappedBetaMessagesCreate(
     params: Parameters<OrigCreate>[0],
     options?: Parameters<OrigCreate>[1],
-  ): Promise<WithTracking<Message> | TrackedStream<RawMessageStreamEvent>> {
+  ): Promise<
+    WithTracking<BetaMessage> | TrackedStream<BetaRawMessageStreamEvent>
+  > {
     const start = performance.now();
 
     let res: Awaited<ReturnType<OrigCreate>>;
@@ -108,12 +56,11 @@ export function createMessagesWrapper(
             latestUsage = event.usage;
             latestStopReason = event.delta.stop_reason;
           }
-
-          yield event as RawMessageStreamEvent;
+          yield event as BetaRawMessageStreamEvent;
         }
       })();
 
-      return new TrackedStream<RawMessageStreamEvent>(
+      return new TrackedStream<BetaRawMessageStreamEvent>(
         trackingSource,
         (_last, streamError) => {
           const { status, errorMessage } = streamError
@@ -137,7 +84,7 @@ export function createMessagesWrapper(
       );
     }
 
-    const message = res as Message;
+    const message = res as BetaMessage;
     const { status, errorMessage } = extractResponseStatus(message.stop_reason);
     const fluxGateCostTrackingResponse = await recordUsage({
       instance,
