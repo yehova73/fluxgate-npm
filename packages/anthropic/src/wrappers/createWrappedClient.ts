@@ -90,6 +90,7 @@ export function createMessagesWrapper(
         usage: extractAnthropicUsage(undefined),
         status: "ERROR",
         errorMessage: (err as Error).message,
+        requestUser: params.metadata?.user_id ?? undefined,
       });
       throw err;
     }
@@ -128,6 +129,7 @@ export function createMessagesWrapper(
             usage: extractAnthropicUsage(latestUsage),
             status,
             errorMessage,
+            requestUser: params.metadata?.user_id ?? undefined,
           });
         },
       );
@@ -144,6 +146,7 @@ export function createMessagesWrapper(
       usage: extractAnthropicUsage(message.usage),
       status,
       errorMessage,
+      requestUser: params.metadata?.user_id ?? undefined,
     });
 
     return Object.assign(message, { fluxGateCostTrackingResponse });

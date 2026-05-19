@@ -37,6 +37,7 @@ export function createChatWrapper(
         errorMessage: (err as Error).message,
         provider,
         serviceTier: params.service_tier,
+        requestUser: params.user ?? undefined,
       });
       throw err;
     }
@@ -56,6 +57,7 @@ export function createChatWrapper(
           errorMessage: streamError?.message,
           provider,
           serviceTier: lastChunk?.service_tier ?? params.service_tier,
+          requestUser: params.user ?? undefined,
         }),
       );
     }
@@ -71,6 +73,7 @@ export function createChatWrapper(
       status: finishReasonToStatus(completion?.choices?.[0]?.finish_reason),
       provider,
       serviceTier: completion?.service_tier ?? params.service_tier,
+      requestUser: params.user ?? undefined,
     });
     return Object.assign(completion, { fluxGateCostTrackingResponse });
   };

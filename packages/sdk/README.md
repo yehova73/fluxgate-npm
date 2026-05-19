@@ -24,25 +24,28 @@ const fluxgate = new FluxGate({
 
 // Record a usage event
 const response = await fluxgate.recordEvent({
-  usage: {
-    inputTokens: 100,
-    outputTokens: 50,
-    cachedTokens: 20,
-    model: "gpt-4",
-    provider: "openai",
-    latencyInMs: 1500,
+  provider: "openai",
+  model: "gpt-4o",
+  feature: "chatbot",
+  user: "user-123",
+  performance: {
+    latency: 1500,
+    status: "SUCCESS",
     isStreamed: false,
   },
-  status: "SUCCESS",
-  metadata: {
-    feature: "chatbot",
-    user: "user-123",
-    sessionId: "session-456",
+  usage: {
+    promptTokens: 100,
+    completionTokens: 50,
   },
 });
 
 console.log(response);
-// { id: "event-123", createdAt: "2026-05-05T...", cost: 0.001 }
+// {
+//   recordId: "evt_...",
+//   totalTokens: 150,
+//   totalCost: 0.0015,
+//   status: "ok",
+// }
 ```
 
 ## 📖 API Reference
@@ -75,26 +78,32 @@ Records a usage event to FluxGate.
 **Parameters:**
 
 ```typescript
-interface LLMEvent {
-  usage: AiEventUsage;
-  status?: AiEventStatus | { status: AiEventStatus; errorMessage?: string };
+type LLMEvent = {
+  provider: string; // AI provider (e.g. "openai", "anthropic", "google")
+  model: string; // Model identifier (e.g. "gpt-4o", "claude-opus-4")
+  performance: Performance; // Latency, status, and streaming info
+  usage: AiEventUsage; // Token counts
+  user?: string | TrackedUser;
+  feature?: string;
+  step?: string;
+  sessionId?: string;
+  conversationId?: string;
+  timestamp?: number; // Unix ms — defaults to server ingest time if omitted
   metadata?: AiEventMetadata;
-}
+  costOverride?: CostOverride;
+};
 ```
 
-**Usage Object:**
+**Performance Object:**
 
 ```typescript
-interface AiEventUsage {
-  inputTokens: number;
-  outputTokens: number;
-  cachedTokens?: number;
-  model?: string;
-  provider?: string;
-  latencyInMs?: number;
-  isStreamed?: boolean;
-  streamingDurationInMs?: number;
-}
+type Performance = {
+  latency: number; // Total round-trip time in milliseconds
+  status: AiEventStatus; // HTTP status category from the provider
+  isStreamed: boolean; // Whether the response used SSE streaming
+  streamDuration?: number | null; // Active streaming duration in ms (null if not streamed)
+  errorMessage?: string | null; // Raw error string if the request failed
+};
 ```
 
 **Status Types:**
@@ -110,25 +119,36 @@ type AiEventStatus =
   | "MALFORMED_REQUEST";
 ```
 
+**Usage Object:**
+
+```typescript
+type AiEventUsage = {
+  promptTokens: number; // Input / prompt tokens
+  completionTokens: number; // Output / completion tokens
+  cacheReadTokens?: number | null; // Tokens read from a warm cache
+  cacheWriteTokens?: number | null; // Tokens written to initialize a cache
+  reasoningTokens?: number | null; // Internal thinking tokens (e.g. o1, DeepSeek R1)
+};
+```
+
 **Metadata Object:**
 
 ```typescript
-interface AiEventMetadata {
-  feature?: string;
-  step?: string;
-  user?: string | TrackedUser;
-  sessionId?: string;
-  conversationId?: string;
+type AiEventMetadata = {
+  serviceTier?: "default" | "standard" | "batch" | "flex" | "priority";
+  region?: string; // Hosting region for regional price variance
+  openrouterCost?: number; // Explicit cost in USD from a proxy (skips server-side compute)
+  cacheTtl?: string; // Provider cache expiration window (e.g. "5m", "1h")
   [key: string]: unknown; // Custom fields allowed
-}
+};
 
-interface TrackedUser {
+type TrackedUser = {
   id: string;
-  name?: string;
-  email?: string;
-  image?: string;
-  monthlyRevenue?: number;
-}
+  name?: string | null;
+  email?: string | null;
+  image?: string | null;
+  monthlyRevenue?: number | string | null; // Monthly revenue in USD
+};
 ```
 
 **Returns:**
@@ -136,11 +156,13 @@ interface TrackedUser {
 ```typescript
 Promise<CreateAiEventResponse | null>;
 
-interface CreateAiEventResponse {
-  id: string;
-  createdAt: string;
-  cost: number | null;
-}
+type CreateAiEventResponse = {
+  recordId: string; // ID of the persisted AiEvent record
+  totalTokens: number; // Sum of all token categories
+  totalCost: number | null; // Computed cost in USD; null when no pricing data available
+  status: "ok" | "no_pricing"; // "no_pricing" when model/provider not in pricing table
+  description?: string; // Human-readable explanation of cost derivation
+};
 ```
 
 ## 💡 Usage Examples
@@ -153,11 +175,17 @@ const fluxgate = new FluxGate({
 });
 
 await fluxgate.recordEvent({
-  usage: {
-    inputTokens: 100,
-    outputTokens: 50,
+  provider: "openai",
+  model: "gpt-4o",
+  performance: {
+    latency: 1500,
+    status: "SUCCESS",
+    isStreamed: false,
   },
-  status: "SUCCESS",
+  usage: {
+    promptTokens: 100,
+    completionTokens: 50,
+  },
 });
 ```
 
@@ -165,28 +193,30 @@ await fluxgate.recordEvent({
 
 ```typescript
 await fluxgate.recordEvent({
-  usage: {
-    inputTokens: 200,
-    outputTokens: 150,
-    cachedTokens: 50,
-    model: "gpt-4-turbo",
-    provider: "openai",
-    latencyInMs: 2500,
-    isStreamed: true,
-    streamingDurationInMs: 3000,
+  provider: "openai",
+  model: "gpt-4-turbo",
+  feature: "code-generation",
+  step: "implementation",
+  user: {
+    id: "user-123",
+    name: "John Doe",
+    email: "john@example.com",
+    monthlyRevenue: 99.99,
   },
-  status: "SUCCESS",
+  sessionId: "session-abc",
+  conversationId: "conv-xyz",
+  performance: {
+    latency: 2500,
+    status: "SUCCESS",
+    isStreamed: true,
+    streamDuration: 3000,
+  },
+  usage: {
+    promptTokens: 200,
+    completionTokens: 150,
+    cacheReadTokens: 50,
+  },
   metadata: {
-    feature: "code-generation",
-    step: "implementation",
-    user: {
-      id: "user-123",
-      name: "John Doe",
-      email: "john@example.com",
-      monthlyRevenue: 99.99,
-    },
-    sessionId: "session-abc",
-    conversationId: "conv-xyz",
     customField: "any custom data",
   },
 });
@@ -196,16 +226,18 @@ await fluxgate.recordEvent({
 
 ```typescript
 await fluxgate.recordEvent({
-  usage: {
-    inputTokens: 100,
-    outputTokens: 0,
-  },
-  status: {
+  provider: "openai",
+  model: "gpt-4o",
+  feature: "chatbot",
+  performance: {
+    latency: 300,
     status: "ERROR",
+    isStreamed: false,
     errorMessage: "API rate limit exceeded",
   },
-  metadata: {
-    feature: "chatbot",
+  usage: {
+    promptTokens: 100,
+    completionTokens: 0,
   },
 });
 ```
@@ -219,14 +251,14 @@ const fluxgate = new FluxGate({
 });
 
 await fluxgate.recordEvent({
-  usage: {
-    inputTokens: 100,
-    outputTokens: 50,
-  },
+  provider: "openai",
+  model: "gpt-4o",
+  performance: { latency: 1000, status: "SUCCESS", isStreamed: false },
+  usage: { promptTokens: 100, completionTokens: 50 },
 });
 // [fluxgate] FluxGate initialized { endpoint: '...', timeout: 5000 }
 // [fluxgate] Sending event to ...: { ... }
-// [fluxgate] Event sent successfully. Status: 200. Response: { "id": "evt_...", ... }
+// [fluxgate] Event sent successfully. Status: 200. Response: { "recordId": "evt_...", ... }
 ```
 
 ### Custom Endpoint
@@ -265,30 +297,32 @@ async function trackMyCustomLLM(prompt: string) {
     const response = await myCustomLLM.generate(prompt);
 
     await fluxgate.recordEvent({
-      usage: {
-        inputTokens: response.inputTokens,
-        outputTokens: response.outputTokens,
-        model: "custom-model",
-        provider: "custom-provider",
-        latencyInMs: performance.now() - start,
+      provider: "custom-provider",
+      model: "custom-model",
+      feature: "my-feature",
+      performance: {
+        latency: performance.now() - start,
+        status: "SUCCESS",
+        isStreamed: false,
       },
-      status: "SUCCESS",
-      metadata: {
-        feature: "my-feature",
+      usage: {
+        promptTokens: response.inputTokens,
+        completionTokens: response.outputTokens,
       },
     });
 
     return response;
   } catch (error) {
     await fluxgate.recordEvent({
-      usage: {
-        inputTokens: 0,
-        outputTokens: 0,
-      },
-      status: {
+      provider: "custom-provider",
+      model: "custom-model",
+      performance: {
+        latency: performance.now() - start,
         status: "ERROR",
+        isStreamed: false,
         errorMessage: error.message,
       },
+      usage: { promptTokens: 0, completionTokens: 0 },
     });
     throw error;
   }
@@ -322,10 +356,12 @@ import type {
   CreateAiEventResponse,
   TrackedUser,
   AiEventMetadata,
-  FluxGateCostTrackingResponse,
-  WithTracking,
   AiEventStatus,
   AiEventUsage,
+  Performance,
+  CostOverride,
+  FluxGateCostTrackingResponse,
+  WithTracking,
   ExtractedUsage,
   FluxGateConfig,
 } from "@fluxgate/sdk";

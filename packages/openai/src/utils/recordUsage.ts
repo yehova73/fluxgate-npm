@@ -44,6 +44,8 @@ export async function recordUsage(params: {
   provider: string;
   /** service_tier from the provider response; takes priority over context.serviceTier */
   serviceTier?: string | null;
+  /** user extracted from the request params (e.g. params.user). Used as fallback when context.user is not set. */
+  requestUser?: string;
 }): Promise<FluxGateCostTrackingResponse> {
   const {
     context,
@@ -56,6 +58,7 @@ export async function recordUsage(params: {
     errorMessage,
     provider,
     serviceTier,
+    requestUser,
   } = params;
 
   // Response service tier takes priority over user-supplied context value
@@ -83,7 +86,7 @@ export async function recordUsage(params: {
   const trackingData = await instance.recordEvent({
     provider,
     model,
-    user: context?.user,
+    user: context?.user ?? requestUser,
     feature: context?.feature,
     step: context?.step,
     sessionId: context?.sessionId,

@@ -93,11 +93,11 @@ Each example automatically tracks:
 
 All examples work with:
 
-- `gemini-pro` - Text generation
-- `gemini-pro-vision` - Multimodal (text + images)
+- `gemini-2.5-pro` - Most capable model
+- `gemini-2.5-flash` - Fast, efficient responses
 - `gemini-1.5-pro` - Long context window
-- `gemini-1.5-flash` - Fast responses
-- `embedding-001` - Text embeddings
+- `gemini-1.5-flash` - Stable fast responses
+- `text-embedding-004` - Text embeddings
 
 ## Notes
 

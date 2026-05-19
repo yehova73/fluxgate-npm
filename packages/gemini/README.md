@@ -25,8 +25,8 @@ const fluxgate = new FluxGate({
   apiKey: process.env.FLUXGATE_API_KEY,
 });
 
-// Create tracked client (pass ai instance + model name)
-const gemini = createGeminiCostTracker(ai, "gemini-2.5-flash", fluxgate);
+// Create tracked client
+const gemini = createGeminiCostTracker(ai, fluxgate);
 
 // Use with context
 const result = await gemini
@@ -34,7 +34,10 @@ const result = await gemini
     feature: "content-generation",
     user: "user-123",
   })
-  .generateContent({ contents: "Explain quantum computing in simple terms" });
+  .generateContent({
+    model: "gemini-2.5-flash",
+    contents: "Explain quantum computing in simple terms",
+  });
 
 // Access tracking data
 console.log(result.text);
@@ -49,20 +52,38 @@ console.log(result.fluxGateCostTrackingResponse);
 
 ## 📖 API Reference
 
-### `createGeminiCostTracker(ai, modelName, fluxgate)`
+### `createGeminiCostTracker(ai, instance)`
 
 Creates a tracked Gemini client with context support.
 
 **Parameters:**
 
 - `ai`: `GoogleGenAI` instance from `@google/genai`
-- `modelName`: Model name string (e.g. `"gemini-2.5-flash"`)
-- `fluxgate`: `FluxGate` instance
+- `instance`: `FluxGate` instance
 
 **Returns:** Object with:
 
-- `withContext(metadata)`: Returns tracked client with context
+- `withContext(ctx: FluxGateContext)`: Returns tracked client with context
 - `client`: Default tracked client (no context)
+
+#### `FluxGateContext`
+
+Fields available when calling `withContext()`. The model is passed per-request, not here.
+
+| Field            | Type                                                         | Description                                                  |
+| ---------------- | ------------------------------------------------------------ | ------------------------------------------------------------ |
+| `user`           | `string \| TrackedUser`                                      | End-user ID or TrackedUser object                            |
+| `feature`        | `string`                                                     | Product feature name (e.g. `"chat"`, `"summarization"`)      |
+| `step`           | `string`                                                     | Step within a feature pipeline                               |
+| `sessionId`      | `string`                                                     | Session identifier                                           |
+| `conversationId` | `string`                                                     | Conversation identifier                                      |
+| `timestamp`      | `number`                                                     | Unix ms; defaults to server ingest time if omitted           |
+| `serviceTier`    | `"default" \| "standard" \| "batch" \| "flex" \| "priority"` | Pricing tier multiplier                                      |
+| `region`         | `string`                                                     | Hosting region for regional price variance                   |
+| `openrouterCost` | `number`                                                     | Explicit cost in USD from a proxy; skips server-side compute |
+| `cacheTtl`       | `string`                                                     | Provider cache expiration window (e.g. `"5m"`, `"1h"`)       |
+| `costOverride`   | `CostOverride`                                               | Override per-token pricing for cost calculation              |
+| `metadata`       | `Record<string, unknown>`                                    | Arbitrary key-value pairs forwarded to the event metadata    |
 
 ### Tracked Methods
 
@@ -84,12 +105,15 @@ import { createGeminiCostTracker } from "@fluxgate/gemini";
 
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 const fluxgate = new FluxGate({ apiKey: process.env.FLUXGATE_API_KEY });
-const gemini = createGeminiCostTracker(ai, "gemini-2.5-flash", fluxgate);
+const gemini = createGeminiCostTracker(ai, fluxgate);
 
 // Generate content
 const result = await gemini
   .withContext({ feature: "content-gen", user: "user-123" })
-  .generateContent({ contents: "Write a poem about coding" });
+  .generateContent({
+    model: "gemini-2.5-flash",
+    contents: "Write a poem about coding",
+  });
 
 console.log(result.text);
 console.log(result.fluxGateCostTrackingResponse);
@@ -101,6 +125,7 @@ console.log(result.fluxGateCostTrackingResponse);
 const stream = await gemini
   .withContext({ feature: "streaming-gen" })
   .generateContentStream({
+    model: "gemini-2.5-flash",
     contents: "Tell me a long story about space exploration",
   });
 
@@ -119,6 +144,7 @@ console.log("\n\nTracking:", stream.fluxGateCostTrackingResponse);
 const chat = gemini
   .withContext({ feature: "chatbot", user: "user-456" })
   .startChat({
+    model: "gemini-2.5-flash",
     history: [
       {
         role: "user",
@@ -148,7 +174,9 @@ console.log(result2.fluxGateCostTrackingResponse);
 ### Streaming Chat
 
 ```typescript
-const chat = gemini.withContext({ feature: "streaming-chat" }).startChat();
+const chat = gemini
+  .withContext({ feature: "streaming-chat" })
+  .startChat({ model: "gemini-2.5-flash" });
 
 const stream = await chat.sendMessageStream({
   message: "Explain neural networks",
@@ -168,7 +196,7 @@ Use `withTracking()` on a `TrackedChat` to change or extend context mid-conversa
 ```typescript
 const chat = gemini
   .withContext({ feature: "chatbot", user: "user-123" })
-  .startChat();
+  .startChat({ model: "gemini-2.5-flash" });
 
 // Upgrade context for a specific message (merged with existing context)
 const premiumChat = chat.withTracking({
@@ -193,7 +221,10 @@ New context keys override matching keys from the original context; unmatched key
 ```typescript
 const result = await gemini
   .withContext({ feature: "embeddings" })
-  .embedContent({ contents: "The quick brown fox jumps over the lazy dog" });
+  .embedContent({
+    model: "text-embedding-004",
+    contents: "The quick brown fox jumps over the lazy dog",
+  });
 
 console.log(result.embeddings?.[0]?.values);
 console.log(result.fluxGateCostTrackingResponse);
@@ -203,7 +234,10 @@ console.log(result.fluxGateCostTrackingResponse);
 
 ```typescript
 // Use client property for default tracking without metadata
-const result = await gemini.client.generateContent({ contents: "Hello!" });
+const result = await gemini.client.generateContent({
+  model: "gemini-2.5-flash",
+  contents: "Hello!",
+});
 console.log(result.fluxGateCostTrackingResponse);
 ```
 
@@ -221,9 +255,12 @@ const result = await gemini
     },
     sessionId: "sess-abc123",
     conversationId: "conv-xyz789",
-    customTier: "premium",
+    metadata: { tier: "premium" },
   })
-  .generateContent("Create a marketing strategy");
+  .generateContent({
+    model: "gemini-2.5-flash",
+    contents: "Create a marketing strategy",
+  });
 
 console.log(result.fluxGateCostTrackingResponse);
 ```
@@ -231,17 +268,23 @@ console.log(result.fluxGateCostTrackingResponse);
 ### Multiple Contexts
 
 ```typescript
-const gemini = createGeminiCostTracker(model, fluxgate);
+const gemini = createGeminiCostTracker(ai, fluxgate);
 
 // Create different contexts for different features
-const contentModel = gemini.withContext({ feature: "content" });
-const chatModel = gemini.withContext({ feature: "chat" });
-const codeModel = gemini.withContext({ feature: "code-help" });
+const contentClient = gemini.withContext({ feature: "content" });
+const chatClient = gemini.withContext({ feature: "chat" });
+const codeClient = gemini.withContext({ feature: "code-help" });
 
 // Each maintains its own context
-await contentModel.generateContent("Write an article");
-await chatModel.startChat();
-await codeModel.generateContent("Explain this code");
+await contentClient.generateContent({
+  model: "gemini-2.5-flash",
+  contents: "Write an article",
+});
+await chatClient.startChat({ model: "gemini-2.5-flash" });
+await codeClient.generateContent({
+  model: "gemini-2.5-flash",
+  contents: "Explain this code",
+});
 ```
 
 ## 🔧 Advanced Usage
@@ -251,26 +294,25 @@ await codeModel.generateContent("Explain this code");
 ```typescript
 import fs from "fs";
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-const model = genAI.getGenerativeModel({ model: "gemini-pro-vision" });
-const gemini = createGeminiCostTracker(model, fluxgate);
-
 const imageData = fs.readFileSync("./image.jpg");
 const base64Image = imageData.toString("base64");
 
 const result = await gemini
   .withContext({ feature: "image-analysis" })
-  .generateContent([
-    { text: "Describe this image in detail" },
-    {
-      inlineData: {
-        mimeType: "image/jpeg",
-        data: base64Image,
+  .generateContent({
+    model: "gemini-2.5-flash",
+    contents: [
+      {
+        role: "user",
+        parts: [
+          { text: "Describe this image in detail" },
+          { inlineData: { mimeType: "image/jpeg", data: base64Image } },
+        ],
       },
-    },
-  ]);
+    ],
+  });
 
-console.log(result.response.text());
+console.log(result.text);
 console.log(result.fluxGateCostTrackingResponse);
 ```
 
@@ -292,24 +334,20 @@ try {
 ### Safety Settings
 
 ```typescript
-import { HarmCategory, HarmBlockThreshold } from "@google/generative-ai";
-
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-const model = genAI.getGenerativeModel({
-  model: "gemini-pro",
-  safetySettings: [
-    {
-      category: HarmCategory.HARM_CATEGORY_HARASSMENT,
-      threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
-    },
-  ],
-});
-
-const gemini = createGeminiCostTracker(model, tracker);
-
 const result = await gemini
   .withContext({ feature: "safe-content" })
-  .generateContent("Your prompt");
+  .generateContent({
+    model: "gemini-2.5-flash",
+    contents: "Your prompt",
+    config: {
+      safetySettings: [
+        {
+          category: "HARM_CATEGORY_HARASSMENT",
+          threshold: "BLOCK_MEDIUM_AND_ABOVE",
+        },
+      ],
+    },
+  });
 
 // If blocked by safety settings, status will be "BLOCKED"
 console.log(result.fluxGateCostTrackingResponse);
@@ -318,22 +356,18 @@ console.log(result.fluxGateCostTrackingResponse);
 ### Generation Config
 
 ```typescript
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-const model = genAI.getGenerativeModel({
-  model: "gemini-pro",
-  generationConfig: {
-    temperature: 0.9,
-    topK: 40,
-    topP: 0.95,
-    maxOutputTokens: 1024,
-  },
-});
-
-const gemini = createGeminiCostTracker(model, tracker);
-
 const result = await gemini
   .withContext({ feature: "creative-writing" })
-  .generateContent("Write a creative story");
+  .generateContent({
+    model: "gemini-2.5-flash",
+    contents: "Write a creative story",
+    config: {
+      temperature: 0.9,
+      topK: 40,
+      topP: 0.95,
+      maxOutputTokens: 1024,
+    },
+  });
 ```
 
 ## 📊 Tracking Data Structure
@@ -369,6 +403,7 @@ Tracked metrics include:
 - ✅ Latency (milliseconds)
 - ✅ Stream duration (for streaming)
 - ✅ Finish reason (stop, max_tokens, safety, recitation)
+- ✅ Reasoning tokens (Gemini 2.5 thinking models)
 
 ## 🎯 Type Safety
 
@@ -376,19 +411,21 @@ Full TypeScript support with enhanced types:
 
 ```typescript
 import type {
-  TrackedGenerativeModel,
-  TrackedChatSession,
+  TrackedGeminiClient,
+  TrackedChat,
+  FluxGateContext,
   WithTracking,
   AiEventMetadata,
   TrackedUser,
+  CostOverride,
   FluxGateCostTrackingResponse,
 } from "@fluxgate/gemini";
 
-// TrackedGenerativeModel includes all Gemini methods with tracking
-const model: TrackedGenerativeModel = gemini.model;
+// TrackedGeminiClient includes all Gemini methods with tracking
+const client: TrackedGeminiClient = gemini.client;
 
 // WithTracking adds fluxGateCostTrackingResponse to any type
-type Response = WithTracking<GenerateContentResult>;
+type Response = WithTracking<GenerateContentResponse>;
 ```
 
 ## 🔗 Related Packages
@@ -403,18 +440,17 @@ See the [examples directory](./examples) for complete working examples:
 - Basic text generation
 - Streaming responses
 - Chat sessions
-- Multimodal (vision) usage
-- Error handling
+- Embeddings
 
 ## 🚀 Supported Models
 
 All Google Gemini models are supported:
 
-- `gemini-pro` - Text generation
-- `gemini-pro-vision` - Multimodal (text + images)
-- `gemini-ultra` - Most capable model
+- `gemini-2.5-pro` - Most capable model
+- `gemini-2.5-flash` - Fast, efficient responses
 - `gemini-1.5-pro` - Long context window
-- `gemini-1.5-flash` - Fast responses
+- `gemini-1.5-flash` - Stable fast responses
+- `text-embedding-004` - Text embeddings
 
 ## 📝 License
 

@@ -48,6 +48,8 @@ export async function recordUsage(params: {
   usage: AiEventUsage;
   status: AiEventStatus;
   errorMessage?: string;
+  /** User extracted from the request params (e.g. params.metadata?.user_id). Used as fallback when context.user is not set. */
+  requestUser?: string;
 }): Promise<FluxGateCostTrackingResponse> {
   const {
     context,
@@ -58,6 +60,7 @@ export async function recordUsage(params: {
     usage,
     status,
     errorMessage,
+    requestUser,
   } = params;
 
   const resolvedServiceTier = context?.serviceTier as
@@ -84,7 +87,7 @@ export async function recordUsage(params: {
   const trackingData = await instance.recordEvent({
     provider: "anthropic",
     model,
-    user: context?.user,
+    user: context?.user ?? requestUser,
     feature: context?.feature,
     step: context?.step,
     sessionId: context?.sessionId,

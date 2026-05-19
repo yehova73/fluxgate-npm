@@ -37,6 +37,7 @@ export function createResponsesWrapper(
         errorMessage: (err as Error).message,
         provider,
         serviceTier: params.service_tier,
+        requestUser: params.user ?? undefined,
       });
       throw err;
     }
@@ -83,6 +84,7 @@ export function createResponsesWrapper(
             errorMessage,
             provider,
             serviceTier: response?.service_tier ?? params.service_tier,
+            requestUser: params.user ?? undefined,
           });
         },
       );
@@ -101,6 +103,7 @@ export function createResponsesWrapper(
       errorMessage,
       provider,
       serviceTier: response?.service_tier ?? params.service_tier,
+      requestUser: params.user ?? undefined,
     });
     return Object.assign(response, { fluxGateCostTrackingResponse });
   };

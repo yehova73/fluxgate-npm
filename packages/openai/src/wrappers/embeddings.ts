@@ -33,6 +33,7 @@ export function createEmbeddingsWrapper(
         status: "ERROR",
         errorMessage: (err as Error).message,
         provider,
+        requestUser: params.user ?? undefined,
       });
       throw err;
     }
@@ -46,6 +47,7 @@ export function createEmbeddingsWrapper(
       usage: extractEmbeddingUsage(res?.usage),
       status: "SUCCESS",
       provider,
+      requestUser: params.user ?? undefined,
     });
     return Object.assign(res, { fluxGateCostTrackingResponse });
   };

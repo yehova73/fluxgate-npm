@@ -50,24 +50,45 @@ console.log(message.fluxGateCostTrackingResponse);
 
 ## 📖 API Reference
 
-### `createAnthropicCostTracker(client, tracker)`
+### `createAnthropicCostTracker(client, instance)`
 
 Creates a tracked Anthropic client with context support.
 
 **Parameters:**
 
 - `client`: Anthropic client instance
-- `fluxgate`: FluxGate instance
+- `instance`: `FluxGate` instance
 
 **Returns:** Object with:
 
-- `withContext(metadata)`: Returns tracked client with context
+- `withContext(ctx: FluxGateContext)`: Returns tracked client with context
 - `client`: Default tracked client (no context)
+
+#### `FluxGateContext`
+
+Fields available when calling `withContext()`:
+
+| Field            | Type                                                         | Description                                                  |
+| ---------------- | ------------------------------------------------------------ | ------------------------------------------------------------ |
+| `user`           | `string \| TrackedUser`                                      | End-user ID or TrackedUser object                            |
+| `feature`        | `string`                                                     | Product feature name (e.g. `"chat"`, `"summarization"`)      |
+| `step`           | `string`                                                     | Step within a feature pipeline                               |
+| `sessionId`      | `string`                                                     | Session identifier                                           |
+| `conversationId` | `string`                                                     | Conversation identifier                                      |
+| `timestamp`      | `number`                                                     | Unix ms; defaults to server ingest time if omitted           |
+| `serviceTier`    | `"default" \| "standard" \| "batch" \| "flex" \| "priority"` | Pricing tier multiplier                                      |
+| `region`         | `string`                                                     | Hosting region for regional price variance                   |
+| `openrouterCost` | `number`                                                     | Explicit cost in USD from a proxy; skips server-side compute |
+| `cacheTtl`       | `string`                                                     | Provider cache expiration window (e.g. `"5m"`, `"1h"`)       |
+| `costOverride`   | `CostOverride`                                               | Override per-token pricing for cost calculation              |
+| `metadata`       | `Record<string, unknown>`                                    | Arbitrary key-value pairs forwarded to the event metadata    |
 
 ### Tracked Methods
 
-- ✅ `messages.create()` — non-streaming responses
-- ✅ `messages.create({ stream: true })` — streaming responses
+- ✅ `messages.create()` — Messages API, non-streaming
+- ✅ `messages.create({ stream: true })` — Messages API, streaming
+- ✅ `completions.create()` — Legacy text completions, non-streaming and streaming
+- ✅ `beta.messages.create()` — Beta Messages API, non-streaming and streaming
 
 ## 💡 Usage Examples
 
@@ -88,7 +109,10 @@ const message = await anthropic
     model: "claude-sonnet-4-6",
     max_tokens: 1024,
     messages: [
-      { role: "user", content: "Summarize the French Revolution in 3 sentences." },
+      {
+        role: "user",
+        content: "Summarize the French Revolution in 3 sentences.",
+      },
     ],
   });
 
@@ -202,6 +226,8 @@ Tracked metrics include:
 
 - ✅ Input tokens (prompt)
 - ✅ Output tokens (completion)
+- ✅ Cache write tokens (prompt caching)
+- ✅ Cache read tokens (prompt caching)
 - ✅ Model name
 - ✅ Latency (milliseconds)
 - ✅ Stream duration (for streaming)
@@ -214,9 +240,11 @@ Full TypeScript support with enhanced types:
 ```typescript
 import type {
   TrackedAnthropic,
+  FluxGateContext,
   WithTracking,
   AiEventMetadata,
   TrackedUser,
+  CostOverride,
   FluxGateCostTrackingResponse,
 } from "@fluxgate/anthropic";
 

@@ -1,6 +1,6 @@
 {
   "name": "@fluxgate/sdk",
-  "version": "0.0.2-dev.0",
+  "version": "0.0.3-dev.0",
   "description": "Core tracking SDK for FluxGate token usage, latency, and cost monitoring.",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",

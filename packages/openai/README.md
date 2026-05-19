@@ -64,8 +64,26 @@ Creates a tracked OpenAI client with context support.
 
 **Returns:** Object with:
 
-- `withContext(metadata)`: Returns tracked client with context
+- `withContext(context: FluxGateContext)`: Returns tracked client with context
 - `client`: Default tracked client (no context)
+
+#### `FluxGateContext`
+
+Fields available when calling `withContext()`:
+
+| Field            | Type                                                         | Description                                                                    |
+| ---------------- | ------------------------------------------------------------ | ------------------------------------------------------------------------------ |
+| `user`           | `string \| TrackedUser`                                      | End-user ID or TrackedUser object                                              |
+| `feature`        | `string`                                                     | Product feature name (e.g. `"chat"`, `"summarization"`)                        |
+| `step`           | `string`                                                     | Step within a feature pipeline                                                 |
+| `sessionId`      | `string`                                                     | Session identifier                                                             |
+| `conversationId` | `string`                                                     | Conversation identifier                                                        |
+| `timestamp`      | `number`                                                     | Unix ms; defaults to server ingest time if omitted                             |
+| `serviceTier`    | `"default" \| "standard" \| "batch" \| "flex" \| "priority"` | Pricing tier multiplier                                                        |
+| `region`         | `string`                                                     | Hosting region for regional price variance                                     |
+| `openrouterCost` | `number`                                                     | Explicit cost in USD from a proxy (e.g. OpenRouter); skips server-side compute |
+| `cacheTtl`       | `string`                                                     | Provider cache expiration window (e.g. `"5m"`, `"1h"`)                         |
+| `costOverride`   | `CostOverride`                                               | Override per-token pricing for cost calculation                                |
 
 ### Tracked Methods
 
@@ -183,6 +201,7 @@ const completion = await openai.client.chat.completions.create({
 const completion = await openai
   .withContext({
     feature: "premium-chat",
+    step: "initial-response",
     user: {
       id: "user-123",
       name: "John Doe",
@@ -191,10 +210,9 @@ const completion = await openai
     },
     sessionId: "sess-abc123",
     conversationId: "conv-xyz789",
-    customField: "any additional data",
   })
   .chat.completions.create({
-    model: "gpt-4",
+    model: "gpt-4o",
     messages: [{ role: "user", content: "Hello!" }],
   });
 ```
@@ -314,6 +332,7 @@ Tracked metrics include:
 - ✅ Latency (milliseconds)
 - ✅ Stream duration (for streaming)
 - ✅ Finish reason (stop, length, content_filter, etc.)
+- ✅ Reasoning tokens (o1, o3, DeepSeek R1)
 
 ## 🎯 Type Safety
 
@@ -322,9 +341,11 @@ Full TypeScript support with enhanced types:
 ```typescript
 import type {
   TrackedOpenAI,
+  FluxGateContext,
   WithTracking,
   AiEventMetadata,
   TrackedUser,
+  CostOverride,
   FluxGateCostTrackingResponse,
 } from "@fluxgate/openai";
 

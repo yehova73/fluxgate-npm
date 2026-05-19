@@ -33,7 +33,7 @@ This directory contains example code demonstrating various features of the @flux
 ### Basic Example
 
 ```bash
-npx tsx examples/basic.ts
+npx tsx packages/sdk/examples/basic.ts
 ```
 
 This example demonstrates:

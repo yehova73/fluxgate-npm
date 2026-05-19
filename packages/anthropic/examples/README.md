@@ -37,7 +37,7 @@ This directory contains example code demonstrating various features of the @flux
 Demonstrates a simple non-streaming message with FluxGate cost tracking context.
 
 ```bash
-npx tsx examples/basic-chat.ts
+npx tsx packages/anthropic/examples/basic-chat.ts
 ```
 
 ### Streaming (`streaming.ts`)
@@ -45,7 +45,7 @@ npx tsx examples/basic-chat.ts
 Shows how to use streaming responses with `stream: true` and access tracking data after the stream completes.
 
 ```bash
-npx tsx examples/streaming.ts
+npx tsx packages/anthropic/examples/streaming.ts
 ```
 
 ### Multiple Contexts (`multiple-contexts.ts`)
@@ -53,7 +53,7 @@ npx tsx examples/streaming.ts
 Illustrates how to use `withContext` to track costs across different features and users in the same application, as well as using the default `client` accessor without a context.
 
 ```bash
-npx tsx examples/multiple-contexts.ts
+npx tsx packages/anthropic/examples/multiple-contexts.ts
 ```
 
 ### Error Handling (`error-handling.ts`)
@@ -61,5 +61,5 @@ npx tsx examples/multiple-contexts.ts
 Demonstrates that failed requests are still tracked by FluxGate and shows best practices for handling errors in both regular and streaming calls.
 
 ```bash
-npx tsx examples/error-handling.ts
+npx tsx packages/anthropic/examples/error-handling.ts
 ```
