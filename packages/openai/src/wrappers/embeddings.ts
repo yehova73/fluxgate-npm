@@ -1,7 +1,8 @@
-import { FluxGate, AiEventMetadata, WithTracking } from "@fluxgate/sdk";
+import { FluxGate, WithTracking } from "@fluxgate/sdk";
 import type OpenAI from "openai";
 import { extractEmbeddingUsage } from "../utils/extractUsage.js";
 import { recordUsage } from "../utils/recordUsage.js";
+import { FluxGateContext } from "../types/types.js";
 
 type OrigCreate = OpenAI["embeddings"]["create"];
 type CreateEmbeddingResponse = OpenAI.CreateEmbeddingResponse;
@@ -9,7 +10,7 @@ type CreateEmbeddingResponse = OpenAI.CreateEmbeddingResponse;
 export function createEmbeddingsWrapper(
   original: OrigCreate,
   instance: FluxGate,
-  context: AiEventMetadata | undefined,
+  context: FluxGateContext | undefined,
   provider: string,
 ) {
   return async function wrappedEmbeddingsCreate(

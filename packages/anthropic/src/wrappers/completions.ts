@@ -1,4 +1,5 @@
-import { AiEventMetadata, AiEventStatus, FluxGate, WithTracking } from "@fluxgate/sdk";
+import { AiEventStatus, FluxGate, WithTracking } from "@fluxgate/sdk";
+import { FluxGateContext } from "../types/types.js";
 import type Anthropic from "@anthropic-ai/sdk";
 import type { Completion } from "@anthropic-ai/sdk/resources/completions";
 import { extractAnthropicUsage } from "../utils/extractUsage.js";
@@ -11,7 +12,7 @@ type OrigCreate = Anthropic["completions"]["create"];
 export function createCompletionsWrapper(
   original: OrigCreate,
   instance: FluxGate,
-  context: AiEventMetadata | undefined,
+  context: FluxGateContext | undefined,
 ) {
   return async function wrappedCompletionsCreate(
     params: Parameters<OrigCreate>[0],
@@ -74,7 +75,9 @@ export function createCompletionsWrapper(
     }
 
     const completion = res as Completion;
-    const { status, errorMessage } = extractResponseStatus(completion.stop_reason);
+    const { status, errorMessage } = extractResponseStatus(
+      completion.stop_reason,
+    );
     // The legacy completions API does not return token usage
     const fluxGateCostTrackingResponse = await recordUsage({
       instance,

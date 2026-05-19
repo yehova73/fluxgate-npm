@@ -28,7 +28,7 @@ async function main() {
       id: "user-123",
       name: "Alice",
       email: "alice@example.com",
-      monthlyRevenue: 29.99,
+      monthlyRevenue: "29.99",
     },
     sessionId: "session-abc",
   });
@@ -48,7 +48,7 @@ async function main() {
     feature: "code-generation",
     user: "user-456",
     step: "generate",
-    language: "typescript",
+    metadata: { language: "typescript" },
   });
 
   const codeResponse = await codeClient.chat.completions.create({
@@ -69,11 +69,11 @@ async function main() {
   console.log("3. DOCUMENT SUMMARIZATION FEATURE");
   const summaryClient = openai.withContext({
     feature: "summarization",
-    documentType: "article",
+    metadata: { documentType: "article" },
     user: {
       id: "user-789",
       name: "Bob",
-      monthlyRevenue: 99.99,
+      monthlyRevenue: "99.99",
     },
   });
 
@@ -96,7 +96,7 @@ async function main() {
   console.log("4. SEMANTIC SEARCH FEATURE");
   const searchClient = openai.withContext({
     feature: "semantic-search",
-    searchType: "documents",
+    metadata: { searchType: "documents" },
     user: "user-123", // Same user as chatbot, different feature
   });
 
@@ -116,11 +116,11 @@ async function main() {
   console.log("5. STREAMING CONTENT GENERATION");
   const contentClient = openai.withContext({
     feature: "content-generation",
-    contentType: "blog-post",
+    metadata: { contentType: "blog-post" },
     user: {
       id: "user-999",
       name: "Charlie",
-      monthlyRevenue: 199.99,
+      monthlyRevenue: "199.99",
     },
   });
 

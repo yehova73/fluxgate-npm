@@ -1,25 +1,16 @@
 import {
-  AiEventMetadata,
   AiEventStatus,
   FluxGateCostTrackingResponse,
-  ExtractedUsage,
+  AiEventUsage,
+  AiEventMetadata,
   FluxGate,
 } from "@fluxgate/sdk";
+import { FluxGateContext } from "../types/types.js";
 
-function normalizeMetadata(
-  context: AiEventMetadata | undefined,
-): AiEventMetadata {
-  const { user, ...rest } = context ?? {};
-
-  const normalized: AiEventMetadata = { ...rest };
-
-  if (typeof user === "string") {
-    normalized.user = user;
-  } else if (user != null) {
-    normalized.user = user;
-  }
-
-  return normalized;
+function toPerformanceStatus(status: AiEventStatus): "SUCCESS" | "ERROR" {
+  return status === "ERROR" || status === "MALFORMED_REQUEST"
+    ? "ERROR"
+    : "SUCCESS";
 }
 
 export async function recordUsage(params: {
@@ -27,10 +18,11 @@ export async function recordUsage(params: {
   model: string;
   latencyMs: number;
   streaming: boolean;
-  context: AiEventMetadata | undefined;
-  usage: ExtractedUsage;
+  context: FluxGateContext | undefined;
+  usage: AiEventUsage;
   status: AiEventStatus;
   errorMessage?: string;
+  /** service_tier from the provider request config; takes priority over context.serviceTier */
   serviceTier?: string | null;
 }): Promise<FluxGateCostTrackingResponse> {
   const {
@@ -45,32 +37,52 @@ export async function recordUsage(params: {
     serviceTier,
   } = params;
 
-  const metadata = normalizeMetadata(context);
-  if (serviceTier != null) metadata.service_tier = serviceTier;
+  const resolvedServiceTier = (serviceTier ?? context?.serviceTier) as
+    | AiEventMetadata["serviceTier"]
+    | undefined;
+
+  const hasMetadata =
+    resolvedServiceTier != null ||
+    context?.region != null ||
+    context?.openrouterCost != null ||
+    context?.cacheTtl != null ||
+    (context?.metadata != null && Object.keys(context.metadata).length > 0);
+
+  const metadata: AiEventMetadata | undefined = hasMetadata
+    ? {
+        serviceTier: resolvedServiceTier,
+        region: context?.region,
+        openrouterCost: context?.openrouterCost,
+        cacheTtl: context?.cacheTtl,
+        ...context?.metadata,
+      }
+    : undefined;
 
   const trackingData = await instance.recordEvent({
-    metadata,
-    status: {
-      status,
-      errorMessage,
-    },
-    usage: {
-      inputTokens: usage.inputTokens,
-      outputTokens: usage.outputTokens,
-      cachedTokens: usage.cachedTokens,
-      model,
-      provider: "google",
-      latencyInMs: latencyMs,
+    provider: "google",
+    model,
+    user: context?.user,
+    feature: context?.feature,
+    step: context?.step,
+    sessionId: context?.sessionId,
+    conversationId: context?.conversationId,
+    timestamp: context?.timestamp,
+    performance: {
+      latency: latencyMs,
+      status: toPerformanceStatus(status),
       isStreamed: streaming,
-      streamingDurationInMs: streaming ? latencyMs : undefined,
+      errorMessage: errorMessage ?? null,
     },
+    usage,
+    ...(metadata && { metadata }),
+    ...(context?.costOverride && { costOverride: context.costOverride }),
   });
 
   return {
     status,
-    cost: trackingData?.cost ?? null,
-    trackingId: trackingData?.id ?? null,
-    createdAt: trackingData?.createdAt ?? null,
+    cost: trackingData?.totalCost ?? null,
+    trackingId: trackingData?.recordId ?? null,
+    createdAt: null,
     errorMessage,
   };
 }

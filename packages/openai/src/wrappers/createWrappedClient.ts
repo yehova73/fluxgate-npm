@@ -1,7 +1,6 @@
 import { FluxGate } from "@fluxgate/sdk";
 import type OpenAI from "openai";
-import { AiEventMetadata } from "@fluxgate/sdk";
-import { TrackedOpenAI } from "../types/types.js";
+import { TrackedOpenAI, FluxGateContext } from "../types/types.js";
 import { createCompletionsWrapper } from "./completions.js";
 import { createChatWrapper } from "./chatCompletions.js";
 import { createResponsesWrapper } from "./responses.js";
@@ -11,7 +10,7 @@ import { detectProvider } from "../utils/recordUsage.js";
 export function withOpenAITracking(
   client: OpenAI,
   instance: FluxGate,
-  context?: AiEventMetadata,
+  context?: FluxGateContext,
 ): TrackedOpenAI {
   const provider = detectProvider(client.baseURL);
 

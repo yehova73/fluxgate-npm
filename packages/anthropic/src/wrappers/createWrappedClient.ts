@@ -1,9 +1,5 @@
-import {
-  AiEventMetadata,
-  AiEventStatus,
-  FluxGate,
-  WithTracking,
-} from "@fluxgate/sdk";
+import { AiEventStatus, FluxGate, WithTracking } from "@fluxgate/sdk";
+import { FluxGateContext } from "../types/types.js";
 import type Anthropic from "@anthropic-ai/sdk";
 import type {
   Message,
@@ -22,7 +18,7 @@ type OrigCreate = Anthropic["messages"]["create"];
 export function withAnthropicTracking(
   client: Anthropic,
   instance: FluxGate,
-  context?: AiEventMetadata,
+  context?: FluxGateContext,
 ): TrackedAnthropic {
   const wrappedClient = Object.create(
     Object.getPrototypeOf(client),
@@ -73,7 +69,7 @@ export function withAnthropicTracking(
 export function createMessagesWrapper(
   original: OrigCreate,
   instance: FluxGate,
-  context: AiEventMetadata | undefined,
+  context: FluxGateContext | undefined,
 ) {
   return async function wrappedMessagesCreate(
     params: Parameters<OrigCreate>[0],

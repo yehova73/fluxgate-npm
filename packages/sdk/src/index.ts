@@ -40,10 +40,6 @@ export class FluxGate {
       );
     }
 
-    if (!event.status) {
-      event.status = "SUCCESS";
-    }
-
     const fetchPromise = fetch(this.endpoint, {
       method: "POST",
       headers: {
@@ -69,13 +65,7 @@ export class FluxGate {
       if (this.debug) {
         console.error("[fluxgate] Network error sending event:", err);
       }
-      return {
-        cost: 0,
-        createdAt: new Date().toISOString(),
-        id: "error-" + Math.random().toString(36).substring(2, 15),
-        status: "ERROR",
-      };
-      // throw err;
+      return null;
     }
 
     let trackingData: CreateAiEventResponse | null = null;
@@ -103,10 +93,12 @@ export type {
   CreateAiEventResponse,
   TrackedUser,
   AiEventMetadata,
-  FluxGateCostTrackingResponse,
-  WithTracking,
   AiEventStatus,
   AiEventUsage,
+  Performance,
+  CostOverride,
   ExtractedUsage,
+  FluxGateCostTrackingResponse,
+  WithTracking,
   FluxGateConfig,
 } from "./types/types.js";

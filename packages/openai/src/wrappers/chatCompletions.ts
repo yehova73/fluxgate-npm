@@ -1,9 +1,10 @@
-import { FluxGate, AiEventMetadata, WithTracking } from "@fluxgate/sdk";
+import { FluxGate, WithTracking } from "@fluxgate/sdk";
 import type OpenAI from "openai";
 import { extractChatUsage } from "../utils/extractUsage.js";
 import { isAsyncIterable } from "../utils/utils.js";
 import { TrackedStream } from "./TrackedStream.js";
 import { finishReasonToStatus, recordUsage } from "../utils/recordUsage.js";
+import { FluxGateContext } from "../types/types.js";
 
 type OrigCreate = OpenAI["chat"]["completions"]["create"];
 type ChatCompletion = OpenAI.Chat.Completions.ChatCompletion;
@@ -12,7 +13,7 @@ type ChatChunk = OpenAI.Chat.Completions.ChatCompletionChunk;
 export function createChatWrapper(
   original: OrigCreate,
   instance: FluxGate,
-  context: AiEventMetadata | undefined,
+  context: FluxGateContext | undefined,
   provider: string,
 ) {
   return async function wrappedChatCreate(

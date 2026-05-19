@@ -1,10 +1,10 @@
-import { AiEventMetadata, FluxGate } from "@fluxgate/sdk";
+import { FluxGate } from "@fluxgate/sdk";
 import type { GoogleGenAI } from "@google/genai";
 import { withGeminiTracking } from "./wrappers/createWrappedClient.js";
-import { TrackedGeminiClient } from "./types/types.js";
+import { TrackedGeminiClient, FluxGateContext } from "./types/types.js";
 
 export type GeminiTracker = {
-  withContext: (ctx: AiEventMetadata) => TrackedGeminiClient;
+  withContext: (ctx: FluxGateContext) => TrackedGeminiClient;
   get client(): TrackedGeminiClient;
 };
 
@@ -13,7 +13,7 @@ export function createGeminiCostTracker(
   instance: FluxGate,
 ): GeminiTracker {
   return {
-    withContext(ctx: AiEventMetadata) {
+    withContext(ctx: FluxGateContext) {
       return withGeminiTracking(ai, instance, ctx);
     },
 
@@ -25,11 +25,13 @@ export function createGeminiCostTracker(
 }
 
 export type {
-  AiEventMetadata,
   TrackedUser,
   FluxGateCostTrackingResponse,
   WithTracking,
   AiEventStatus,
+  AiEventMetadata,
+  CostOverride,
+  Performance,
 } from "@fluxgate/sdk";
 export * from "./types/types.js";
 export { TrackedStream } from "./wrappers/TrackedStream.js";

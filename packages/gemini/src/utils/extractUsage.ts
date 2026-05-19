@@ -1,47 +1,37 @@
 import type { GenerateContentResponse } from "@google/genai";
-import { ExtractedUsage } from "@fluxgate/sdk";
+import { AiEventUsage } from "@fluxgate/sdk";
 
 export function extractGeminiUsage(
   result: GenerateContentResponse | undefined,
-): ExtractedUsage {
+): AiEventUsage {
   if (!result?.usageMetadata) {
-    return {
-      inputTokens: 0,
-      outputTokens: 0,
-      cachedTokens: 0,
-      totalTokens: 0,
-    };
+    return { promptTokens: 0, completionTokens: 0 };
   }
 
   const usage = result.usageMetadata;
 
   return {
-    inputTokens: usage.promptTokenCount ?? 0,
-    outputTokens: usage.candidatesTokenCount ?? 0,
-    cachedTokens: usage.cachedContentTokenCount ?? 0,
-    totalTokens: usage.totalTokenCount ?? 0,
+    promptTokens: usage.promptTokenCount ?? 0,
+    completionTokens: usage.candidatesTokenCount ?? 0,
+    cacheReadTokens: usage.cachedContentTokenCount || undefined,
+    reasoningTokens: usage.thoughtsTokenCount || undefined,
   };
 }
 
 // For streaming, each chunk is also a GenerateContentResponse
 export function extractGeminiUsageFromChunk(
   chunk: GenerateContentResponse | undefined,
-): ExtractedUsage {
+): AiEventUsage {
   if (!chunk?.usageMetadata) {
-    return {
-      inputTokens: 0,
-      outputTokens: 0,
-      cachedTokens: 0,
-      totalTokens: 0,
-    };
+    return { promptTokens: 0, completionTokens: 0 };
   }
 
   const usage = chunk.usageMetadata;
 
   return {
-    inputTokens: usage.promptTokenCount ?? 0,
-    outputTokens: usage.candidatesTokenCount ?? 0,
-    cachedTokens: usage.cachedContentTokenCount ?? 0,
-    totalTokens: usage.totalTokenCount ?? 0,
+    promptTokens: usage.promptTokenCount ?? 0,
+    completionTokens: usage.candidatesTokenCount ?? 0,
+    cacheReadTokens: usage.cachedContentTokenCount || undefined,
+    reasoningTokens: usage.thoughtsTokenCount || undefined,
   };
 }

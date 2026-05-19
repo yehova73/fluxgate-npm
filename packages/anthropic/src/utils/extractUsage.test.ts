@@ -14,10 +14,10 @@ describe("extractAnthropicUsage", () => {
       const result = extractAnthropicUsage(usage);
 
       expect(result).toEqual({
-        inputTokens: 100,
-        outputTokens: 50,
-        cachedTokens: 30,
-        totalTokens: 150,
+        promptTokens: 100,
+        completionTokens: 50,
+        cacheWriteTokens: 20,
+        cacheReadTokens: 10,
       });
     });
 
@@ -30,10 +30,8 @@ describe("extractAnthropicUsage", () => {
       const result = extractAnthropicUsage(usage);
 
       expect(result).toEqual({
-        inputTokens: 100,
-        outputTokens: 50,
-        cachedTokens: 0,
-        totalTokens: 150,
+        promptTokens: 100,
+        completionTokens: 50,
       });
     });
 
@@ -48,10 +46,8 @@ describe("extractAnthropicUsage", () => {
       const result = extractAnthropicUsage(usage);
 
       expect(result).toEqual({
-        inputTokens: 120,
-        outputTokens: 30,
-        cachedTokens: 0,
-        totalTokens: 150,
+        promptTokens: 120,
+        completionTokens: 30,
       });
     });
   });
@@ -61,10 +57,8 @@ describe("extractAnthropicUsage", () => {
       const result = extractAnthropicUsage(null);
 
       expect(result).toEqual({
-        inputTokens: 0,
-        outputTokens: 0,
-        cachedTokens: 0,
-        totalTokens: 0,
+        promptTokens: 0,
+        completionTokens: 0,
       });
     });
 
@@ -72,10 +66,8 @@ describe("extractAnthropicUsage", () => {
       const result = extractAnthropicUsage(undefined);
 
       expect(result).toEqual({
-        inputTokens: 0,
-        outputTokens: 0,
-        cachedTokens: 0,
-        totalTokens: 0,
+        promptTokens: 0,
+        completionTokens: 0,
       });
     });
 
@@ -88,10 +80,8 @@ describe("extractAnthropicUsage", () => {
       const result = extractAnthropicUsage(usage);
 
       expect(result).toEqual({
-        inputTokens: 80,
-        outputTokens: 0,
-        cachedTokens: 0,
-        totalTokens: 80,
+        promptTokens: 80,
+        completionTokens: 0,
       });
     });
   });
@@ -108,10 +98,8 @@ describe("extractAnthropicUsage", () => {
       const result = extractAnthropicUsage(usage);
 
       expect(result).toEqual({
-        inputTokens: 0,
-        outputTokens: 0,
-        cachedTokens: 0,
-        totalTokens: 0,
+        promptTokens: 0,
+        completionTokens: 0,
       });
     });
 
@@ -126,10 +114,10 @@ describe("extractAnthropicUsage", () => {
       const result = extractAnthropicUsage(usage);
 
       expect(result).toEqual({
-        inputTokens: 1000000,
-        outputTokens: 500000,
-        cachedTokens: 300000,
-        totalTokens: 1500000,
+        promptTokens: 1000000,
+        completionTokens: 500000,
+        cacheWriteTokens: 200000,
+        cacheReadTokens: 100000,
       });
     });
   });

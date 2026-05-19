@@ -59,30 +59,25 @@ describe("FluxGate", () => {
   describe("recordEvent", () => {
     it("should send event to the correct endpoint", async () => {
       const mockResponse = {
-        id: "event-123",
-        createdAt: "2026-05-05T00:00:00Z",
-        cost: 0.001,
+        recordId: "event-123",
+        totalTokens: 150,
+        totalCost: 0.001,
+        status: "ok" as const,
       };
 
       vi.mocked(fetch).mockResolvedValue({
-        status: 200,
-        statusText: "OK",
+        status: 201,
+        statusText: "Created",
         text: async () => JSON.stringify(mockResponse),
       } as Response);
 
       const event: LLMEvent = {
-        usage: {
-          inputTokens: 100,
-          outputTokens: 50,
-          model: "gpt-4",
-          provider: "openai",
-          latencyInMs: 1000,
-        },
-        status: "SUCCESS",
-        metadata: {
-          feature: "chat",
-          user: "user-123",
-        },
+        provider: "openai",
+        model: "gpt-4",
+        feature: "chat",
+        user: "user-123",
+        performance: { latency: 1000, status: "SUCCESS", isStreamed: false },
+        usage: { promptTokens: 100, completionTokens: 50 },
       };
 
       const result = await instance.recordEvent(event);
@@ -103,30 +98,31 @@ describe("FluxGate", () => {
       expect(result).toEqual(mockResponse);
     });
 
-    it("should default status to SUCCESS if not provided", async () => {
+    it("should send event body unchanged to the API", async () => {
       vi.mocked(fetch).mockResolvedValue({
         status: 200,
         statusText: "OK",
         text: async () =>
           JSON.stringify({
-            id: "123",
-            createdAt: "2026-05-05T00:00:00Z",
-            cost: 0.001,
+            recordId: "123",
+            totalTokens: 150,
+            totalCost: 0.001,
+            status: "ok",
           }),
       } as Response);
 
       const event: LLMEvent = {
-        usage: {
-          inputTokens: 100,
-          outputTokens: 50,
-        },
+        provider: "openai",
+        model: "gpt-4o",
+        performance: { latency: 500, status: "SUCCESS", isStreamed: false },
+        usage: { promptTokens: 100, completionTokens: 50 },
       };
 
       await instance.recordEvent(event);
 
       const callArgs = vi.mocked(fetch).mock.calls[0];
       const body = JSON.parse(callArgs[1]?.body as string);
-      expect(body.status).toBe("SUCCESS");
+      expect(body).toEqual(event);
     });
 
     it("should handle fetch errors gracefully", async () => {
@@ -143,10 +139,10 @@ describe("FluxGate", () => {
       } as Response);
 
       const event: LLMEvent = {
-        usage: {
-          inputTokens: 100,
-          outputTokens: 50,
-        },
+        provider: "openai",
+        model: "gpt-4o",
+        performance: { latency: 500, status: "SUCCESS", isStreamed: false },
+        usage: { promptTokens: 100, completionTokens: 50 },
       };
 
       const result = await instance.recordEvent(event);
@@ -161,10 +157,10 @@ describe("FluxGate", () => {
       } as Response);
 
       const event: LLMEvent = {
-        usage: {
-          inputTokens: 100,
-          outputTokens: 50,
-        },
+        provider: "openai",
+        model: "gpt-4o",
+        performance: { latency: 500, status: "SUCCESS", isStreamed: false },
+        usage: { promptTokens: 100, completionTokens: 50 },
       };
 
       const result = await instance.recordEvent(event);
@@ -194,15 +190,13 @@ describe("FluxGate", () => {
       );
 
       const event: LLMEvent = {
-        usage: {
-          inputTokens: 100,
-          outputTokens: 50,
-        },
+        provider: "openai",
+        model: "gpt-4o",
+        performance: { latency: 500, status: "SUCCESS", isStreamed: false },
+        usage: { promptTokens: 100, completionTokens: 50 },
       };
 
-      await expect(
-        shortTimeoutTracker.recordEvent(event),
-      ).resolves.toHaveProperty("status", "ERROR");
+      await expect(shortTimeoutTracker.recordEvent(event)).resolves.toBeNull();
     });
 
     it("should include complex metadata in the event", async () => {
@@ -218,30 +212,26 @@ describe("FluxGate", () => {
       } as Response);
 
       const event: LLMEvent = {
-        usage: {
-          inputTokens: 100,
-          outputTokens: 50,
-          cachedTokens: 20,
-          model: "gpt-4",
-          provider: "openai",
-          latencyInMs: 1500,
+        provider: "openai",
+        model: "gpt-4",
+        feature: "chat",
+        step: "generation",
+        user: {
+          id: "user-123",
+          name: "Test User",
+          email: "test@example.com",
+          monthlyRevenue: "99.99",
+        },
+        sessionId: "session-456",
+        conversationId: "conv-789",
+        performance: {
+          latency: 1500,
+          status: "SUCCESS",
           isStreamed: true,
-          streamingDurationInMs: 2000,
+          streamDuration: 2000,
         },
-        status: "SUCCESS",
-        metadata: {
-          feature: "chat",
-          step: "generation",
-          user: {
-            id: "user-123",
-            name: "Test User",
-            email: "test@example.com",
-            monthlyRevenue: 99.99,
-          },
-          sessionId: "session-456",
-          conversationId: "conv-789",
-          customField: "custom value",
-        },
+        usage: { promptTokens: 100, completionTokens: 50, cacheReadTokens: 20 },
+        metadata: { customField: "custom value" },
       };
 
       await instance.recordEvent(event);
@@ -266,21 +256,23 @@ describe("FluxGate", () => {
       } as Response);
 
       const event: LLMEvent = {
-        usage: {
-          inputTokens: 100,
-          outputTokens: 0,
-        },
-        status: {
+        provider: "openai",
+        model: "gpt-4o",
+        performance: {
+          latency: 500,
           status: "ERROR",
+          isStreamed: false,
           errorMessage: "API call failed",
         },
+        usage: { promptTokens: 100, completionTokens: 0 },
       };
 
       await instance.recordEvent(event);
 
       const callArgs = vi.mocked(fetch).mock.calls[0];
       const body = JSON.parse(callArgs[1]?.body as string);
-      expect(body.status).toEqual(event.status);
+      expect(body.performance.status).toEqual("ERROR");
+      expect(body.performance.errorMessage).toEqual("API call failed");
     });
   });
 
@@ -311,10 +303,10 @@ describe("FluxGate", () => {
       } as Response);
 
       const event: LLMEvent = {
-        usage: {
-          inputTokens: 100,
-          outputTokens: 50,
-        },
+        provider: "openai",
+        model: "gpt-4o",
+        performance: { latency: 500, status: "SUCCESS", isStreamed: false },
+        usage: { promptTokens: 100, completionTokens: 50 },
       };
 
       await debugTracker.recordEvent(event);

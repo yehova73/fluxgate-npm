@@ -19,7 +19,12 @@ import type {
   MessageCreateParamsNonStreaming as BetaMessageCreateParamsNonStreaming,
   MessageCreateParamsStreaming as BetaMessageCreateParamsStreaming,
 } from "@anthropic-ai/sdk/resources/beta/messages/messages";
-import type { WithTracking } from "@fluxgate/sdk";
+import type {
+  WithTracking,
+  TrackedUser,
+  AiEventMetadata,
+  CostOverride,
+} from "@fluxgate/sdk";
 import type { TrackedStream } from "../wrappers/TrackedStream.js";
 
 type MessageCreateOptions = Parameters<Anthropic["messages"]["create"]>[1];
@@ -80,4 +85,20 @@ export type TrackedAnthropic = Omit<
       >;
     };
   };
+};
+
+export type FluxGateContext = {
+  user?: string | TrackedUser;
+  feature?: string;
+  step?: string;
+  sessionId?: string;
+  conversationId?: string;
+  timestamp?: number;
+  serviceTier?: AiEventMetadata["serviceTier"];
+  region?: string;
+  openrouterCost?: number;
+  cacheTtl?: string;
+  costOverride?: CostOverride;
+  /** Arbitrary key-value pairs forwarded to the metadata object (e.g. { language: "typescript", documentType: "article" }) */
+  metadata?: Record<string, unknown>;
 };

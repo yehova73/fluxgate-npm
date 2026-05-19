@@ -1,14 +1,10 @@
-import {
-  AiEventMetadata,
-  AiEventStatus,
-  FluxGate,
-  WithTracking,
-} from "@fluxgate/sdk";
+import { AiEventStatus, FluxGate, WithTracking } from "@fluxgate/sdk";
 import type OpenAI from "openai";
 import { extractResponseUsage } from "../utils/extractUsage.js";
 import { isAsyncIterable } from "../utils/utils.js";
 import { TrackedStream } from "./TrackedStream.js";
 import { extractResponseStatus, recordUsage } from "../utils/recordUsage.js";
+import { FluxGateContext } from "../types/types.js";
 
 type OrigCreate = OpenAI["responses"]["create"];
 type Response = OpenAI.Responses.Response;
@@ -17,7 +13,7 @@ type ResponseStreamEvent = OpenAI.Responses.ResponseStreamEvent;
 export function createResponsesWrapper(
   original: OrigCreate,
   instance: FluxGate,
-  context: AiEventMetadata | undefined,
+  context: FluxGateContext | undefined,
   provider: string,
 ) {
   return async function wrappedResponsesCreate(

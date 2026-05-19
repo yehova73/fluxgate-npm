@@ -20,10 +20,9 @@ describe("extractUsage utilities", () => {
       const result = extractChatUsage(usage);
 
       expect(result).toEqual({
-        inputTokens: 100,
-        outputTokens: 50,
-        cachedTokens: 20,
-        totalTokens: 150,
+        promptTokens: 100,
+        completionTokens: 50,
+        cacheReadTokens: 20,
       });
     });
 
@@ -37,10 +36,8 @@ describe("extractUsage utilities", () => {
       const result = extractChatUsage(usage);
 
       expect(result).toEqual({
-        inputTokens: 100,
-        outputTokens: 50,
-        cachedTokens: 0,
-        totalTokens: 150,
+        promptTokens: 100,
+        completionTokens: 50,
       });
     });
 
@@ -48,10 +45,8 @@ describe("extractUsage utilities", () => {
       const result = extractChatUsage(null);
 
       expect(result).toEqual({
-        inputTokens: 0,
-        outputTokens: 0,
-        cachedTokens: 0,
-        totalTokens: 0,
+        promptTokens: 0,
+        completionTokens: 0,
       });
     });
 
@@ -59,10 +54,8 @@ describe("extractUsage utilities", () => {
       const result = extractChatUsage(undefined);
 
       expect(result).toEqual({
-        inputTokens: 0,
-        outputTokens: 0,
-        cachedTokens: 0,
-        totalTokens: 0,
+        promptTokens: 0,
+        completionTokens: 0,
       });
     });
 
@@ -76,10 +69,8 @@ describe("extractUsage utilities", () => {
       const result = extractChatUsage(usage);
 
       expect(result).toEqual({
-        inputTokens: 100,
-        outputTokens: 0,
-        cachedTokens: 0,
-        totalTokens: 100,
+        promptTokens: 100,
+        completionTokens: 0,
       });
     });
   });
@@ -101,10 +92,10 @@ describe("extractUsage utilities", () => {
       const result = extractResponseUsage(usage);
 
       expect(result).toEqual({
-        inputTokens: 100,
-        outputTokens: 50,
-        cachedTokens: 20,
-        totalTokens: 150,
+        promptTokens: 100,
+        completionTokens: 50,
+        cacheReadTokens: 20,
+        reasoningTokens: 20,
       });
     });
 
@@ -124,10 +115,10 @@ describe("extractUsage utilities", () => {
       const result = extractResponseUsage(usage);
 
       expect(result).toEqual({
-        inputTokens: 100,
-        outputTokens: 50,
-        cachedTokens: 20,
-        totalTokens: 150,
+        promptTokens: 100,
+        completionTokens: 50,
+        cacheReadTokens: 20,
+        reasoningTokens: 20,
       });
     });
 
@@ -135,10 +126,8 @@ describe("extractUsage utilities", () => {
       const result = extractResponseUsage(null);
 
       expect(result).toEqual({
-        inputTokens: 0,
-        outputTokens: 0,
-        cachedTokens: 0,
-        totalTokens: 0,
+        promptTokens: 0,
+        completionTokens: 0,
       });
     });
 
@@ -146,10 +135,8 @@ describe("extractUsage utilities", () => {
       const result = extractResponseUsage(undefined);
 
       expect(result).toEqual({
-        inputTokens: 0,
-        outputTokens: 0,
-        cachedTokens: 0,
-        totalTokens: 0,
+        promptTokens: 0,
+        completionTokens: 0,
       });
     });
 
@@ -163,10 +150,8 @@ describe("extractUsage utilities", () => {
       const result = extractResponseUsage(usage);
 
       expect(result).toEqual({
-        inputTokens: 100,
-        outputTokens: 0,
-        cachedTokens: 0,
-        totalTokens: 100,
+        promptTokens: 100,
+        completionTokens: 0,
       });
     });
   });
@@ -181,10 +166,8 @@ describe("extractUsage utilities", () => {
       const result = extractEmbeddingUsage(usage);
 
       expect(result).toEqual({
-        inputTokens: 100,
-        outputTokens: 0,
-        cachedTokens: 0,
-        totalTokens: 100,
+        promptTokens: 100,
+        completionTokens: 0,
       });
     });
 
@@ -192,10 +175,8 @@ describe("extractUsage utilities", () => {
       const result = extractEmbeddingUsage(null);
 
       expect(result).toEqual({
-        inputTokens: 0,
-        outputTokens: 0,
-        cachedTokens: 0,
-        totalTokens: 0,
+        promptTokens: 0,
+        completionTokens: 0,
       });
     });
 
@@ -203,10 +184,8 @@ describe("extractUsage utilities", () => {
       const result = extractEmbeddingUsage(undefined);
 
       expect(result).toEqual({
-        inputTokens: 0,
-        outputTokens: 0,
-        cachedTokens: 0,
-        totalTokens: 0,
+        promptTokens: 0,
+        completionTokens: 0,
       });
     });
 
@@ -218,8 +197,7 @@ describe("extractUsage utilities", () => {
 
       const result = extractEmbeddingUsage(usage);
 
-      expect(result.outputTokens).toBe(0);
-      expect(result.cachedTokens).toBe(0);
+      expect(result.completionTokens).toBe(0);
     });
 
     it("should handle partial usage data", () => {
@@ -231,10 +209,8 @@ describe("extractUsage utilities", () => {
       const result = extractEmbeddingUsage(usage);
 
       expect(result).toEqual({
-        inputTokens: 0,
-        outputTokens: 0,
-        cachedTokens: 0,
-        totalTokens: 0,
+        promptTokens: 0,
+        completionTokens: 0,
       });
     });
   });

@@ -66,7 +66,7 @@ describe("createOpenAICostTracker", () => {
           id: "user-123",
           name: "Test User",
           email: "test@example.com",
-          monthlyRevenue: 99.99,
+          monthlyRevenue: "99.99",
         },
         conversationId: "conv-789",
       });
@@ -79,8 +79,7 @@ describe("createOpenAICostTracker", () => {
       const contextClient = tracker.withContext({
         feature: "chat",
         step: "generation",
-        customField: "custom value",
-        anotherField: 123,
+        region: "us-east-1",
       });
 
       expect(contextClient).toBeDefined();

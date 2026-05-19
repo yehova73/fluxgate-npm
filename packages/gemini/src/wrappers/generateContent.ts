@@ -3,14 +3,15 @@ import type {
   GenerateContentParameters,
   GenerateContentResponse,
 } from "@google/genai";
-import { AiEventMetadata, WithTracking, FluxGate } from "@fluxgate/sdk";
+import { WithTracking, FluxGate } from "@fluxgate/sdk";
 import { extractGeminiUsage } from "../utils/extractUsage.js";
 import { finishReasonToStatus, recordUsage } from "../utils/recordUsage.js";
+import { FluxGateContext } from "../types/types.js";
 
 export function createGenerateContentWrapper(
   ai: GoogleGenAI,
   instance: FluxGate,
-  context: AiEventMetadata | undefined,
+  context: FluxGateContext | undefined,
 ) {
   return async function wrappedGenerateContent(
     request: GenerateContentParameters,

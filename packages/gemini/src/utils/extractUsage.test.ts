@@ -17,10 +17,28 @@ describe("extractGeminiUsage", () => {
       const usage = extractGeminiUsage(result);
 
       expect(usage).toEqual({
-        inputTokens: 100,
-        outputTokens: 50,
-        cachedTokens: 20,
-        totalTokens: 170,
+        promptTokens: 100,
+        completionTokens: 50,
+        cacheReadTokens: 20,
+      });
+    });
+
+    it("should extract reasoning tokens (thoughtsTokenCount)", () => {
+      const result = {
+        usageMetadata: {
+          promptTokenCount: 100,
+          candidatesTokenCount: 50,
+          thoughtsTokenCount: 30,
+          totalTokenCount: 180,
+        },
+      } as GenerateContentResponse;
+
+      const usage = extractGeminiUsage(result);
+
+      expect(usage).toEqual({
+        promptTokens: 100,
+        completionTokens: 50,
+        reasoningTokens: 30,
       });
     });
 
@@ -36,10 +54,8 @@ describe("extractGeminiUsage", () => {
       const usage = extractGeminiUsage(result);
 
       expect(usage).toEqual({
-        inputTokens: 100,
-        outputTokens: 50,
-        cachedTokens: 0,
-        totalTokens: 150,
+        promptTokens: 100,
+        completionTokens: 50,
       });
     });
 
@@ -56,10 +72,8 @@ describe("extractGeminiUsage", () => {
       const usage = extractGeminiUsage(result);
 
       expect(usage).toEqual({
-        inputTokens: 0,
-        outputTokens: 0,
-        cachedTokens: 0,
-        totalTokens: 0,
+        promptTokens: 0,
+        completionTokens: 0,
       });
     });
   });
@@ -69,10 +83,8 @@ describe("extractGeminiUsage", () => {
       const usage = extractGeminiUsage(undefined);
 
       expect(usage).toEqual({
-        inputTokens: 0,
-        outputTokens: 0,
-        cachedTokens: 0,
-        totalTokens: 0,
+        promptTokens: 0,
+        completionTokens: 0,
       });
     });
 
@@ -82,10 +94,8 @@ describe("extractGeminiUsage", () => {
       const usage = extractGeminiUsage(result);
 
       expect(usage).toEqual({
-        inputTokens: 0,
-        outputTokens: 0,
-        cachedTokens: 0,
-        totalTokens: 0,
+        promptTokens: 0,
+        completionTokens: 0,
       });
     });
 
@@ -99,10 +109,8 @@ describe("extractGeminiUsage", () => {
       const usage = extractGeminiUsage(result);
 
       expect(usage).toEqual({
-        inputTokens: 100,
-        outputTokens: 0,
-        cachedTokens: 0,
-        totalTokens: 0,
+        promptTokens: 100,
+        completionTokens: 0,
       });
     });
 
@@ -119,10 +127,8 @@ describe("extractGeminiUsage", () => {
       const usage = extractGeminiUsage(result);
 
       expect(usage).toEqual({
-        inputTokens: 0,
-        outputTokens: 0,
-        cachedTokens: 0,
-        totalTokens: 0,
+        promptTokens: 0,
+        completionTokens: 0,
       });
     });
   });
@@ -141,10 +147,9 @@ describe("extractGeminiUsage", () => {
       const usage = extractGeminiUsage(result);
 
       expect(usage).toEqual({
-        inputTokens: 1000000,
-        outputTokens: 500000,
-        cachedTokens: 100000,
-        totalTokens: 1600000,
+        promptTokens: 1000000,
+        completionTokens: 500000,
+        cacheReadTokens: 100000,
       });
     });
 
@@ -161,10 +166,9 @@ describe("extractGeminiUsage", () => {
       const usage = extractGeminiUsage(result);
 
       expect(usage).toEqual({
-        inputTokens: 0,
-        outputTokens: 0,
-        cachedTokens: 100,
-        totalTokens: 100,
+        promptTokens: 0,
+        completionTokens: 0,
+        cacheReadTokens: 100,
       });
     });
   });

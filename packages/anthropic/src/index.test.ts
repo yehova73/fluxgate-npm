@@ -68,7 +68,7 @@ describe("createAnthropicCostTracker", () => {
           id: "user-123",
           name: "Test User",
           email: "test@example.com",
-          monthlyRevenue: 99.99,
+          monthlyRevenue: "99.99",
         },
         conversationId: "conv-789",
       });
@@ -81,8 +81,7 @@ describe("createAnthropicCostTracker", () => {
       const contextClient = tracker.withContext({
         feature: "chat",
         step: "generation",
-        customField: "custom value",
-        anotherField: 123,
+        region: "us-east-1",
       });
 
       expect(contextClient).toBeDefined();

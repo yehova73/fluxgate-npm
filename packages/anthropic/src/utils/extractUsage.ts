@@ -1,4 +1,4 @@
-import type { ExtractedUsage } from "@fluxgate/sdk";
+import type { AiEventUsage } from "@fluxgate/sdk";
 
 type AnthropicUsage = {
   input_tokens: number | null;
@@ -9,24 +9,18 @@ type AnthropicUsage = {
 
 export function extractAnthropicUsage(
   usage: AnthropicUsage | null | undefined,
-): ExtractedUsage {
+): AiEventUsage {
   if (!usage) {
     return {
-      inputTokens: 0,
-      outputTokens: 0,
-      cachedTokens: 0,
-      totalTokens: 0,
+      promptTokens: 0,
+      completionTokens: 0,
     };
   }
 
-  const cachedTokens =
-    (usage.cache_creation_input_tokens ?? 0) +
-    (usage.cache_read_input_tokens ?? 0);
-
   return {
-    inputTokens: usage.input_tokens ?? 0,
-    outputTokens: usage.output_tokens ?? 0,
-    cachedTokens,
-    totalTokens: (usage.input_tokens ?? 0) + (usage.output_tokens ?? 0),
+    promptTokens: usage.input_tokens ?? 0,
+    completionTokens: usage.output_tokens ?? 0,
+    cacheWriteTokens: usage.cache_creation_input_tokens || undefined,
+    cacheReadTokens: usage.cache_read_input_tokens || undefined,
   };
 }

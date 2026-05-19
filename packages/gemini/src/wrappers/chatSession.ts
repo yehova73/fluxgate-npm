@@ -4,19 +4,20 @@ import type {
   SendMessageParameters,
   Content,
 } from "@google/genai";
-import { AiEventMetadata, WithTracking, FluxGate } from "@fluxgate/sdk";
+import { WithTracking, FluxGate } from "@fluxgate/sdk";
 import {
   extractGeminiUsage,
   extractGeminiUsageFromChunk,
 } from "../utils/extractUsage.js";
 import { finishReasonToStatus, recordUsage } from "../utils/recordUsage.js";
 import { TrackedStream } from "./TrackedStream.js";
+import { FluxGateContext } from "../types/types.js";
 
 export function createSendMessageWrapper(
   original: Chat["sendMessage"],
   instance: FluxGate,
   modelName: string,
-  context: AiEventMetadata | undefined,
+  context: FluxGateContext | undefined,
 ) {
   return async function wrappedSendMessage(
     params: SendMessageParameters,
@@ -72,7 +73,7 @@ export function createSendMessageStreamWrapper(
   original: Chat["sendMessageStream"],
   instance: FluxGate,
   modelName: string,
-  context: AiEventMetadata | undefined,
+  context: FluxGateContext | undefined,
 ) {
   return async function wrappedSendMessageStream(
     params: SendMessageParameters,
@@ -144,14 +145,14 @@ export interface TrackedChat {
 
   getHistory(): Content[];
 
-  withTracking(context: AiEventMetadata): TrackedChat;
+  withTracking(context: FluxGateContext): TrackedChat;
 }
 
 export function wrapChatSession(
   chat: Chat,
   instance: FluxGate,
   modelName: string,
-  context: AiEventMetadata | undefined,
+  context: FluxGateContext | undefined,
 ): TrackedChat {
   return {
     sendMessage: createSendMessageWrapper(
@@ -172,7 +173,7 @@ export function wrapChatSession(
       return chat.getHistory();
     },
 
-    withTracking(newContext: AiEventMetadata): TrackedChat {
+    withTracking(newContext: FluxGateContext): TrackedChat {
       const mergedContext = context
         ? { ...context, ...newContext }
         : newContext;

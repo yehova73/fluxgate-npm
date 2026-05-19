@@ -1,10 +1,10 @@
-import { AiEventMetadata, FluxGate } from "@fluxgate/sdk";
+import { FluxGate } from "@fluxgate/sdk";
 import type OpenAI from "openai";
 import { withOpenAITracking } from "./wrappers/createWrappedClient.js";
-import { TrackedOpenAI } from "./types/types.js";
+import { TrackedOpenAI, FluxGateContext } from "./types/types.js";
 
 export type OpenAITracker = {
-  withContext: (ctx: AiEventMetadata) => TrackedOpenAI;
+  withContext: (ctx: FluxGateContext) => TrackedOpenAI;
   get client(): TrackedOpenAI;
 };
 
@@ -13,7 +13,7 @@ export function createOpenAICostTracker(
   instance: FluxGate,
 ): OpenAITracker {
   return {
-    withContext(ctx: AiEventMetadata) {
+    withContext(ctx: FluxGateContext) {
       return withOpenAITracking(client, instance, ctx);
     },
 
@@ -25,11 +25,13 @@ export function createOpenAICostTracker(
 }
 
 export type {
-  AiEventMetadata,
   TrackedUser,
   FluxGateCostTrackingResponse,
   WithTracking,
   AiEventStatus,
+  AiEventMetadata,
+  CostOverride,
+  Performance,
 } from "@fluxgate/sdk";
 export * from "./types/types.js";
 export { TrackedStream } from "./wrappers/TrackedStream.js";

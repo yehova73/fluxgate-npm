@@ -1,9 +1,5 @@
-import {
-  AiEventMetadata,
-  AiEventStatus,
-  FluxGate,
-  WithTracking,
-} from "@fluxgate/sdk";
+import { AiEventStatus, FluxGate, WithTracking } from "@fluxgate/sdk";
+import { FluxGateContext } from "../types/types.js";
 import type Anthropic from "@anthropic-ai/sdk";
 import type {
   BetaMessage,
@@ -19,7 +15,7 @@ type OrigCreate = Anthropic["beta"]["messages"]["create"];
 export function createBetaMessagesWrapper(
   original: OrigCreate,
   instance: FluxGate,
-  context: AiEventMetadata | undefined,
+  context: FluxGateContext | undefined,
 ) {
   return async function wrappedBetaMessagesCreate(
     params: Parameters<OrigCreate>[0],
