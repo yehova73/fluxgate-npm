@@ -1,6 +1,6 @@
 {
   "name": "@fluxgate/openai",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "OpenAI wrapper for FluxGate token usage, latency, and cost monitoring.",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -51,7 +51,7 @@
     "access": "public"
   },
   "dependencies": {
-    "@fluxgate/sdk": "^0.0.3-dev.0"
+    "@fluxgate/sdk": "^0.0.4-dev.0"
   },
   "peerDependencies": {
     "openai": "^6.34.0"
