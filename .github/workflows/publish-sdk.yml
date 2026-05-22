@@ -26,7 +26,8 @@ jobs:
           registry-url: "https://registry.npmjs.org"
 
       - run: npm ci
-      - run: npm test
+      - run: npm run typecheck --workspace=packages/sdk
+      - run: npm test --workspace=packages/sdk
       - run: npm run build --workspace=packages/sdk
 
       - name: Publish to npm
