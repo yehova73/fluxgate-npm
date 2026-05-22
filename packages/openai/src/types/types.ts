@@ -1,7 +1,7 @@
 import type OpenAI from "openai";
 import type {
   WithTracking,
-  UserSession,
+  TrackedUser,
   AiEventMetadata,
   CostOverride,
 } from "@fluxgate/sdk";
@@ -89,8 +89,8 @@ export type TrackedOpenAI = Omit<
  * Top-level fields map directly to the FluxGate ingest API's event fields.
  */
 export type FluxGateContext = {
-  /** End-user who triggered the event — plain string ID or a UserSession object */
-  user?: string | UserSession;
+  /** End-user who triggered the event — plain string ID or a TrackedUser object */
+  user?: string | TrackedUser;
   /** Product feature name (e.g. "chat", "summarization") */
   feature?: string;
   step?: string;

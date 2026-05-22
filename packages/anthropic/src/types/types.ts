@@ -21,7 +21,7 @@ import type {
 } from "@anthropic-ai/sdk/resources/beta/messages/messages";
 import type {
   WithTracking,
-  UserSession,
+  TrackedUser,
   AiEventMetadata,
   CostOverride,
 } from "@fluxgate/sdk";
@@ -88,7 +88,7 @@ export type TrackedAnthropic = Omit<
 };
 
 export type FluxGateContext = {
-  user?: string | UserSession;
+  user?: string | TrackedUser;
   feature?: string;
   step?: string;
   sessionId?: string;

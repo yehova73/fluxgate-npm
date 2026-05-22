@@ -25,7 +25,7 @@ export function createOpenAICostTracker(
 }
 
 export type {
-  UserSession,
+  TrackedUser,
   FluxGateCostTrackingResponse,
   WithTracking,
   AiEventStatus,

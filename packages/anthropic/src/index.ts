@@ -26,7 +26,7 @@ export function createAnthropicCostTracker(
 
 export type {
   AiEventMetadata,
-  UserSession,
+  TrackedUser,
   FluxGateCostTrackingResponse,
   WithTracking,
   AiEventStatus,

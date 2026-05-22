@@ -13,7 +13,7 @@ import type { TrackedStream } from "../wrappers/TrackedStream.js";
 import type {
   FluxGateCostTrackingResponse,
   WithTracking,
-  UserSession,
+  TrackedUser,
   CostOverride,
   AiEventUsage,
 } from "@fluxgate/sdk";
@@ -71,8 +71,8 @@ export type TrackedGeminiClient = Omit<GoogleGenAI, "models" | "chats"> & {
  * Context passed to `withContext()` to annotate events with user/feature/billing info.
  */
 export type FluxGateContext = {
-  /** End-user who triggered the event — plain string ID or a UserSession object */
-  user?: string | UserSession;
+  /** End-user who triggered the event — plain string ID or a TrackedUser object */
+  user?: string | TrackedUser;
   /** Product feature name (e.g. "chat", "summarization") */
   feature?: string;
   step?: string;

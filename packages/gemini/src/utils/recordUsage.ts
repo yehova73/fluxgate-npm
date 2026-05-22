@@ -102,7 +102,7 @@ export async function recordUsage(params: {
     status,
     cost: trackingData?.totalCost ?? null,
     trackingId: trackingData?.recordId ?? null,
-    createdAt: trackingData?.timestamp ?? null,
+    createdAt: null,
     errorMessage,
   };
 }
