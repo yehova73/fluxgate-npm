@@ -58,7 +58,7 @@ describe("createOpenAICostTracker", () => {
       expect(contextClient).toBeDefined();
     });
 
-    it("should accept user context with TrackedUser object", () => {
+    it("should accept user context with UserSession object", () => {
       const tracker = createOpenAICostTracker(mockClient, mockFluxgate);
       const contextClient = tracker.withContext({
         feature: "chat",

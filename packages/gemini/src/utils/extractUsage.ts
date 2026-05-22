@@ -1,9 +1,9 @@
 import type { GenerateContentResponse } from "@google/genai";
-import { AiEventUsage } from "@fluxgate/sdk";
+import { GeminiAiEventUsage } from "../types/types.js";
 
 export function extractGeminiUsage(
   result: GenerateContentResponse | undefined,
-): AiEventUsage {
+): GeminiAiEventUsage {
   if (!result?.usageMetadata) {
     return { promptTokens: 0, completionTokens: 0 };
   }
@@ -14,14 +14,14 @@ export function extractGeminiUsage(
     promptTokens: usage.promptTokenCount ?? 0,
     completionTokens: usage.candidatesTokenCount ?? 0,
     cacheReadTokens: usage.cachedContentTokenCount || undefined,
-    reasoningTokens: usage.thoughtsTokenCount || undefined,
+    thinkingTokens: usage.thoughtsTokenCount || undefined,
   };
 }
 
 // For streaming, each chunk is also a GenerateContentResponse
 export function extractGeminiUsageFromChunk(
   chunk: GenerateContentResponse | undefined,
-): AiEventUsage {
+): GeminiAiEventUsage {
   if (!chunk?.usageMetadata) {
     return { promptTokens: 0, completionTokens: 0 };
   }
@@ -32,6 +32,6 @@ export function extractGeminiUsageFromChunk(
     promptTokens: usage.promptTokenCount ?? 0,
     completionTokens: usage.candidatesTokenCount ?? 0,
     cacheReadTokens: usage.cachedContentTokenCount || undefined,
-    reasoningTokens: usage.thoughtsTokenCount || undefined,
+    thinkingTokens: usage.thoughtsTokenCount || undefined,
   };
 }

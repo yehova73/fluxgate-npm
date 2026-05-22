@@ -62,12 +62,12 @@ new FluxGate(config: FluxGateConfig)
 
 **Configuration Options:**
 
-| Option     | Type      | Required | Default                           | Description                     |
-| ---------- | --------- | -------- | --------------------------------- | ------------------------------- |
-| `apiKey`   | `string`  | ✅       | -                                 | Your FluxGate API key           |
-| `endpoint` | `string`  | ❌       | `https://fluxgate.app/api/events` | API endpoint URL                |
-| `timeout`  | `number`  | ❌       | `5000`                            | Request timeout in milliseconds |
-| `debug`    | `boolean` | ❌       | `false`                           | Enable debug logging            |
+| Option     | Type      | Required | Default                           | Description                                                                                                                                                                                   |
+| ---------- | --------- | -------- | --------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `apiKey`   | `string`  | ✅       | -                                 | Your FluxGate API key. Get a free one at [fluxgate.app](https://fluxgate.app)                                                                                                                 |
+| `endpoint` | `string`  | ❌       | `https://fluxgate.app/api/events` | API endpoint URL                                                                                                                                                                              |
+| `timeout`  | `number`  | ❌       | `5000`                            | Request timeout in milliseconds. On edge runtimes (Cloudflare Workers, Vercel Edge) with tight execution limits, set this lower and confirm your runtime supports `fetch` with `AbortSignal`. |
+| `debug`    | `boolean` | ❌       | `false`                           | Enable debug logging                                                                                                                                                                          |
 
 #### Methods
 
@@ -83,7 +83,7 @@ type LLMEvent = {
   model: string; // Model identifier (e.g. "gpt-4o", "claude-opus-4")
   performance: Performance; // Latency, status, and streaming info
   usage: AiEventUsage; // Token counts
-  user?: string | TrackedUser;
+  user?: string | UserSession;
   feature?: string;
   step?: string;
   sessionId?: string;
@@ -94,7 +94,8 @@ type LLMEvent = {
 };
 ```
 
-**Performance Object:**
+<details>
+<summary><strong>Performance</strong> — latency, status, and streaming fields</summary>
 
 ```typescript
 type Performance = {
@@ -104,11 +105,7 @@ type Performance = {
   streamDuration?: number | null; // Active streaming duration in ms (null if not streamed)
   errorMessage?: string | null; // Raw error string if the request failed
 };
-```
 
-**Status Types:**
-
-```typescript
 type AiEventStatus =
   | "SUCCESS"
   | "ERROR"
@@ -119,7 +116,10 @@ type AiEventStatus =
   | "MALFORMED_REQUEST";
 ```
 
-**Usage Object:**
+</details>
+
+<details>
+<summary><strong>AiEventUsage</strong> — token count fields</summary>
 
 ```typescript
 type AiEventUsage = {
@@ -131,7 +131,10 @@ type AiEventUsage = {
 };
 ```
 
-**Metadata Object:**
+</details>
+
+<details>
+<summary><strong>AiEventMetadata</strong>, <strong>UserSession</strong>, and <strong>CostOverride</strong> — optional enrichment fields</summary>
 
 ```typescript
 type AiEventMetadata = {
@@ -142,14 +145,24 @@ type AiEventMetadata = {
   [key: string]: unknown; // Custom fields allowed
 };
 
-type TrackedUser = {
+type UserSession = {
   id: string;
   name?: string | null;
   email?: string | null;
   image?: string | null;
   monthlyRevenue?: number | string | null; // Monthly revenue in USD
 };
+
+type CostOverride = {
+  inputCostPer1MTokens: number; // Price per 1M prompt tokens in USD
+  outputCostPer1MTokens: number; // Price per 1M completion tokens in USD
+  cacheWriteCostPer1MTokens?: number | null; // Surcharge for writing a prompt segment to cache
+  cacheReadCostPer1MTokens?: number | null; // Discounted rate for reading from a warm cache
+  reasoningCostPer1MTokens?: number | null; // Rate for reasoning/thinking tokens
+};
 ```
+
+</details>
 
 **Returns:**
 
@@ -161,6 +174,7 @@ type CreateAiEventResponse = {
   totalTokens: number; // Sum of all token categories
   totalCost: number | null; // Computed cost in USD; null when no pricing data available
   status: "ok" | "no_pricing"; // "no_pricing" when model/provider not in pricing table
+  timestamp?: number; // Unix timestamp in milliseconds
   description?: string; // Human-readable explanation of cost derivation
 };
 ```
@@ -301,7 +315,7 @@ async function trackMyCustomLLM(prompt: string) {
       model: "custom-model",
       feature: "my-feature",
       performance: {
-        latency: performance.now() - start,
+        latency: Math.round(performance.now() - start),
         status: "SUCCESS",
         isStreamed: false,
       },
@@ -317,7 +331,7 @@ async function trackMyCustomLLM(prompt: string) {
       provider: "custom-provider",
       model: "custom-model",
       performance: {
-        latency: performance.now() - start,
+        latency: Math.round(performance.now() - start),
         status: "ERROR",
         isStreamed: false,
         errorMessage: error.message,
@@ -329,21 +343,30 @@ async function trackMyCustomLLM(prompt: string) {
 }
 ```
 
-## 🛡️ Error Handling
+## 🛡️ Error Handling & Performance
 
-The tracker is designed to never break your application:
+The tracker is designed to be completely non-blocking and safe for production critical paths:
 
-- Network errors are caught and logged (in debug mode)
-- Timeouts are handled gracefully
-- Returns `null` if tracking fails
-- Your main LLM calls continue regardless of tracking status
+- Network errors are caught internally and logged (in debug mode).
+- Timeouts are handled gracefully, returning `null` if tracking fails.
+- Your main application flows continue completely uninterrupted regardless of tracking status.
+
+### Non-Blocking (Fire-and-Forget) Execution
+
+If you want to track events without blocking your user-facing response time, you can safely trigger `recordEvent` without using the `await` keyword:
 
 ```typescript
-const result = await tracker.recordEvent(event);
-if (result === null) {
-  // Tracking failed, but your app continues
-  console.log("Failed to track event");
-}
+// Fires the tracking request in the background without awaiting the network trip
+fluxgate
+  .recordEvent({
+    provider: "openai",
+    model: "gpt-4o",
+    performance: { latency: 1200, status: "SUCCESS", isStreamed: false },
+    usage: { promptTokens: 80, completionTokens: 40 },
+  })
+  .catch((err) => {
+    if (config.debug) console.error("Background tracking failed:", err);
+  });
 ```
 
 ## 📊 Type Exports
@@ -354,7 +377,7 @@ All types are exported for use in your application:
 import type {
   LLMEvent,
   CreateAiEventResponse,
-  TrackedUser,
+  UserSession,
   AiEventMetadata,
   AiEventStatus,
   AiEventUsage,
@@ -371,6 +394,7 @@ import type {
 
 - [@fluxgate/openai](../openai) - OpenAI SDK wrapper
 - [@fluxgate/gemini](../gemini) - Gemini SDK wrapper
+- [@fluxgate/anthropic](../anthropic) - Anthropic SDK wrapper
 
 ## 📝 License
 

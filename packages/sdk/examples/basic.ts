@@ -13,46 +13,49 @@ async function main() {
 
   // Track a simple success event
   const response1 = await instance.recordEvent({
-    usage: {
-      inputTokens: 100,
-      outputTokens: 50,
-      model: "gpt-4",
-      provider: "openai",
-      latencyInMs: 1500,
+    provider: "openai",
+    model: "gpt-4o",
+    feature: "example-basic",
+    performance: {
+      latency: 1500,
+      status: "SUCCESS",
+      isStreamed: false,
     },
-    status: "SUCCESS",
-    metadata: {
-      feature: "example-basic",
+    usage: {
+      promptTokens: 100,
+      completionTokens: 50,
     },
   });
 
   console.log("Response 1:", response1);
   console.log();
 
-  // Track event with full metadata
+  // Track event with full metadata (user session, caching, streaming)
   const response2 = await instance.recordEvent({
-    usage: {
-      inputTokens: 200,
-      outputTokens: 150,
-      cachedTokens: 50,
-      model: "gpt-4-turbo",
-      provider: "openai",
-      latencyInMs: 2500,
-      isStreamed: true,
-      streamingDurationInMs: 3000,
+    provider: "openai",
+    model: "gpt-4-turbo",
+    feature: "chat",
+    step: "conversation",
+    user: {
+      id: "user-123",
+      name: "John Doe",
+      email: "john@example.com",
+      monthlyRevenue: 99.99,
     },
-    status: "SUCCESS",
+    sessionId: "session-abc",
+    conversationId: "conv-xyz",
+    performance: {
+      latency: 2500,
+      status: "SUCCESS",
+      isStreamed: true,
+      streamDuration: 2200,
+    },
+    usage: {
+      promptTokens: 200,
+      completionTokens: 150,
+      cacheReadTokens: 50,
+    },
     metadata: {
-      feature: "chat",
-      step: "conversation",
-      user: {
-        id: "user-123",
-        name: "John Doe",
-        email: "john@example.com",
-        monthlyRevenue: 99.99,
-      },
-      sessionId: "session-abc",
-      conversationId: "conv-xyz",
       customField: "any custom data",
     },
   });
@@ -62,34 +65,38 @@ async function main() {
 
   // Track an error event
   const response3 = await instance.recordEvent({
-    usage: {
-      inputTokens: 50,
-      outputTokens: 0,
-      model: "gpt-4",
-      provider: "openai",
-    },
-    status: {
+    provider: "openai",
+    model: "gpt-4o",
+    feature: "example-error",
+    user: "user-456",
+    performance: {
+      latency: 300,
       status: "ERROR",
+      isStreamed: false,
       errorMessage: "API rate limit exceeded",
     },
-    metadata: {
-      feature: "example-error",
-      user: "user-456",
+    usage: {
+      promptTokens: 50,
+      completionTokens: 0,
     },
   });
 
   console.log("Response 3 (Error):", response3);
   console.log();
 
-  // Track a blocked event
+  // Track a blocked / content-filtered event
   const response4 = await instance.recordEvent({
-    usage: {
-      inputTokens: 30,
-      outputTokens: 0,
+    provider: "openai",
+    model: "gpt-4o",
+    feature: "moderation",
+    performance: {
+      latency: 200,
+      status: "CONTENT_FILTER",
+      isStreamed: false,
     },
-    status: "CONTENT_FILTER",
-    metadata: {
-      feature: "moderation",
+    usage: {
+      promptTokens: 30,
+      completionTokens: 0,
     },
   });
 

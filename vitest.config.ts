@@ -14,6 +14,10 @@ export default defineConfig({
         "**/*.config.*",
         "**/types/",
       ],
+      thresholds: {
+        statements: 80,
+        branches: 70,
+      },
     },
     include: ["packages/**/*.{test,spec}.ts"],
     exclude: ["node_modules/", "dist/"],

@@ -49,9 +49,13 @@ async function main() {
 
   // First message
   console.log("User: What is machine learning?\n");
-  const result1 = await chat.sendMessage({
-    message: "What is machine learning?",
-  });
+  const result1 = await chat
+    .withTracking({
+      feature: "first-message",
+    })
+    .sendMessage({
+      message: "What is machine learning?",
+    });
   console.log("Assistant:", result1.text);
   console.log("\nTracking 1:", result1.fluxGateCostTrackingResponse);
 

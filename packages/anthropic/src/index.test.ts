@@ -60,7 +60,7 @@ describe("createAnthropicCostTracker", () => {
       expect(contextClient).toBeDefined();
     });
 
-    it("should accept user context with TrackedUser object", () => {
+    it("should accept user context with UserSession object", () => {
       const tracker = createAnthropicCostTracker(mockClient, mockFluxGate);
       const contextClient = tracker.withContext({
         feature: "chat",

@@ -38,7 +38,7 @@ describe("extractGeminiUsage", () => {
       expect(usage).toEqual({
         promptTokens: 100,
         completionTokens: 50,
-        reasoningTokens: 30,
+        thinkingTokens: 30,
       });
     });
 

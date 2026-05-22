@@ -29,4 +29,4 @@ npx tsx packages/openai/examples/<file>.ts
 | `streaming.ts`         | Streaming `chat.completions.create`, streaming `responses.create`                                                  |
 | `embeddings.ts`        | Single and batch `embeddings.create`                                                                               |
 | `error-handling.ts`    | Automatic error tracking, stream error tracking, legacy `completions.create`, regional endpoint auto-detection     |
-| `multiple-contexts.ts` | Feature isolation, rich `TrackedUser`, `service_tier`, OpenRouter cost passthrough, `costOverride`                 |
+| `multiple-contexts.ts` | Feature isolation, rich `UserSession`, `service_tier`, OpenRouter cost passthrough, `costOverride`                 |

@@ -25,7 +25,7 @@ export function createGeminiCostTracker(
 }
 
 export type {
-  TrackedUser,
+  UserSession,
   FluxGateCostTrackingResponse,
   WithTracking,
   AiEventStatus,
@@ -33,5 +33,6 @@ export type {
   CostOverride,
   Performance,
 } from "@fluxgate/sdk";
+export type { GeminiCostOverride, GeminiAiEventUsage } from "./types/types.js";
 export * from "./types/types.js";
 export { TrackedStream } from "./wrappers/TrackedStream.js";

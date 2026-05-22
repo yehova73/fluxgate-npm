@@ -50,9 +50,9 @@ async function main() {
   console.log("summarization:", summaryRes.fluxGateCostTrackingResponse);
   console.log("code-gen:", codeRes.fluxGateCostTrackingResponse);
 
-  // --- Rich TrackedUser ---
-  // Pass a TrackedUser object to associate revenue and identity with events.
-  console.log("\n=== Rich TrackedUser ===\n");
+  // --- Rich UserSession ---
+  // Pass a UserSession object to associate revenue and identity with events.
+  console.log("\n=== Rich UserSession ===\n");
 
   const premiumRes = await openai
     .withContext({

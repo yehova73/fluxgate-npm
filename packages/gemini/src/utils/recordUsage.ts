@@ -3,14 +3,39 @@ import {
   FluxGateCostTrackingResponse,
   AiEventUsage,
   AiEventMetadata,
+  CostOverride,
   FluxGate,
 } from "@fluxgate/sdk";
-import { FluxGateContext } from "../types/types.js";
+import {
+  FluxGateContext,
+  GeminiAiEventUsage,
+  GeminiCostOverride,
+} from "../types/types.js";
 
 function toPerformanceStatus(status: AiEventStatus): "SUCCESS" | "ERROR" {
   return status === "ERROR" || status === "MALFORMED_REQUEST"
     ? "ERROR"
     : "SUCCESS";
+}
+
+/** Maps Gemini-specific usage (thinkingTokens) to the SDK's AiEventUsage (reasoningTokens). */
+function toSdkUsage(usage: GeminiAiEventUsage): AiEventUsage {
+  const { thinkingTokens, ...rest } = usage;
+  return {
+    ...rest,
+    ...(thinkingTokens != null && { reasoningTokens: thinkingTokens }),
+  };
+}
+
+/** Maps GeminiCostOverride (thinkingCostPer1MTokens) to the SDK's CostOverride (reasoningCostPer1MTokens). */
+function toSdkCostOverride(override: GeminiCostOverride): CostOverride {
+  const { thinkingCostPer1MTokens, ...rest } = override;
+  return {
+    ...rest,
+    ...(thinkingCostPer1MTokens != null && {
+      reasoningCostPer1MTokens: thinkingCostPer1MTokens,
+    }),
+  };
 }
 
 export async function recordUsage(params: {
@@ -19,7 +44,7 @@ export async function recordUsage(params: {
   latencyMs: number;
   streaming: boolean;
   context: FluxGateContext | undefined;
-  usage: AiEventUsage;
+  usage: GeminiAiEventUsage;
   status: AiEventStatus;
   errorMessage?: string;
   /** service_tier from the provider request config; takes priority over context.serviceTier */
@@ -43,18 +68,12 @@ export async function recordUsage(params: {
 
   const hasMetadata =
     resolvedServiceTier != null ||
-    context?.region != null ||
-    context?.openrouterCost != null ||
-    context?.cacheTtl != null ||
     (context?.metadata != null && Object.keys(context.metadata).length > 0);
 
   const metadata: AiEventMetadata | undefined = hasMetadata
     ? {
         ...context?.metadata, // user-supplied (lower priority)
         serviceTier: resolvedServiceTier,
-        region: context?.region,
-        openrouterCost: context?.openrouterCost,
-        cacheTtl: context?.cacheTtl,
       }
     : undefined;
 
@@ -66,23 +85,24 @@ export async function recordUsage(params: {
     step: context?.step,
     sessionId: context?.sessionId,
     conversationId: context?.conversationId,
-    timestamp: context?.timestamp,
     performance: {
       latency: latencyMs,
       status: toPerformanceStatus(status),
       isStreamed: streaming,
       errorMessage: errorMessage ?? null,
     },
-    usage,
+    usage: toSdkUsage(usage),
     ...(metadata && { metadata }),
-    ...(context?.costOverride && { costOverride: context.costOverride }),
+    ...(context?.costOverride && {
+      costOverride: toSdkCostOverride(context.costOverride),
+    }),
   });
 
   return {
     status,
     cost: trackingData?.totalCost ?? null,
     trackingId: trackingData?.recordId ?? null,
-    createdAt: null,
+    createdAt: trackingData?.timestamp ?? null,
     errorMessage,
   };
 }

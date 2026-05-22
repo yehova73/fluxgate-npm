@@ -29,7 +29,7 @@ describe("TrackedStream", () => {
         status: "SUCCESS",
         cost: 0.001,
         trackingId: "track-123",
-        createdAt: "2026-05-05T00:00:00Z",
+        createdAt: 1777939200000,
       } as FluxGateCostTrackingResponse);
 
       const trackedStream = new TrackedStream(source, finalize);
@@ -49,7 +49,7 @@ describe("TrackedStream", () => {
         status: "SUCCESS",
         cost: 0.001,
         trackingId: "track-123",
-        createdAt: "2026-05-05T00:00:00Z",
+        createdAt: 1777939200000,
       } as FluxGateCostTrackingResponse);
 
       const trackedStream = new TrackedStream(source, finalize);
@@ -68,7 +68,7 @@ describe("TrackedStream", () => {
         status: "SUCCESS",
         cost: 0.002,
         trackingId: "track-456",
-        createdAt: "2026-05-05T00:00:00Z",
+        createdAt: 1777939200000,
       };
       const finalize = vi.fn().mockResolvedValue(mockResponse);
 
@@ -89,7 +89,7 @@ describe("TrackedStream", () => {
         status: "SUCCESS",
         cost: 0,
         trackingId: "track-789",
-        createdAt: "2026-05-05T00:00:00Z",
+        createdAt: 1777939200000,
       } as FluxGateCostTrackingResponse);
 
       const trackedStream = new TrackedStream(source, finalize);
@@ -112,7 +112,7 @@ describe("TrackedStream", () => {
         status: "ERROR",
         cost: null,
         trackingId: "track-error",
-        createdAt: "2026-05-05T00:00:00Z",
+        createdAt: 1777939200000,
         errorMessage: "Stream error",
       } as FluxGateCostTrackingResponse);
 
@@ -141,7 +141,7 @@ describe("TrackedStream", () => {
         status: "ERROR",
         cost: null,
         trackingId: "track-error-2",
-        createdAt: "2026-05-05T00:00:00Z",
+        createdAt: 1777939200000,
         errorMessage: "Stream error",
       };
       const finalize = vi.fn().mockResolvedValue(mockResponse);
@@ -190,7 +190,7 @@ describe("TrackedStream", () => {
         status: "SUCCESS",
         cost: 0.003,
         trackingId: "track-multi",
-        createdAt: "2026-05-05T00:00:00Z",
+        createdAt: 1777939200000,
       } as FluxGateCostTrackingResponse);
 
       const trackedStream = new TrackedStream(source, finalize);

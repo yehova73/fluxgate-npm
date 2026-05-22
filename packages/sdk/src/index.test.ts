@@ -66,6 +66,7 @@ describe("FluxGate", () => {
       };
 
       vi.mocked(fetch).mockResolvedValue({
+        ok: true,
         status: 201,
         statusText: "Created",
         text: async () => JSON.stringify(mockResponse),
@@ -89,7 +90,7 @@ describe("FluxGate", () => {
           headers: expect.objectContaining({
             "Content-Type": "application/json",
             Authorization: `Bearer ${mockApiKey}`,
-            "User-Agent": "@fluxgate/sdk/0.0.2-dev.0",
+            "User-Agent": "@fluxgate/sdk/0.0.5",
           }),
           body: JSON.stringify(event),
         }),
@@ -100,6 +101,7 @@ describe("FluxGate", () => {
 
     it("should send event body unchanged to the API", async () => {
       vi.mocked(fetch).mockResolvedValue({
+        ok: true,
         status: 200,
         statusText: "OK",
         text: async () =>
@@ -125,17 +127,12 @@ describe("FluxGate", () => {
       expect(body).toEqual(event);
     });
 
-    it("should handle fetch errors gracefully", async () => {
-      const mockResponse = {
-        id: "event-123",
-        createdAt: "2026-05-05T00:00:00Z",
-        cost: 0.001,
-      };
-
+    it("should return null for non-2xx responses", async () => {
       vi.mocked(fetch).mockResolvedValue({
+        ok: false,
         status: 500,
         statusText: "Internal Server Error",
-        text: async () => JSON.stringify(mockResponse),
+        text: async () => JSON.stringify({ error: "server error" }),
       } as Response);
 
       const event: LLMEvent = {
@@ -146,11 +143,12 @@ describe("FluxGate", () => {
       };
 
       const result = await instance.recordEvent(event);
-      expect(result).toEqual(mockResponse);
+      expect(result).toBeNull();
     });
 
     it("should handle invalid JSON response", async () => {
       vi.mocked(fetch).mockResolvedValue({
+        ok: true,
         status: 200,
         statusText: "OK",
         text: async () => "invalid json",
@@ -201,6 +199,7 @@ describe("FluxGate", () => {
 
     it("should include complex metadata in the event", async () => {
       vi.mocked(fetch).mockResolvedValue({
+        ok: true,
         status: 200,
         statusText: "OK",
         text: async () =>
@@ -245,6 +244,7 @@ describe("FluxGate", () => {
 
     it("should handle status with error message", async () => {
       vi.mocked(fetch).mockResolvedValue({
+        ok: true,
         status: 200,
         statusText: "OK",
         text: async () =>
@@ -292,6 +292,7 @@ describe("FluxGate", () => {
       );
 
       vi.mocked(fetch).mockResolvedValue({
+        ok: true,
         status: 200,
         statusText: "OK",
         text: async () =>

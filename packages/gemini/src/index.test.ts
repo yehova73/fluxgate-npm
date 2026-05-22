@@ -60,7 +60,7 @@ describe("createGeminiCostTracker", () => {
       expect(contextClient).toBeDefined();
     });
 
-    it("should accept user context with TrackedUser object", () => {
+    it("should accept user context with UserSession object", () => {
       const tracker = createGeminiCostTracker(mockAi, mockFluxGate);
       const contextClient = tracker.withContext({
         feature: "chat",
@@ -81,7 +81,6 @@ describe("createGeminiCostTracker", () => {
       const contextClient = tracker.withContext({
         feature: "generation",
         step: "content-creation",
-        region: "us-east-1",
       });
 
       expect(contextClient).toBeDefined();

@@ -44,7 +44,7 @@ console.log(message.fluxGateCostTrackingResponse);
 //   status: "SUCCESS",
 //   cost: 0.003,
 //   trackingId: "evt_...",
-//   createdAt: "2026-05-12T..."
+//   createdAt: 1748000000000
 // }
 ```
 
@@ -70,7 +70,7 @@ Fields available when calling `withContext()`:
 
 | Field            | Type                                                         | Description                                                  |
 | ---------------- | ------------------------------------------------------------ | ------------------------------------------------------------ |
-| `user`           | `string \| TrackedUser`                                      | End-user ID or TrackedUser object                            |
+| `user`           | `string \| UserSession`                                      | End-user ID or UserSession object                            |
 | `feature`        | `string`                                                     | Product feature name (e.g. `"chat"`, `"summarization"`)      |
 | `step`           | `string`                                                     | Step within a feature pipeline                               |
 | `sessionId`      | `string`                                                     | Session identifier                                           |
@@ -208,7 +208,7 @@ interface FluxGateCostTrackingResponse {
   status: AiEventStatus;
   cost: number | null;
   trackingId: string | null;
-  createdAt: string | null;
+  createdAt: number | null;
   errorMessage?: string;
 }
 
@@ -243,7 +243,7 @@ import type {
   FluxGateContext,
   WithTracking,
   AiEventMetadata,
-  TrackedUser,
+  UserSession,
   CostOverride,
   FluxGateCostTrackingResponse,
 } from "@fluxgate/anthropic";

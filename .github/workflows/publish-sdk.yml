@@ -1,0 +1,34 @@
+name: Publish @fluxgate/sdk
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "packages/sdk/**"
+      - "!packages/sdk/**/*.test.ts"
+      - "!packages/sdk/examples/**"
+  workflow_dispatch:
+
+permissions:
+  id-token: write # required for OIDC trusted publishing
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20.x"
+          cache: "npm"
+          registry-url: "https://registry.npmjs.org"
+
+      - run: npm ci
+      - run: npm test
+      - run: npm run build --workspace=packages/sdk
+
+      - name: Publish to npm
+        working-directory: packages/sdk
+        run: npm publish --provenance --access public

@@ -18,6 +18,17 @@ async function main() {
 
   console.log("=== Basic Text Generation ===\n");
 
+  const chat = gemini.client.chats.create({
+    model: "gemini-2.5-flash",
+    config: { serviceTier: ServiceTier.PRIORITY },
+  });
+
+  chat
+    .withTracking({
+      feature: "example-generation",
+    })
+    .sendMessageStream({ message: "test" });
+
   // Basic text generation
   const result = await gemini
     .withContext({

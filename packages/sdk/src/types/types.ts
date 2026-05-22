@@ -7,7 +7,7 @@ export type AiEventStatus =
   | "RECITATION"
   | "MALFORMED_REQUEST";
 
-export type TrackedUser = {
+export type UserSession = {
   id: string;
   name?: string | null;
   email?: string | null;
@@ -79,8 +79,8 @@ export type LLMEvent = {
   provider: string;
   /** Model identifier (e.g. "gpt-4o", "claude-opus-4", "gemini-2.0-flash") */
   model: string;
-  /** End-user who triggered the event — either a plain string ID or a TrackedUser object */
-  user?: string | TrackedUser;
+  /** End-user who triggered the event — either a plain string ID or a UserSession object */
+  user?: string | UserSession;
   /** Product feature name (e.g. "chat", "summarization", "embedding") */
   feature?: string;
   step?: string;
@@ -103,9 +103,17 @@ export type CreateAiEventResponse = {
   totalCost: number | null;
   /** ok — cost was successfully computed; no_pricing — model/provider not in pricing table */
   status: "ok" | "no_pricing";
+  /** Unix timestamp in milliseconds. Defaults to server ingest time if omitted. */
+  timestamp?: number;
   /** Human-readable explanation of how the cost was derived */
   description?: string;
 };
+
+export type FluxGateLogger = (
+  level: "log" | "error",
+  message: string,
+  data?: unknown,
+) => void;
 
 export interface FluxGateConfig {
   apiKey: string;
@@ -115,13 +123,20 @@ export interface FluxGateConfig {
   debug?: boolean;
 
   timeout?: number;
+
+  /**
+   * Custom logger called instead of console.log/console.error when debug is true.
+   * Receives the level ("log" | "error"), a message string, and an optional data value.
+   * Defaults to console.log / console.error.
+   */
+  logger?: FluxGateLogger;
 }
 
 export type FluxGateCostTrackingResponse = {
   status: AiEventStatus;
   cost: number | null;
   trackingId: string | null;
-  createdAt: string | null;
+  createdAt: number | null;
   errorMessage?: string;
 };
 

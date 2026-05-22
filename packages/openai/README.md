@@ -1,11 +1,11 @@
 # @fluxgate/openai
 
-OpenAI SDK wrapper for [FluxGate](https://fluxgate.app) — automatically tracks token usage, costs, and latency for all OpenAI API calls.
+OpenAI SDK wrapper for [FluxGate](https://fluxgate.app). You can easily track and manage your OpenAI API token usage, costs, and performance.
 
 ## Installation
 
 ```bash
-npm install @fluxgate/sdk @fluxgate/openai openai
+npm install @fluxgate/openai
 ```
 
 > **ESM only** — this package is ESM-only (`"type": "module"`), matching `openai` v5+. Your project must use ESM (set `"type": "module"` in `package.json` or use `.mjs` extensions). Node.js ≥ 18 is required.
@@ -32,7 +32,7 @@ const response = await openai
   });
 
 console.log(response.fluxGateCostTrackingResponse);
-// { status: "SUCCESS", cost: 0.0015, trackingId: "evt_...", createdAt: "..." }
+// { status: "SUCCESS", cost: 0.0015, trackingId: "evt_...", createdAt: 1748000000000 }
 ```
 
 ## API Reference
@@ -59,7 +59,7 @@ All fields are optional. Pass to `withContext()` to annotate tracked events.
 
 | Field            | Type                      | Description                                                                    |
 | ---------------- | ------------------------- | ------------------------------------------------------------------------------ |
-| `user`           | `string \| TrackedUser`   | End-user ID or a `TrackedUser` object (see below)                              |
+| `user`           | `string \| UserSession`   | End-user ID or a `UserSession` object (see below)                              |
 | `feature`        | `string`                  | Product feature name (e.g. `"chat"`, `"summarization"`)                        |
 | `step`           | `string`                  | Step within a feature pipeline (e.g. `"retrieval"`, `"generation"`)            |
 | `sessionId`      | `string`                  | Session identifier                                                             |
@@ -72,9 +72,9 @@ All fields are optional. Pass to `withContext()` to annotate tracked events.
 
 ---
 
-### `TrackedUser`
+### `UserSession`
 
-Pass a `TrackedUser` object to the `user` field to associate identity and revenue data with every event.
+Pass a `UserSession` object to the `user` field to associate identity and revenue data with every event.
 
 | Field            | Type                       | Description                           |
 | ---------------- | -------------------------- | ------------------------------------- |
@@ -142,7 +142,7 @@ Every call returns the standard OpenAI SDK response intersected with `fluxGateCo
 | `status`       | `AiEventStatus`  | Outcome of the request (see values below)          |
 | `cost`         | `number \| null` | Total cost in USD; `null` if model pricing unknown |
 | `trackingId`   | `string \| null` | FluxGate event ID                                  |
-| `createdAt`    | `string \| null` | ISO timestamp of the recorded event                |
+| `createdAt`    | `number \| null` | Unix timestamp (ms) from the FluxGate server       |
 | `errorMessage` | `string`         | Error message when `status` is `"ERROR"`           |
 
 **`AiEventStatus` values:**
@@ -168,4 +168,4 @@ Full runnable examples are available in the [repository](https://github.com/flux
 - `streaming.ts` — streaming `chat.completions.create` and `responses.create`
 - `embeddings.ts` — single and batch embeddings
 - `error-handling.ts` — error tracking, stream errors, legacy completions, regional endpoints
-- `multiple-contexts.ts` — feature isolation, `TrackedUser`, `serviceTier`, OpenRouter cost passthrough, `costOverride`
+- `multiple-contexts.ts` — feature isolation, `UserSession`, `serviceTier`, OpenRouter cost passthrough, `costOverride`

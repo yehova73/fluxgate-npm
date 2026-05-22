@@ -99,6 +99,14 @@ npx tsx packages/gemini/examples/error-handling.ts
 
 ApiError inspection, streaming errors, and confirming tracking continues after failures.
 
+### Full Example
+
+```bash
+npx tsx packages/gemini/examples/full-example.ts
+```
+
+All tracked methods in one file: `models.generateContent`, `models.generateContentStream`, `chats.create` with `sendMessage` and `sendMessageStream`, `models.embedContent` (single and batch), and no-context passthrough via `gemini.client`.
+
 ## Example Files
 
 - **`basic-generation.ts`** - Simple text generation example
@@ -109,6 +117,7 @@ ApiError inspection, streaming errors, and confirming tracking continues after f
 - **`multimodal.ts`** - Inline image analysis, vision chat, and Files API upload pattern
 - **`structured-output.ts`** - System instructions and JSON schema responses
 - **`error-handling.ts`** - ApiError handling and automatic error tracking
+- **`full-example.ts`** - All tracked methods in one file: generation, streaming, chat, streaming chat, embeddings, and no-context passthrough
 
 ## What Gets Tracked
 

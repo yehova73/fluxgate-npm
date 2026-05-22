@@ -5,7 +5,7 @@
     "rootDir": "./src",
     "target": "ES2020",
     "composite": true,
-
+    "stripInternal": true,
     "module": "ESNext",
     "moduleResolution": "Bundler",
     "declaration": true,

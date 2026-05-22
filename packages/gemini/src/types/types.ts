@@ -13,9 +13,32 @@ import type { TrackedStream } from "../wrappers/TrackedStream.js";
 import type {
   FluxGateCostTrackingResponse,
   WithTracking,
-  TrackedUser,
+  UserSession,
   CostOverride,
+  AiEventUsage,
 } from "@fluxgate/sdk";
+
+/**
+ * Gemini-specific cost override.
+ * - Excludes `cacheWriteCostPer1MTokens` — Gemini does not report cache-write token counts.
+ * - Replaces `reasoningCostPer1MTokens` with `thinkingCostPer1MTokens` to match Gemini's terminology.
+ */
+export type GeminiCostOverride = Omit<
+  CostOverride,
+  "cacheWriteCostPer1MTokens" | "reasoningCostPer1MTokens"
+> & {
+  /** Cost per 1M thinking tokens produced by Gemini 2.5 models. */
+  thinkingCostPer1MTokens?: number | null;
+};
+
+/**
+ * Gemini-specific usage shape. Uses `thinkingTokens` (matching Gemini's
+ * `thoughtsTokenCount`) instead of the generic SDK `reasoningTokens`.
+ */
+export type GeminiAiEventUsage = Omit<AiEventUsage, "reasoningTokens"> & {
+  /** Thinking tokens produced by Gemini 2.5 models (from `usageMetadata.thoughtsTokenCount`) */
+  thinkingTokens?: number | null;
+};
 
 export type WithStreamTracking<T> = T & {
   fluxGateCostTrackingResponse: FluxGateCostTrackingResponse | undefined;
@@ -48,23 +71,15 @@ export type TrackedGeminiClient = Omit<GoogleGenAI, "models" | "chats"> & {
  * Context passed to `withContext()` to annotate events with user/feature/billing info.
  */
 export type FluxGateContext = {
-  /** End-user who triggered the event — plain string ID or a TrackedUser object */
-  user?: string | TrackedUser;
+  /** End-user who triggered the event — plain string ID or a UserSession object */
+  user?: string | UserSession;
   /** Product feature name (e.g. "chat", "summarization") */
   feature?: string;
   step?: string;
   sessionId?: string;
   conversationId?: string;
-  /** Unix timestamp in milliseconds. Defaults to server ingest time if omitted. */
-  timestamp?: number;
-  /** Explicit hosting region for regional price variance */
-  region?: string;
-  /** Explicit total cost in USD from an aggregator proxy. Skips server-side cost computation. */
-  openrouterCost?: number;
-  /** Provider cache expiration window. Accepts "5m", "1h", or a custom string. */
-  cacheTtl?: string;
   /** Override per-token pricing used for cost calculation */
-  costOverride?: CostOverride;
+  costOverride?: GeminiCostOverride;
   /** Arbitrary key-value pairs forwarded to the metadata object (e.g. { language: "typescript", documentType: "article" }) */
   metadata?: Record<string, unknown>;
 };
