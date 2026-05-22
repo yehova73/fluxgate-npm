@@ -13,6 +13,7 @@ export function createCompletionsWrapper(
   original: OrigCreate,
   instance: FluxGate,
   context: FluxGateContext | undefined,
+  region: string | undefined,
 ) {
   return async function wrappedCompletionsCreate(
     params: Parameters<OrigCreate>[0],
@@ -33,6 +34,7 @@ export function createCompletionsWrapper(
         usage: extractAnthropicUsage(undefined),
         status: "ERROR",
         errorMessage: (err as Error).message,
+        region,
       });
       throw err;
     }
@@ -69,6 +71,7 @@ export function createCompletionsWrapper(
             usage: extractAnthropicUsage(undefined),
             status,
             errorMessage,
+            region,
           });
         },
       );
@@ -88,6 +91,7 @@ export function createCompletionsWrapper(
       usage: extractAnthropicUsage(undefined),
       status,
       errorMessage,
+      region,
     });
 
     return Object.assign(completion, { fluxGateCostTrackingResponse });

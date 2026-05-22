@@ -16,6 +16,7 @@ export function createBetaMessagesWrapper(
   original: OrigCreate,
   instance: FluxGate,
   context: FluxGateContext | undefined,
+  region: string | undefined,
 ) {
   return async function wrappedBetaMessagesCreate(
     params: Parameters<OrigCreate>[0],
@@ -39,6 +40,7 @@ export function createBetaMessagesWrapper(
         status: "ERROR",
         errorMessage: (err as Error).message,
         requestUser: params.metadata?.user_id ?? undefined,
+        region,
       });
       throw err;
     }
@@ -77,6 +79,7 @@ export function createBetaMessagesWrapper(
             status,
             errorMessage,
             requestUser: params.metadata?.user_id ?? undefined,
+            region,
           });
         },
       );
@@ -94,6 +97,7 @@ export function createBetaMessagesWrapper(
       status,
       errorMessage,
       requestUser: params.metadata?.user_id ?? undefined,
+      region,
     });
 
     return Object.assign(message, { fluxGateCostTrackingResponse });

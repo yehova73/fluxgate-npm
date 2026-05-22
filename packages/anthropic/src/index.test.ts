@@ -81,7 +81,6 @@ describe("createAnthropicCostTracker", () => {
       const contextClient = tracker.withContext({
         feature: "chat",
         step: "generation",
-        region: "us-east-1",
       });
 
       expect(contextClient).toBeDefined();

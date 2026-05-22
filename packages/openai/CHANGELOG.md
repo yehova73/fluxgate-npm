@@ -6,7 +6,23 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
-## [0.0.3] — 2026-05-22
+## [0.0.7] — 2026-05-22
+
+### Added
+
+- Explicit named exports for `FluxGateContext`, `OpenAICostOverride`, and `OpenAiEventUsage` from the package entry point — consumers can now `import { FluxGateContext } from "@fluxgate/openai"`.
+- `clean` script (`npx rimraf dist tsconfig.tsbuildinfo`) for reliable rebuilds.
+- `lint` script (`tsc --noEmit`).
+- `CHANGELOG.md` for the openai package.
+- README badges (npm version, MIT license, CI status).
+- Dedicated `publish-openai.yml` GitHub Actions workflow.
+
+### Fixed
+
+- `peerDependencies` corrected from `"openai": "^6.34.0"` to `"^5.0.0"` to match actual SDK compatibility.
+- `files` field updated to explicitly include `README.md` and `LICENSE`.
+
+## [0.0.6] — 2026-05-22
 
 ### Added
 

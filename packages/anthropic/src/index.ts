@@ -33,5 +33,9 @@ export type {
   Performance,
   CostOverride,
 } from "@fluxgate/sdk";
+export type {
+  FluxGateContext,
+  AnthropicCostOverride,
+} from "./types/types.js";
 export * from "./types/types.js";
 export { TrackedStream } from "./wrappers/TrackedStream.js";

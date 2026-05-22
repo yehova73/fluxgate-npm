@@ -4,14 +4,9 @@ import {
   FluxGateCostTrackingResponse,
   AiEventUsage,
   AiEventMetadata,
+  CostOverride,
 } from "@fluxgate/sdk";
-import { FluxGateContext } from "../types/types.js";
-
-function toPerformanceStatus(status: AiEventStatus): "SUCCESS" | "ERROR" {
-  return status === "ERROR" || status === "MALFORMED_REQUEST"
-    ? "ERROR"
-    : "SUCCESS";
-}
+import { AnthropicCostOverride, FluxGateContext } from "../types/types.js";
 
 export function stopReasonToStatus(
   stopReason: string | null | undefined,
@@ -23,20 +18,14 @@ export function stopReasonToStatus(
   ) {
     return "SUCCESS";
   }
-
-  if (stopReason === "max_tokens") {
-    return "MAX_TOKENS";
-  }
-
-  if (stopReason === "content_filter") {
-    return "BLOCKED";
-  }
-
-  if (stopReason === "tool_use") {
-    return "SUCCESS";
-  }
-
+  if (stopReason === "max_tokens") return "MAX_TOKENS";
+  if (stopReason === "content_filter") return "BLOCKED";
+  if (stopReason === "tool_use") return "SUCCESS";
   return "ERROR";
+}
+
+function toSdkCostOverride(override: AnthropicCostOverride): CostOverride {
+  return { ...override };
 }
 
 export async function recordUsage(params: {
@@ -50,6 +39,10 @@ export async function recordUsage(params: {
   errorMessage?: string;
   /** User extracted from the request params (e.g. params.metadata?.user_id). Used as fallback when context.user is not set. */
   requestUser?: string;
+  /** Region auto-detected from the client baseURL */
+  region?: string;
+  /** Cache TTL auto-detected from cache_control blocks in the request */
+  cacheTtl?: string;
 }): Promise<FluxGateCostTrackingResponse> {
   const {
     context,
@@ -61,55 +54,57 @@ export async function recordUsage(params: {
     status,
     errorMessage,
     requestUser,
+    region,
+    cacheTtl,
   } = params;
 
-  const resolvedServiceTier = context?.serviceTier as
-    | AiEventMetadata["serviceTier"]
-    | undefined;
-
   const hasMetadata =
-    resolvedServiceTier != null ||
-    context?.region != null ||
-    context?.openrouterCost != null ||
-    context?.cacheTtl != null ||
+    region != null ||
+    cacheTtl != null ||
     (context?.metadata != null && Object.keys(context.metadata).length > 0);
 
+  // User metadata is spread first so auto-detected values cannot be overridden by arbitrary keys.
   const metadata: AiEventMetadata | undefined = hasMetadata
     ? {
-        serviceTier: resolvedServiceTier,
-        region: context?.region,
-        openrouterCost: context?.openrouterCost,
-        cacheTtl: context?.cacheTtl,
         ...context?.metadata,
+        region,
+        cacheTtl,
       }
     : undefined;
 
-  const trackingData = await instance.recordEvent({
-    provider: "anthropic",
-    model,
-    user: context?.user ?? requestUser,
-    feature: context?.feature,
-    step: context?.step,
-    sessionId: context?.sessionId,
-    conversationId: context?.conversationId,
-    timestamp: context?.timestamp,
-    performance: {
-      latency: latencyMs,
-      status: toPerformanceStatus(status),
-      isStreamed: streaming,
-      errorMessage: errorMessage ?? null,
-    },
-    usage,
-    ...(metadata && { metadata }),
-    ...(context?.costOverride && { costOverride: context.costOverride }),
-  });
+  let trackingData = null;
+  try {
+    trackingData = await instance.recordEvent({
+      provider: "anthropic",
+      model,
+      user: context?.user ?? requestUser,
+      feature: context?.feature,
+      step: context?.step,
+      sessionId: context?.sessionId,
+      conversationId: context?.conversationId,
+      performance: {
+        latency: latencyMs,
+        status,
+        isStreamed: streaming,
+        errorMessage: errorMessage ?? null,
+      },
+      usage,
+      ...(metadata && { metadata }),
+      ...(context?.costOverride && {
+        costOverride: toSdkCostOverride(context.costOverride),
+      }),
+    });
+  } catch {
+    // Tracking failure must never surface as a user-facing error.
+    // Return a degraded response so the caller always gets a result.
+  }
 
   return {
     status,
     errorMessage,
     cost: trackingData?.totalCost ?? null,
     trackingId: trackingData?.recordId ?? null,
-    createdAt: null,
+    createdAt: trackingData?.timestamp ?? null,
   };
 }
 

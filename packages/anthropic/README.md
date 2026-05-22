@@ -7,10 +7,17 @@ Anthropic SDK wrapper for FluxGate token tracking. Automatically track token usa
 ## 📦 Installation
 
 ```bash
-npm install @fluxgate/sdk @fluxgate/anthropic @anthropic-ai/sdk
+npm install @fluxgate/anthropic
 ```
 
-## 🚀 Quick Start
+> **ESM only** - this package ships as ESM (`"type": "module"`), matching `@anthropic-ai/sdk` v0.39+.
+> Your project must use ESM. Node.js ≥ 18 is required.
+
+> **Peer dependency** - `@anthropic-ai/sdk` is a peer dependency; it is assumed you already have it installed. `@fluxgate/sdk` is pulled in automatically as a dependency.
+
+Get your FluxGate API key at [fluxgate.app](https://fluxgate.app).
+
+## Quick Start
 
 ```typescript
 import Anthropic from "@anthropic-ai/sdk";
@@ -48,7 +55,7 @@ console.log(message.fluxGateCostTrackingResponse);
 // }
 ```
 
-## 📖 API Reference
+## API Reference
 
 ### `createAnthropicCostTracker(client, instance)`
 
@@ -68,29 +75,54 @@ Creates a tracked Anthropic client with context support.
 
 Fields available when calling `withContext()`:
 
-| Field            | Type                                                         | Description                                                  |
-| ---------------- | ------------------------------------------------------------ | ------------------------------------------------------------ |
-| `user`           | `string \| UserSession`                                      | End-user ID or UserSession object                            |
-| `feature`        | `string`                                                     | Product feature name (e.g. `"chat"`, `"summarization"`)      |
-| `step`           | `string`                                                     | Step within a feature pipeline                               |
-| `sessionId`      | `string`                                                     | Session identifier                                           |
-| `conversationId` | `string`                                                     | Conversation identifier                                      |
-| `timestamp`      | `number`                                                     | Unix ms; defaults to server ingest time if omitted           |
-| `serviceTier`    | `"default" \| "standard" \| "batch" \| "flex" \| "priority"` | Pricing tier multiplier                                      |
-| `region`         | `string`                                                     | Hosting region for regional price variance                   |
-| `openrouterCost` | `number`                                                     | Explicit cost in USD from a proxy; skips server-side compute |
-| `cacheTtl`       | `string`                                                     | Provider cache expiration window (e.g. `"5m"`, `"1h"`)       |
-| `costOverride`   | `CostOverride`                                               | Override per-token pricing for cost calculation              |
-| `metadata`       | `Record<string, unknown>`                                    | Arbitrary key-value pairs forwarded to the event metadata    |
+| Field            | Type                      | Description                                               |
+| ---------------- | ------------------------- | --------------------------------------------------------- |
+| `user`           | `string \| UserSession`   | End-user ID or UserSession object                         |
+| `feature`        | `string`                  | Product feature name (e.g. `"chat"`, `"summarization"`)   |
+| `step`           | `string`                  | Step within a feature pipeline                            |
+| `sessionId`      | `string`                  | Session identifier                                        |
+| `conversationId` | `string`                  | Conversation identifier                                   |
+| `costOverride`   | `AnthropicCostOverride`   | Override per-token pricing for cost calculation           |
+| `metadata`       | `Record<string, unknown>` | Arbitrary key-value pairs forwarded to the event metadata |
+
+> **Auto-detected fields** — `region` and `cacheTtl` are never passed via context. `region` is inferred from the Anthropic client's `baseURL` (AWS Bedrock → `"us-east-1"`, GCP Vertex AI → `"us-central1"`, Anthropic regional API → `"eu"`, etc.). `cacheTtl` is inferred from `cache_control` blocks found in the request's `system` prompt or `messages`.
 
 ### Tracked Methods
 
 - ✅ `messages.create()` — Messages API, non-streaming
 - ✅ `messages.create({ stream: true })` — Messages API, streaming
+- ✅ `messages.withTracking(ctx)` — fork context for a single call
 - ✅ `completions.create()` — Legacy text completions, non-streaming and streaming
 - ✅ `beta.messages.create()` — Beta Messages API, non-streaming and streaming
+- ✅ `beta.messages.withTracking(ctx)` — fork context for a single call
 
-## 💡 Usage Examples
+### Per-call Context Fork (`withTracking`)
+
+Use `withTracking` to override context fields for a single call without mutating the session. The new fields are shallowly merged on top of the existing context.
+
+```typescript
+const session = anthropic.withContext({
+  feature: "chat",
+  user: "user-123",
+  conversationId: "conv-abc",
+});
+
+// Tag only this turn — session context is unaffected
+const reply = await session.messages
+  .withTracking({ step: "follow-up" })
+  .create({
+    model: "claude-opus-4-5",
+    max_tokens: 1024,
+    messages: history,
+  });
+
+// Works for beta.messages too
+const thinkingReply = await session.beta.messages
+  .withTracking({ step: "reasoning" })
+  .create({ model: "claude-opus-4-5", max_tokens: 8000, messages });
+```
+
+## Usage Examples
 
 ### Non-Streaming
 
@@ -186,12 +218,16 @@ try {
 }
 ```
 
+### Per-call Context Fork (`withTracking`)
+
+See [API Reference → Per-call Context Fork](#per-call-context-fork-withtracking) above for the full description and example.
+
 ### Without Context (Default)
 
 ```typescript
 // Use client property for default tracking without metadata
 const message = await anthropic.client.messages.create({
-  model: "claude-sonnet-4-6",
+  model: "claude-opus-4-5",
   max_tokens: 1024,
   messages: [{ role: "user", content: "Hello!" }],
 });
@@ -199,7 +235,7 @@ const message = await anthropic.client.messages.create({
 console.log(message.fluxGateCostTrackingResponse);
 ```
 
-## 📊 Tracking Data Structure
+## Tracking Data Structure
 
 Each response includes a `fluxGateCostTrackingResponse` property:
 
@@ -226,33 +262,56 @@ Tracked metrics include:
 
 - ✅ Input tokens (prompt)
 - ✅ Output tokens (completion)
-- ✅ Cache write tokens (prompt caching)
-- ✅ Cache read tokens (prompt caching)
+- ✅ Cache write tokens (`cache_creation_input_tokens` → `cacheWriteTokens`)
+- ✅ Cache read tokens (`cache_read_input_tokens` → `cacheReadTokens`)
 - ✅ Model name
 - ✅ Latency (milliseconds)
 - ✅ Stream duration (for streaming)
 - ✅ Stop reason (end_turn, max_tokens, content_filter, etc.)
 
-## 🎯 Type Safety
+## Type Safety
 
 Full TypeScript support with enhanced types:
 
 ```typescript
 import type {
+  // tracker return types
+  AnthropicTracker,
   TrackedAnthropic,
+  TrackedMessages,
+  TrackedBetaMessages,
+  // context
   FluxGateContext,
+  AnthropicCostOverride,
+  // sdk re-exports
   WithTracking,
   AiEventMetadata,
   UserSession,
-  CostOverride,
   FluxGateCostTrackingResponse,
 } from "@fluxgate/anthropic";
+
+// AnthropicTracker is the return type from createAnthropicCostTracker(...)
+const trackedClient: AnthropicTracker = createAnthropicCostTracker(
+  client,
+  fluxgate,
+);
 
 // TrackedAnthropic includes all Anthropic methods with tracking
 const anthropic: TrackedAnthropic = trackedClient.client;
 
+// TrackedMessages / TrackedBetaMessages for annotating variables
+const messages: TrackedMessages = trackedClient.withContext({
+  feature: "chat",
+}).messages;
+
+// AnthropicCostOverride — CostOverride without reasoningCostPer1MTokens
+const override: AnthropicCostOverride = {
+  inputCostPer1MTokens: 3,
+  outputCostPer1MTokens: 15,
+};
+
 // WithTracking adds fluxGateCostTrackingResponse to any type
-type Message = WithTracking<Anthropic.Message>;
+type TrackedMessage = WithTracking<Anthropic.Message>;
 ```
 
 ## 🔗 Related Packages
@@ -261,6 +320,6 @@ type Message = WithTracking<Anthropic.Message>;
 - [@fluxgate/openai](../openai) - OpenAI SDK wrapper
 - [@fluxgate/gemini](../gemini) - Gemini SDK wrapper
 
-## 📝 License
+## License
 
 MIT

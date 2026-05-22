@@ -60,7 +60,6 @@
     "node": ">=18.0.0"
   },
   "dependencies": {
-    "@fluxgate/sdk": "^0.0.6",
-    "fluxgate": "^1.3.0"
+    "@fluxgate/sdk": "^0.0.6"
   }
 }

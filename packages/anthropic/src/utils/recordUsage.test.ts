@@ -119,7 +119,7 @@ describe("recordUsage", () => {
     );
   });
 
-  it("should include metadata when serviceTier or region present in context", async () => {
+  it("should include metadata when region or cacheTtl are provided", async () => {
     const instance = mockInstance(null);
 
     await recordUsage({
@@ -127,22 +127,17 @@ describe("recordUsage", () => {
       model: "claude-sonnet-4-20250514",
       latencyMs: 100,
       streaming: false,
-      context: {
-        serviceTier: "standard",
-        region: "us-east-1",
-        openrouterCost: 0.005,
-        cacheTtl: "5m",
-      },
+      context: undefined,
       usage: { promptTokens: 10, completionTokens: 5 },
       status: "SUCCESS",
+      region: "aws",
+      cacheTtl: "5m",
     });
 
     expect(instance.recordEvent).toHaveBeenCalledWith(
       expect.objectContaining({
         metadata: expect.objectContaining({
-          serviceTier: "standard",
-          region: "us-east-1",
-          openrouterCost: 0.005,
+          region: "aws",
           cacheTtl: "5m",
         }),
       }),
@@ -201,7 +196,7 @@ describe("recordUsage", () => {
     );
   });
 
-  it("should map MALFORMED_REQUEST to ERROR performance", async () => {
+  it("should pass MALFORMED_REQUEST status directly to performance", async () => {
     const instance = mockInstance(null);
 
     await recordUsage({
@@ -216,27 +211,28 @@ describe("recordUsage", () => {
 
     expect(instance.recordEvent).toHaveBeenCalledWith(
       expect.objectContaining({
-        performance: expect.objectContaining({ status: "ERROR" }),
+        performance: expect.objectContaining({ status: "MALFORMED_REQUEST" }),
       }),
     );
   });
 
-  it("should include timestamp from context", async () => {
+  it("should pass context.metadata into event metadata", async () => {
     const instance = mockInstance(null);
-    const ts = Date.now();
 
     await recordUsage({
       instance,
       model: "claude-sonnet-4-20250514",
       latencyMs: 100,
       streaming: false,
-      context: { timestamp: ts },
+      context: { metadata: { customKey: "customValue" } },
       usage: { promptTokens: 10, completionTokens: 5 },
       status: "SUCCESS",
     });
 
     expect(instance.recordEvent).toHaveBeenCalledWith(
-      expect.objectContaining({ timestamp: ts }),
+      expect.objectContaining({
+        metadata: expect.objectContaining({ customKey: "customValue" }),
+      }),
     );
   });
 });

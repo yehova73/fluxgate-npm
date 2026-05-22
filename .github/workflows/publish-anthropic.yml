@@ -1,0 +1,36 @@
+name: Publish @fluxgate/anthropic
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "packages/anthropic/**"
+      - "!packages/anthropic/**/*.test.ts"
+      - "!packages/anthropic/examples/**"
+  workflow_dispatch:
+
+permissions:
+  id-token: write # required for OIDC trusted publishing
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20.x"
+          cache: "npm"
+          registry-url: "https://registry.npmjs.org"
+
+      - run: npm ci
+      - run: npm run build --workspace=packages/sdk
+      - run: npm run typecheck --workspace=packages/anthropic
+      - run: npm test --workspace=packages/anthropic
+      - run: npm run build --workspace=packages/anthropic
+
+      - name: Publish to npm
+        working-directory: packages/anthropic
+        run: npm publish --provenance --access public

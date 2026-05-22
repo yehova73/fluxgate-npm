@@ -3,78 +3,75 @@ import { FluxGate } from "@fluxgate/sdk";
 import { createAnthropicCostTracker } from "@fluxgate/anthropic";
 
 async function main() {
-  // Initialize Anthropic client
-  const client = new Anthropic({
-    apiKey: process.env.ANTHROPIC_API_KEY,
-  });
-
-  // Initialize FluxGate instance
+  const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
   const fluxgate = new FluxGate({
-    apiKey: process.env.FLUXGATE_API_KEY || "your-fluxgate-api-key",
+    apiKey: process.env.FLUXGATE_API_KEY!,
     debug: true,
   });
-
-  // Create tracked client
   const anthropic = createAnthropicCostTracker(client, fluxgate);
 
-  console.log("=== Error Handling Example ===\n");
-
-  // Example 1: Invalid model name
-  console.log("1. Testing with an invalid model...");
+  // --- Invalid model (caught, tracked as ERROR) ---
+  console.log("=== Invalid Model ===\n");
   try {
     await anthropic
-      .withContext({
-        feature: "error-handling",
-        user: "demo-user",
-      })
+      .withContext({ feature: "error-test", user: "user-123" })
       .messages.create({
-        model: "invalid-model-name" as any,
+        model: "invalid-model-name" as Anthropic.Model,
         max_tokens: 1024,
         messages: [{ role: "user", content: "Hello" }],
       });
-  } catch (error: any) {
-    console.log("Caught error (expected):", error.message);
-    console.log("Error was tracked automatically\n");
+  } catch (error: unknown) {
+    const msg = error instanceof Error ? error.message : String(error);
+    console.log("Caught error (expected):", msg);
+    console.log("Error was tracked automatically.\n");
   }
 
-  // Example 2: Exceeding max_tokens in a streaming response
-  console.log("2. Testing streaming with error handling...");
-  try {
-    const stream = await anthropic
-      .withContext({
-        feature: "streaming-error-test",
-        user: "demo-user",
-      })
-      .messages.create({
-        model: "claude-3-5-haiku-20241022",
-        max_tokens: 64,
-        messages: [
-          {
-            role: "user",
-            content: "Count from 1 to 100, one number per line.",
-          },
-        ],
-        stream: true,
-      });
+  // --- MAX_TOKENS stop reason ---
+  console.log("=== MAX_TOKENS stop reason ===\n");
 
-    let chunkCount = 0;
-    for await (const event of stream) {
-      if (
-        event.type === "content_block_delta" &&
-        event.delta.type === "text_delta"
-      ) {
-        process.stdout.write(event.delta.text);
-        chunkCount++;
-      }
+  const maxTokensResponse = await anthropic
+    .withContext({ feature: "max-tokens-test", user: "user-123" })
+    .messages.create({
+      model: "claude-haiku-4-5",
+      max_tokens: 10,
+      messages: [{ role: "user", content: "Count from 1 to 100." }],
+    });
+
+  console.log("Stop reason:", maxTokensResponse.stop_reason);
+  console.log(
+    "Tracking status:",
+    maxTokensResponse.fluxGateCostTrackingResponse?.status,
+  );
+  // status will be MAX_TOKENS
+
+  // --- Streaming error tracking ---
+  console.log("\n=== Streaming with short max_tokens ===\n");
+
+  const stream = await anthropic
+    .withContext({ feature: "streaming-error-test", user: "user-123" })
+    .messages.create({
+      model: "claude-haiku-4-5",
+      max_tokens: 64,
+      messages: [
+        { role: "user", content: "Count from 1 to 1000, one number per line." },
+      ],
+      stream: true,
+    });
+
+  let chunks = 0;
+  for await (const event of stream) {
+    if (
+      event.type === "content_block_delta" &&
+      event.delta.type === "text_delta"
+    ) {
+      process.stdout.write(event.delta.text);
+      chunks++;
     }
-
-    console.log(`\n\nSuccessfully processed ${chunkCount} delta events`);
-    console.log("Tracking Data:", stream.fluxGateCostTrackingResponse);
-  } catch (error: any) {
-    console.log("Caught streaming error:", error.message);
   }
 
-  console.log("\n=== Done ===");
+  console.log(`\n\nProcessed ${chunks} delta events.`);
+  console.log("Tracking:", stream.fluxGateCostTrackingResponse);
+  // status will be MAX_TOKENS
 }
 
 main().catch(console.error);
