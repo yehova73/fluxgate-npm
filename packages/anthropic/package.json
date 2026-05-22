@@ -50,7 +50,7 @@
     "access": "public"
   },
   "dependencies": {
-    "@fluxgate/sdk": "^0.0.4-dev.0"
+    "@fluxgate/sdk": "^0.0.5"
   },
   "peerDependencies": {
     "@anthropic-ai/sdk": "^0.50.0"
