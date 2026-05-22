@@ -10,6 +10,8 @@ Core tracking functionality for FluxGate. This package provides the base `FluxGa
 npm install @fluxgate/sdk
 ```
 
+Get your FluxGate API key at [fluxgate.app](https://fluxgate.app) before initializing the client.
+
 ## 🚀 Quick Start
 
 ```typescript
@@ -62,12 +64,29 @@ new FluxGate(config: FluxGateConfig)
 
 **Configuration Options:**
 
-| Option     | Type      | Required | Default                           | Description                                                                                                                                                                                   |
-| ---------- | --------- | -------- | --------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `apiKey`   | `string`  | ✅       | -                                 | Your FluxGate API key. Get a free one at [fluxgate.app](https://fluxgate.app)                                                                                                                 |
-| `endpoint` | `string`  | ❌       | `https://fluxgate.app/api/events` | API endpoint URL                                                                                                                                                                              |
-| `timeout`  | `number`  | ❌       | `5000`                            | Request timeout in milliseconds. On edge runtimes (Cloudflare Workers, Vercel Edge) with tight execution limits, set this lower and confirm your runtime supports `fetch` with `AbortSignal`. |
-| `debug`    | `boolean` | ❌       | `false`                           | Enable debug logging                                                                                                                                                                          |
+- **`apiKey`**
+  - Type: `string`
+  - Required: ✅ Yes
+  - Default: none
+  - Description: Your FluxGate API key. Get a free one at [fluxgate.app](https://fluxgate.app).
+
+- **`endpoint`**
+  - Type: `string`
+  - Required: ❌ No
+  - Default: `https://fluxgate.app/api/events`
+  - Description: API endpoint URL.
+
+- **`timeout`**
+  - Type: `number`
+  - Required: ❌ No
+  - Default: `5000`
+  - Description: Request timeout in milliseconds. On edge runtimes (Cloudflare Workers, Vercel Edge) with tight execution limits, set this lower and confirm your runtime supports `fetch` with `AbortSignal`.
+
+- **`debug`**
+  - Type: `boolean`
+  - Required: ❌ No
+  - Default: `false`
+  - Description: Enable debug logging.
 
 #### Methods
 

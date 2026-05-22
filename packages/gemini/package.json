@@ -50,7 +50,7 @@
     "access": "public"
   },
   "dependencies": {
-    "@fluxgate/sdk": "^0.0.4-dev.0"
+    "@fluxgate/sdk": "^0.0.5"
   },
   "peerDependencies": {
     "@google/genai": "^2.0.0"

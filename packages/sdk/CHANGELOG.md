@@ -6,6 +6,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+## [0.0.6] — 2026-05-22
+
+### Fixed
+
+- SDK build output now excludes test artifacts from published `dist/` (`src/**/*.test.ts` is excluded from emit).
+- SDK package now consistently emits and publishes the `./types` artifacts (`dist/types/types.d.ts` and `dist/types/types.js`) used by the `./types` subpath export.
+- Export condition ordering in `package.json` was adjusted to prioritize TypeScript type resolution (`types` before `import`) for consumers using bundler-style module resolution.
+- Downstream wrapper compatibility was aligned with the SDK’s exported user type (`UserSession`), removing stale `TrackedUser` references.
+
 ## [0.0.5] — 2026-05-22
 
 ### Added

@@ -25,7 +25,7 @@ export function createGeminiCostTracker(
 }
 
 export type {
-  TrackedUser,
+  UserSession,
   FluxGateCostTrackingResponse,
   WithTracking,
   AiEventStatus,
