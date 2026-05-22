@@ -15,12 +15,16 @@
   },
   "type": "module",
   "files": [
-    "dist"
+    "dist",
+    "README.md",
+    "LICENSE"
   ],
   "sideEffects": false,
   "scripts": {
     "build": "tsc",
     "dev": "tsc --watch",
+    "clean": "npx rimraf dist tsconfig.tsbuildinfo",
+    "lint": "tsc --noEmit",
     "prepublishOnly": "npm run build",
     "typecheck": "tsc --noEmit",
     "test": "vitest run --root ../../",
@@ -50,11 +54,8 @@
   "publishConfig": {
     "access": "public"
   },
-  "dependencies": {
-    "@fluxgate/sdk": "^0.0.4-dev.0"
-  },
   "peerDependencies": {
-    "openai": "^6.34.0"
+    "openai": "^5.0.0"
   },
   "devDependencies": {
     "@types/node": "^20.11.0",
@@ -62,5 +63,8 @@
   },
   "engines": {
     "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "@fluxgate/sdk": "^0.0.6"
   }
 }

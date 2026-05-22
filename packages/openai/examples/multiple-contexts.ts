@@ -90,30 +90,6 @@ async function main() {
 
   console.log("Tracking:", batchRes.fluxGateCostTrackingResponse);
 
-  // --- OpenRouter Cost Passthrough ---
-  // When routing via OpenRouter, pass the provider-reported cost directly.
-  // FluxGate will skip server-side cost computation and record this value.
-  console.log("\n=== OpenRouter Cost Passthrough ===\n");
-
-  const routerClient = new OpenAI({
-    apiKey: process.env.OPENROUTER_API_KEY,
-    baseURL: "https://openrouter.ai/api/v1",
-  });
-  const routerOpenai = createOpenAICostTracker(routerClient, fluxgate);
-
-  // After a real OpenRouter call you would read the cost from
-  // response.headers['x-openrouter-cost'] and pass it here.
-  // Example shows the pattern; the actual call requires a valid OpenRouter key.
-  console.log(
-    "Pattern: pass openrouterCost from response headers into withContext()",
-  );
-  console.log(
-    "  const cost = parseFloat(response.headers['x-openrouter-cost'] ?? '0');",
-  );
-  console.log(
-    "  routerOpenai.withContext({ feature: 'chat', openrouterCost: cost })",
-  );
-
   // --- Cost Override ---
   // Supply custom per-token rates when the model uses non-standard pricing.
   console.log("\n=== Cost Override ===\n");
@@ -136,8 +112,6 @@ async function main() {
     "Tracking with custom rates:",
     overrideRes.fluxGateCostTrackingResponse,
   );
-
-  void routerOpenai; // suppress unused warning
 }
 
 main().catch(console.error);

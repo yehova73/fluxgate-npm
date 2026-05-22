@@ -1,0 +1,36 @@
+name: Publish @fluxgate/openai
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "packages/openai/**"
+      - "!packages/openai/**/*.test.ts"
+      - "!packages/openai/examples/**"
+  workflow_dispatch:
+
+permissions:
+  id-token: write # required for OIDC trusted publishing
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20.x"
+          cache: "npm"
+          registry-url: "https://registry.npmjs.org"
+
+      - run: npm ci
+      - run: npm run build --workspace=packages/sdk
+      - run: npm run typecheck --workspace=packages/openai
+      - run: npm test --workspace=packages/openai
+      - run: npm run build --workspace=packages/openai
+
+      - name: Publish to npm
+        working-directory: packages/openai
+        run: npm publish --provenance --access public

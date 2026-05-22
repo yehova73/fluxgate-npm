@@ -25,13 +25,19 @@ export function createOpenAICostTracker(
 }
 
 export type {
-  TrackedUser,
+  UserSession,
   FluxGateCostTrackingResponse,
   WithTracking,
   AiEventStatus,
   AiEventMetadata,
+  AiEventUsage,
   CostOverride,
   Performance,
 } from "@fluxgate/sdk";
+export type {
+  FluxGateContext,
+  OpenAICostOverride,
+  OpenAiEventUsage,
+} from "./types/types.js";
 export * from "./types/types.js";
 export { TrackedStream } from "./wrappers/TrackedStream.js";

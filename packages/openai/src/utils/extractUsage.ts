@@ -1,9 +1,9 @@
 import OpenAI from "openai";
-import { AiEventUsage } from "@fluxgate/sdk";
+import { OpenAiEventUsage } from "../types/types.js";
 
 export function extractChatUsage(
   usage: OpenAI.Completions.CompletionUsage | null | undefined,
-): AiEventUsage {
+): OpenAiEventUsage {
   if (!usage) {
     return { promptTokens: 0, completionTokens: 0 };
   }
@@ -19,7 +19,7 @@ export function extractChatUsage(
 
 export function extractResponseUsage(
   usage: OpenAI.Responses.ResponseUsage | null | undefined,
-): AiEventUsage {
+): OpenAiEventUsage {
   if (!usage) {
     return { promptTokens: 0, completionTokens: 0 };
   }
@@ -34,7 +34,7 @@ export function extractResponseUsage(
 
 export function extractEmbeddingUsage(
   usage: OpenAI.Embeddings.CreateEmbeddingResponse["usage"] | null | undefined,
-): AiEventUsage {
+): OpenAiEventUsage {
   if (!usage) {
     return { promptTokens: 0, completionTokens: 0 };
   }

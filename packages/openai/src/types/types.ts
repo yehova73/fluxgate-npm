@@ -1,13 +1,27 @@
 import type OpenAI from "openai";
 import type {
   WithTracking,
-  TrackedUser,
-  AiEventMetadata,
+  UserSession,
   CostOverride,
+  AiEventUsage,
 } from "@fluxgate/sdk";
 import type { TrackedStream } from "../wrappers/TrackedStream.js";
 
-/** Utility: intersects any SDK response type with fluxGateCostTrackingResponse */
+/**
+ * OpenAI-specific cost override.
+ * - Excludes `cacheWriteCostPer1MTokens` — OpenAI does not report cache-write token counts
+ *   (prompt caching is automatic and write costs are not surfaced).
+ */
+export type OpenAICostOverride = Omit<
+  CostOverride,
+  "cacheWriteCostPer1MTokens"
+>;
+
+/**
+ * OpenAI-specific usage shape.
+ * - Excludes `cacheWriteTokens` — OpenAI does not expose cache-write token counts.
+ */
+export type OpenAiEventUsage = Omit<AiEventUsage, "cacheWriteTokens">;
 
 // Shorthand for the options parameter shared by all create overloads
 type ChatOpts = Parameters<OpenAI["chat"]["completions"]["create"]>[1];
@@ -89,17 +103,15 @@ export type TrackedOpenAI = Omit<
  * Top-level fields map directly to the FluxGate ingest API's event fields.
  */
 export type FluxGateContext = {
-  /** End-user who triggered the event — plain string ID or a TrackedUser object */
-  user?: string | TrackedUser;
+  /** End-user who triggered the event — plain string ID or a UserSession object */
+  user?: string | UserSession;
   /** Product feature name (e.g. "chat", "summarization") */
   feature?: string;
   step?: string;
   sessionId?: string;
   conversationId?: string;
-  // /** Explicit total cost in USD from an aggregator proxy (e.g. OpenRouter). Skips server-side cost computation. */
-  // openrouterCost?: number;
   /** Override per-token pricing used for cost calculation */
-  costOverride?: CostOverride;
+  costOverride?: OpenAICostOverride;
   /** Arbitrary key-value pairs forwarded to the metadata object (e.g. { language: "typescript", documentType: "article" }) */
   metadata?: Record<string, unknown>;
 };

@@ -5,9 +5,14 @@ import {
   FluxGateCostTrackingResponse,
   AiEventUsage,
   AiEventMetadata,
+  CostOverride,
 } from "@fluxgate/sdk";
 import type OpenAI from "openai";
-import { FluxGateContext } from "../types/types.js";
+import {
+  FluxGateContext,
+  OpenAiEventUsage,
+  OpenAICostOverride,
+} from "../types/types.js";
 
 const OPENAI_REGION_MAP: Record<string, string> = {
   us: "us",
@@ -36,26 +41,28 @@ export function detectRegion(baseURL: string): string | undefined {
 export function detectProvider(baseURL: string): string {
   try {
     const { hostname } = new URL(baseURL);
-    if (hostname === "api.openai.com" || hostname.endsWith(".api.openai.com"))
-      return "openai";
-    if (hostname.endsWith(".azure.com")) return "azure";
-    if (hostname === "api.groq.com") return "groq";
-    if (hostname === "api.together.xyz") return "together";
-    if (hostname === "api.x.ai") return "xai";
-    if (hostname === "openrouter.ai" || hostname === "api.openrouter.ai")
-      return "openrouter";
-    if (hostname === "api.mistral.ai") return "mistral";
-    if (hostname === "generativelanguage.googleapis.com") return "google";
+    if (hostname.includes("azure.com")) return "azure";
+    if (hostname.includes("openai.com")) return "openai";
+    if (hostname.includes("groq.com")) return "groq";
+    if (hostname.includes("together.xyz")) return "together";
+    if (hostname.includes("x.ai")) return "xai";
+    if (hostname.includes("openrouter.ai")) return "openrouter";
+    if (hostname.includes("mistral.ai")) return "mistral";
+    if (hostname.includes("googleapis.com")) return "google";
     return hostname;
   } catch {
     return "openai";
   }
 }
 
-function toPerformanceStatus(status: AiEventStatus): "SUCCESS" | "ERROR" {
-  return status === "ERROR" || status === "MALFORMED_REQUEST"
-    ? "ERROR"
-    : "SUCCESS";
+/** Maps OpenAI-specific usage (no cacheWriteTokens) to the SDK's AiEventUsage. */
+function toSdkUsage(usage: OpenAiEventUsage): AiEventUsage {
+  return { ...usage };
+}
+
+/** Maps OpenAICostOverride (no cacheWriteCostPer1MTokens) to the SDK's CostOverride. */
+function toSdkCostOverride(override: OpenAICostOverride): CostOverride {
+  return { ...override };
 }
 
 export async function recordUsage(params: {
@@ -64,7 +71,7 @@ export async function recordUsage(params: {
   latencyMs: number;
   streaming: boolean;
   context: FluxGateContext | undefined;
-  usage: AiEventUsage;
+  usage: OpenAiEventUsage;
   status: AiEventStatus;
   errorMessage?: string;
   provider: string;
@@ -97,7 +104,6 @@ export async function recordUsage(params: {
   const hasMetadata =
     resolvedServiceTier != null ||
     region != null ||
-    // context?.openrouterCost != null ||
     (context?.metadata != null && Object.keys(context.metadata).length > 0);
 
   // User metadata is spread first so that auto-detected values (region, serviceTier)
@@ -105,7 +111,6 @@ export async function recordUsage(params: {
   const metadata: AiEventMetadata | undefined = hasMetadata
     ? {
         ...context?.metadata,
-        openrouterCost: 0, // context?.openrouterCost,
         serviceTier: resolvedServiceTier,
         region,
       }
@@ -123,13 +128,15 @@ export async function recordUsage(params: {
       conversationId: context?.conversationId,
       performance: {
         latency: latencyMs,
-        status: toPerformanceStatus(status),
+        status: status,
         isStreamed: streaming,
         errorMessage: errorMessage ?? null,
       },
-      usage,
+      usage: toSdkUsage(usage),
       ...(metadata && { metadata }),
-      ...(context?.costOverride && { costOverride: context.costOverride }),
+      ...(context?.costOverride && {
+        costOverride: toSdkCostOverride(context.costOverride),
+      }),
     });
   } catch {
     // Tracking failure must never surface as a user-facing error.

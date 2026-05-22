@@ -1,6 +1,6 @@
 import OpenAI from "openai";
 import { FluxGate } from "@fluxgate/sdk";
-import { createOpenAICostTracker } from "@fluxgate/openai";
+import { createOpenAICostTracker, FluxGateContext } from "@fluxgate/openai";
 
 async function main() {
   const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
@@ -29,7 +29,6 @@ async function main() {
 
   // --- Responses API ---
   console.log("\n=== Responses API ===\n");
-
   const response = await openai
     .withContext({ feature: "assistant", user: "user-123" })
     .responses.create({
