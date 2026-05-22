@@ -9,10 +9,11 @@ export default defineConfig({
       reporter: ["text", "json", "html"],
       exclude: [
         "node_modules/",
-        "dist/",
+        "**/dist/**",
         "**/*.d.ts",
         "**/*.config.*",
         "**/types/",
+        "**/examples/**",
       ],
       thresholds: {
         statements: 80,

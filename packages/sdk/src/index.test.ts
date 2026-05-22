@@ -319,5 +319,148 @@ describe("FluxGate", () => {
 
       consoleSpy.mockRestore();
     });
+
+    it("should log network errors when debug is enabled", async () => {
+      const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+
+      const debugTracker = new FluxGate({
+        apiKey: mockApiKey,
+        endpoint: mockEndpoint,
+        debug: true,
+      });
+
+      vi.mocked(fetch).mockRejectedValue(new Error("network down"));
+
+      const event: LLMEvent = {
+        provider: "openai",
+        model: "gpt-4o",
+        performance: { latency: 500, status: "SUCCESS", isStreamed: false },
+        usage: { promptTokens: 100, completionTokens: 50 },
+      };
+
+      const result = await debugTracker.recordEvent(event);
+      expect(result).toBeNull();
+      expect(errorSpy).toHaveBeenCalledWith(
+        "[fluxgate] Network error sending event:",
+        expect.any(Error),
+      );
+
+      errorSpy.mockRestore();
+    });
+
+    it("should log non-2xx responses when debug is enabled", async () => {
+      const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+
+      const debugTracker = new FluxGate({
+        apiKey: mockApiKey,
+        endpoint: mockEndpoint,
+        debug: true,
+      });
+
+      vi.mocked(fetch).mockResolvedValue({
+        ok: false,
+        status: 503,
+        statusText: "Service Unavailable",
+        text: async () => "error",
+      } as Response);
+
+      const event: LLMEvent = {
+        provider: "openai",
+        model: "gpt-4o",
+        performance: { latency: 500, status: "SUCCESS", isStreamed: false },
+        usage: { promptTokens: 100, completionTokens: 50 },
+      };
+
+      const result = await debugTracker.recordEvent(event);
+      expect(result).toBeNull();
+      expect(errorSpy).toHaveBeenCalledWith(
+        expect.stringContaining("non-2xx status: 503"),
+        undefined,
+      );
+
+      errorSpy.mockRestore();
+    });
+
+    it("should log JSON parse errors when debug is enabled", async () => {
+      const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+
+      const debugTracker = new FluxGate({
+        apiKey: mockApiKey,
+        endpoint: mockEndpoint,
+        debug: true,
+      });
+
+      vi.mocked(fetch).mockResolvedValue({
+        ok: true,
+        status: 200,
+        statusText: "OK",
+        text: async () => "not valid json!!!",
+      } as Response);
+
+      const event: LLMEvent = {
+        provider: "openai",
+        model: "gpt-4o",
+        performance: { latency: 500, status: "SUCCESS", isStreamed: false },
+        usage: { promptTokens: 100, completionTokens: 50 },
+      };
+
+      const result = await debugTracker.recordEvent(event);
+      expect(result).toBeNull();
+      expect(errorSpy).toHaveBeenCalledWith(
+        "[fluxgate] Failed to parse response:",
+        expect.any(SyntaxError),
+      );
+
+      errorSpy.mockRestore();
+    });
+
+    it("should use custom logger when provided", async () => {
+      const customLogger = vi.fn();
+
+      const debugTracker = new FluxGate({
+        apiKey: mockApiKey,
+        endpoint: mockEndpoint,
+        debug: true,
+        logger: customLogger,
+      });
+
+      expect(customLogger).toHaveBeenCalledWith(
+        "log",
+        "[fluxgate] FluxGate initialized",
+        expect.any(Object),
+      );
+
+      vi.mocked(fetch).mockResolvedValue({
+        ok: true,
+        status: 200,
+        statusText: "OK",
+        text: async () =>
+          JSON.stringify({
+            recordId: "1",
+            totalTokens: 10,
+            totalCost: 0.001,
+            status: "ok",
+          }),
+      } as Response);
+
+      const event: LLMEvent = {
+        provider: "openai",
+        model: "gpt-4o",
+        performance: { latency: 500, status: "SUCCESS", isStreamed: false },
+        usage: { promptTokens: 100, completionTokens: 50 },
+      };
+
+      await debugTracker.recordEvent(event);
+
+      expect(customLogger).toHaveBeenCalledWith(
+        "log",
+        expect.stringContaining("[fluxgate] Sending event"),
+        expect.any(String),
+      );
+      expect(customLogger).toHaveBeenCalledWith(
+        "log",
+        expect.stringContaining("[fluxgate] Event sent successfully"),
+      );
+    });
   });
 });
