@@ -9,7 +9,7 @@
   ],
   "license": "MIT",
   "scripts": {
-    "build": "npm run build --workspaces",
+    "build": "npm run build --workspace=packages/sdk && npm run build --workspaces",
     "dev": "tsc -b --watch",
     "test": "vitest run",
     "test:watch": "vitest",
