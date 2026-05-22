@@ -25,7 +25,7 @@ async function main() {
       feature: "semantic-search",
       user: "demo-user",
     })
-    .embedContent({
+    .models.embedContent({
       model: "text-embedding-004",
       contents: "The quick brown fox jumps over the lazy dog",
     });
@@ -53,7 +53,7 @@ async function main() {
           feature: "batch-embeddings",
           step: `text-${index}`,
         })
-        .embedContent({ model: "text-embedding-004", contents: text });
+        .models.embedContent({ model: "text-embedding-004", contents: text });
       return {
         text,
         embedding: result.embeddings?.[0]?.values ?? [],

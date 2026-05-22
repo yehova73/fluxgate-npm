@@ -3,92 +3,90 @@ import { FluxGate } from "@fluxgate/sdk";
 import { createOpenAICostTracker } from "@fluxgate/openai";
 
 async function main() {
-  // Initialize OpenAI client
-  const client = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY,
-  });
-
-  // Initialize FluxGate instance
+  const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
   const fluxgate = new FluxGate({
-    apiKey: process.env.FLUXGATE_API_KEY || "your-fluxgate-api-key",
+    apiKey: process.env.FLUXGATE_API_KEY!,
     debug: true,
   });
 
-  // Create tracked client
   const openai = createOpenAICostTracker(client, fluxgate);
 
-  console.log("=== Error Handling Example ===\n");
+  // --- Error Tracking ---
+  // Errors are automatically captured and sent to FluxGate with status ERROR.
+  console.log("=== Error Tracking ===\n");
 
-  // Example 1: Invalid model
-  console.log("1. Testing with invalid model...");
   try {
     await openai
-      .withContext({
-        feature: "error-handling",
-        user: "demo-user",
-      })
+      .withContext({ feature: "chat", user: "user-123" })
       .chat.completions.create({
-        model: "invalid-model-name",
+        model: "invalid-model",
         messages: [{ role: "user", content: "Hello" }],
       });
-  } catch (error: any) {
-    console.log("Caught error (expected):", error.message);
-    console.log("Error was tracked automatically\n");
+  } catch (err: any) {
+    console.log("Error caught (expected):", err.message);
+    console.log(
+      "The failed event was tracked automatically with status ERROR.\n",
+    );
   }
 
-  // Example 2: Streaming with error handling
-  console.log("2. Testing streaming with error handling...");
-  try {
-    const stream = await openai
-      .withContext({
-        feature: "streaming-error-test",
-      })
-      .chat.completions.create({
-        model: "gpt-3.5-turbo",
-        messages: [{ role: "user", content: "Tell me a story" }],
-        stream: true,
-      });
+  // --- Stream Error Tracking ---
+  // If a stream throws mid-iteration, the error is tracked before re-throwing.
+  console.log("=== Stream Error Tracking ===\n");
 
-    let chunkCount = 0;
-    for await (const chunk of stream) {
-      chunkCount++;
-      process.stdout.write(chunk.choices[0]?.delta?.content || "");
-    }
-
-    console.log(`\n\nSuccessfully processed ${chunkCount} chunks`);
-    console.log("Tracking Data:", stream.fluxGateCostTrackingResponse);
-  } catch (error: any) {
-    console.log("\nStream error:", error.message);
-  }
-
-  // Example 3: Graceful degradation
-  console.log("\n3. Demonstrating graceful degradation...");
-
-  // Even if tracking service is down, your app continues
-  const instanceWithBadEndpoint = new FluxGate({
-    apiKey: "test-key",
-    endpoint: "https://invalid-endpoint-that-doesnt-exist.com",
-    timeout: 1000,
-    debug: false, // Disable debug to avoid noise
-  });
-
-  const openaiWithBadInstance = createOpenAICostTracker(
-    client,
-    instanceWithBadEndpoint,
-  );
-
-  try {
-    const result = await openaiWithBadInstance.client.chat.completions.create({
-      model: "gpt-3.5-turbo",
-      messages: [{ role: "user", content: "Hello!" }],
+  const stream = await openai
+    .withContext({ feature: "streaming", user: "user-123" })
+    .chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [{ role: "user", content: "Count from 1 to 5." }],
+      stream: true,
     });
 
-    console.log("Response received:", result.choices[0].message.content);
-    console.log("Tracking failed silently, but app continued working");
-    console.log("Tracking Data:", result.fluxGateCostTrackingResponse);
-  } catch (error: any) {
-    console.log("App error:", error.message);
+  try {
+    for await (const chunk of stream) {
+      process.stdout.write(chunk.choices[0]?.delta?.content ?? "");
+    }
+    console.log("\n\nTracking:", stream.fluxGateCostTrackingResponse);
+  } catch (err: any) {
+    console.log("\nStream error:", err.message);
+    console.log("Tracking:", stream.fluxGateCostTrackingResponse);
   }
+
+  // --- Legacy Text Completions ---
+  console.log("\n=== Legacy Completions ===\n");
+
+  const legacy = await openai
+    .withContext({ feature: "legacy-gen", user: "user-123" })
+    .completions.create({
+      model: "gpt-3.5-turbo-instruct",
+      prompt: "Write a one-line tagline for a TypeScript library:",
+      max_tokens: 40,
+    });
+
+  console.log(legacy.choices[0].text?.trim());
+  console.log("\nTracking:", legacy.fluxGateCostTrackingResponse);
+
+  // --- Regional Endpoint ---
+  // Point the OpenAI client at a regional base URL. FluxGate automatically
+  // detects the region from the hostname and tags every event accordingly.
+  console.log("\n=== Regional Endpoint (EU) ===\n");
+
+  const euClient = new OpenAI({
+    apiKey: process.env.OPENAI_API_KEY,
+    baseURL: "https://eu.api.openai.com/v1",
+  });
+  const euOpenai = createOpenAICostTracker(euClient, fluxgate);
+
+  // All calls through euOpenai are automatically tagged region: 'eu' —
+  // no extra context configuration needed.
+  const euChat = await euOpenai
+    .withContext({ feature: "chat", user: "user-123" })
+    .chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [{ role: "user", content: "Hello from Europe!" }],
+    });
+
+  console.log(euChat.choices[0].message.content);
+  console.log("\nTracking:", euChat.fluxGateCostTrackingResponse);
 }
 
 main().catch(console.error);

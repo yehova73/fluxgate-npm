@@ -3,146 +3,141 @@ import { FluxGate } from "@fluxgate/sdk";
 import { createOpenAICostTracker } from "@fluxgate/openai";
 
 async function main() {
-  // Initialize OpenAI client
-  const client = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY,
-  });
-
-  // Initialize FluxGate instance
+  const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
   const fluxgate = new FluxGate({
-    apiKey: process.env.FLUXGATE_API_KEY || "your-fluxgate-api-key",
+    apiKey: process.env.FLUXGATE_API_KEY!,
     debug: true,
   });
 
-  // Create tracked client
   const openai = createOpenAICostTracker(client, fluxgate);
 
-  console.log("=== Multiple Contexts Example ===\n");
-  console.log("Simulating different features in the same app\n");
+  // --- Feature Isolation ---
+  // Each withContext() call creates an independent tracked client.
+  // Events appear separately in FluxGate grouped by feature.
+  console.log("=== Feature Isolation ===\n");
 
-  // Context 1: Chatbot feature
-  console.log("1. CHATBOT FEATURE");
-  const chatClient = openai.withContext({
-    feature: "chatbot",
-    user: {
-      id: "user-123",
-      name: "Alice",
-      email: "alice@example.com",
-      monthlyRevenue: "29.99",
-    },
-    sessionId: "session-abc",
-  });
-
-  const chatResponse = await chatClient.chat.completions.create({
-    model: "gpt-3.5-turbo",
-    messages: [{ role: "user", content: "Hello, how are you?" }],
-  });
-
-  console.log("Response:", chatResponse.choices[0].message.content);
-  console.log("Tracking:", chatResponse.fluxGateCostTrackingResponse);
-  console.log();
-
-  // Context 2: Code generation feature
-  console.log("2. CODE GENERATION FEATURE");
-  const codeClient = openai.withContext({
-    feature: "code-generation",
-    user: "user-456",
-    step: "generate",
-    metadata: { language: "typescript" },
-  });
-
-  const codeResponse = await codeClient.chat.completions.create({
-    model: "gpt-4",
-    messages: [
-      {
-        role: "user",
-        content: "Write a TypeScript function to calculate fibonacci",
-      },
-    ],
-  });
-
-  console.log("Response:", codeResponse.choices[0].message.content);
-  console.log("Tracking:", codeResponse.fluxGateCostTrackingResponse);
-  console.log();
-
-  // Context 3: Document summarization feature
-  console.log("3. DOCUMENT SUMMARIZATION FEATURE");
+  const chatClient = openai.withContext({ feature: "chat", user: "user-123" });
   const summaryClient = openai.withContext({
     feature: "summarization",
-    metadata: { documentType: "article" },
-    user: {
-      id: "user-789",
-      name: "Bob",
-      monthlyRevenue: "99.99",
-    },
+    user: "user-123",
+  });
+  const codeClient = openai.withContext({
+    feature: "code-gen",
+    user: "user-456",
   });
 
-  const summaryResponse = await summaryClient.chat.completions.create({
-    model: "gpt-3.5-turbo",
-    messages: [
-      {
-        role: "user",
-        content:
-          "Summarize: Machine learning is a subset of AI that enables systems to learn from data.",
+  const [chatRes, summaryRes, codeRes] = await Promise.all([
+    chatClient.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [{ role: "user", content: "What is TypeScript?" }],
+    }),
+    summaryClient.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [
+        {
+          role: "user",
+          content: "Summarize: TypeScript adds static typing to JavaScript.",
+        },
+      ],
+    }),
+    codeClient.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [{ role: "user", content: "Write a TypeScript hello world." }],
+    }),
+  ]);
+
+  console.log("chat:", chatRes.fluxGateCostTrackingResponse);
+  console.log("summarization:", summaryRes.fluxGateCostTrackingResponse);
+  console.log("code-gen:", codeRes.fluxGateCostTrackingResponse);
+
+  // --- Rich TrackedUser ---
+  // Pass a TrackedUser object to associate revenue and identity with events.
+  console.log("\n=== Rich TrackedUser ===\n");
+
+  const premiumRes = await openai
+    .withContext({
+      feature: "premium-chat",
+      step: "initial-response",
+      sessionId: "sess-abc123",
+      conversationId: "conv-xyz789",
+      user: {
+        id: "user-123",
+        name: "Alice",
+        email: "alice@example.com",
+        monthlyRevenue: 99.99,
       },
-    ],
-  });
+    })
+    .chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [{ role: "user", content: "Hello!" }],
+    });
 
-  console.log("Response:", summaryResponse.choices[0].message.content);
-  console.log("Tracking:", summaryResponse.fluxGateCostTrackingResponse);
-  console.log();
+  console.log(premiumRes.choices[0].message.content);
+  console.log("Tracking:", premiumRes.fluxGateCostTrackingResponse);
 
-  // Context 4: Embeddings for search
-  console.log("4. SEMANTIC SEARCH FEATURE");
-  const searchClient = openai.withContext({
-    feature: "semantic-search",
-    metadata: { searchType: "documents" },
-    user: "user-123", // Same user as chatbot, different feature
-  });
+  // --- Service Tier ---
+  // Pass serviceTier to track pricing tier variations (e.g. batch vs. default).
+  console.log("\n=== Service Tier ===\n");
 
-  const embeddingResponse = await searchClient.embeddings.create({
-    model: "text-embedding-ada-002",
-    input: "artificial intelligence machine learning",
+  // service_tier is passed directly to the OpenAI call and auto-captured by FluxGate.
+  const batchRes = await openai
+    .withContext({ feature: "bulk-processing", user: "user-123" })
+    .chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [{ role: "user", content: "Summarize this text briefly." }],
+      service_tier: "flex",
+    });
+
+  console.log("Tracking:", batchRes.fluxGateCostTrackingResponse);
+
+  // --- OpenRouter Cost Passthrough ---
+  // When routing via OpenRouter, pass the provider-reported cost directly.
+  // FluxGate will skip server-side cost computation and record this value.
+  console.log("\n=== OpenRouter Cost Passthrough ===\n");
+
+  const routerClient = new OpenAI({
+    apiKey: process.env.OPENROUTER_API_KEY,
+    baseURL: "https://openrouter.ai/api/v1",
   });
+  const routerOpenai = createOpenAICostTracker(routerClient, fluxgate);
+
+  // After a real OpenRouter call you would read the cost from
+  // response.headers['x-openrouter-cost'] and pass it here.
+  // Example shows the pattern; the actual call requires a valid OpenRouter key.
+  console.log(
+    "Pattern: pass openrouterCost from response headers into withContext()",
+  );
+  console.log(
+    "  const cost = parseFloat(response.headers['x-openrouter-cost'] ?? '0');",
+  );
+  console.log(
+    "  routerOpenai.withContext({ feature: 'chat', openrouterCost: cost })",
+  );
+
+  // --- Cost Override ---
+  // Supply custom per-token rates when the model uses non-standard pricing.
+  console.log("\n=== Cost Override ===\n");
+
+  const overrideRes = await openai
+    .withContext({
+      feature: "fine-tuned-chat",
+      user: "user-123",
+      costOverride: {
+        inputCostPer1MTokens: 3.0,
+        outputCostPer1MTokens: 6.0,
+      },
+    })
+    .chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [{ role: "user", content: "Hello!" }],
+    });
 
   console.log(
-    "Embedding created with dimensions:",
-    embeddingResponse.data[0].embedding.length,
+    "Tracking with custom rates:",
+    overrideRes.fluxGateCostTrackingResponse,
   );
-  console.log("Tracking:", embeddingResponse.fluxGateCostTrackingResponse);
-  console.log();
 
-  // Context 5: Streaming content generation
-  console.log("5. STREAMING CONTENT GENERATION");
-  const contentClient = openai.withContext({
-    feature: "content-generation",
-    metadata: { contentType: "blog-post" },
-    user: {
-      id: "user-999",
-      name: "Charlie",
-      monthlyRevenue: "199.99",
-    },
-  });
-
-  const stream = await contentClient.chat.completions.create({
-    model: "gpt-3.5-turbo",
-    messages: [
-      { role: "user", content: "Write a short intro for a tech blog post" },
-    ],
-    stream: true,
-  });
-
-  process.stdout.write("Response: ");
-  for await (const chunk of stream) {
-    process.stdout.write(chunk.choices[0]?.delta?.content || "");
-  }
-
-  console.log("\n\nTracking:", stream.fluxGateCostTrackingResponse);
-  console.log();
-
-  console.log("=".repeat(60));
-  console.log("\nAll 5 features tracked separately with their own context!");
-  console.log("Check your FluxGate dashboard to see the breakdown by feature.");
+  void routerOpenai; // suppress unused warning
 }
 
 main().catch(console.error);

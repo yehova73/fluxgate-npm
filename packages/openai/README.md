@@ -1,103 +1,18 @@
 # @fluxgate/openai
 
-![Status: In Development](https://img.shields.io/badge/status-in%20development-orange)
+OpenAI SDK wrapper for [FluxGate](https://fluxgate.app) — automatically tracks token usage, costs, and latency for all OpenAI API calls.
 
-OpenAI SDK wrapper for FluxGate token tracking. Automatically track token usage, costs, and latency for all OpenAI API calls.
-
-## 📦 Installation
+## Installation
 
 ```bash
 npm install @fluxgate/sdk @fluxgate/openai openai
 ```
 
-## 🚀 Quick Start
+> **ESM only** — this package is ESM-only (`"type": "module"`), matching `openai` v5+. Your project must use ESM (set `"type": "module"` in `package.json` or use `.mjs` extensions). Node.js ≥ 18 is required.
 
-```typescript
-import OpenAI from "openai";
-import { FluxGate } from "@fluxgate/sdk";
-import { createOpenAICostTracker } from "@fluxgate/openai";
+Get your FluxGate API key at [fluxgate.app](https://fluxgate.app).
 
-// Initialize OpenAI client
-const client = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
-
-// Initialize FluxGate tracker
-const fluxgate = new FluxGate({
-  apiKey: process.env.FLUXGATE_API_KEY,
-});
-
-// Create tracked client
-const openai = createOpenAICostTracker(client, fluxgate);
-
-// Use with context
-const response = await openai
-  .withContext({
-    feature: "chatbot",
-    user: "user-123",
-  })
-  .chat.completions.create({
-    model: "gpt-4",
-    messages: [{ role: "user", content: "Hello!" }],
-  });
-
-// Access tracking data
-console.log(response.fluxGateCostTrackingResponse);
-// {
-//   status: "SUCCESS",
-//   cost: 0.0015,
-//   trackingId: "evt_...",
-//   createdAt: "2026-05-05T..."
-// }
-```
-
-## 📖 API Reference
-
-### `createOpenAICostTracker(client, tracker)`
-
-Creates a tracked OpenAI client with context support.
-
-**Parameters:**
-
-- `client`: OpenAI client instance
-- `fluxgate`: FluxGate instance
-
-**Returns:** Object with:
-
-- `withContext(context: FluxGateContext)`: Returns tracked client with context
-- `client`: Default tracked client (no context)
-
-#### `FluxGateContext`
-
-Fields available when calling `withContext()`:
-
-| Field            | Type                                                         | Description                                                                    |
-| ---------------- | ------------------------------------------------------------ | ------------------------------------------------------------------------------ |
-| `user`           | `string \| TrackedUser`                                      | End-user ID or TrackedUser object                                              |
-| `feature`        | `string`                                                     | Product feature name (e.g. `"chat"`, `"summarization"`)                        |
-| `step`           | `string`                                                     | Step within a feature pipeline                                                 |
-| `sessionId`      | `string`                                                     | Session identifier                                                             |
-| `conversationId` | `string`                                                     | Conversation identifier                                                        |
-| `timestamp`      | `number`                                                     | Unix ms; defaults to server ingest time if omitted                             |
-| `serviceTier`    | `"default" \| "standard" \| "batch" \| "flex" \| "priority"` | Pricing tier multiplier                                                        |
-| `region`         | `string`                                                     | Hosting region for regional price variance                                     |
-| `openrouterCost` | `number`                                                     | Explicit cost in USD from a proxy (e.g. OpenRouter); skips server-side compute |
-| `cacheTtl`       | `string`                                                     | Provider cache expiration window (e.g. `"5m"`, `"1h"`)                         |
-| `costOverride`   | `CostOverride`                                               | Override per-token pricing for cost calculation                                |
-
-### Tracked Methods
-
-All standard OpenAI methods are supported with automatic tracking:
-
-- ✅ `chat.completions.create()` - Chat completions
-- ✅ `completions.create()` - Legacy completions
-- ✅ `responses.create()` - Responses API
-- ✅ `embeddings.create()` - Embeddings
-- ✅ Streaming responses (all methods)
-
-## 💡 Usage Examples
-
-### Chat Completions
+## Quick Start
 
 ```typescript
 import OpenAI from "openai";
@@ -106,270 +21,151 @@ import { createOpenAICostTracker } from "@fluxgate/openai";
 
 const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 const fluxgate = new FluxGate({ apiKey: process.env.FLUXGATE_API_KEY });
+
 const openai = createOpenAICostTracker(client, fluxgate);
 
-// Non-streaming
-const completion = await openai
+const response = await openai
   .withContext({ feature: "chat", user: "user-123" })
   .chat.completions.create({
-    model: "gpt-4",
-    messages: [
-      { role: "system", content: "You are a helpful assistant." },
-      { role: "user", content: "What is TypeScript?" },
-    ],
-  });
-
-console.log(completion.choices[0].message.content);
-console.log(completion.fluxGateCostTrackingResponse);
-```
-
-### Streaming Responses
-
-```typescript
-const stream = await openai
-  .withContext({ feature: "streaming-chat" })
-  .chat.completions.create({
-    model: "gpt-4",
-    messages: [{ role: "user", content: "Tell me a story" }],
-    stream: true,
-  });
-
-for await (const chunk of stream) {
-  process.stdout.write(chunk.choices[0]?.delta?.content || "");
-}
-
-// Access tracking data after stream completes
-console.log(stream.fluxGateCostTrackingResponse);
-```
-
-### Embeddings
-
-```typescript
-const embedding = await openai
-  .withContext({ feature: "semantic-search" })
-  .embeddings.create({
-    model: "text-embedding-ada-002",
-    input: "The quick brown fox jumps over the lazy dog",
-  });
-
-console.log(embedding.data[0].embedding);
-console.log(embedding.fluxGateCostTrackingResponse);
-```
-
-### Completions (Legacy)
-
-```typescript
-const completion = await openai
-  .withContext({ feature: "text-gen" })
-  .completions.create({
-    model: "gpt-3.5-turbo-instruct",
-    prompt: "Write a tagline for an ice cream shop",
-    max_tokens: 50,
-  });
-
-console.log(completion.choices[0].text);
-console.log(completion.fluxGateCostTrackingResponse);
-```
-
-### Responses API
-
-```typescript
-const response = await openai
-  .withContext({ feature: "reasoning" })
-  .responses.create({
     model: "gpt-4o",
-    input: "Explain quantum computing",
+    messages: [{ role: "user", content: "Hello!" }],
   });
 
-console.log(response.output_text);
 console.log(response.fluxGateCostTrackingResponse);
+// { status: "SUCCESS", cost: 0.0015, trackingId: "evt_...", createdAt: "..." }
 ```
 
-### Without Context (Default)
+## API Reference
+
+### `createOpenAICostTracker(client, fluxgate)`
+
+Creates a tracked OpenAI client.
+
+**Parameters:**
+
+- `client` — OpenAI client instance
+- `fluxgate` — FluxGate instance
+
+**Returns:**
+
+- `withContext(ctx: FluxGateContext)` — returns a tracked client bound to the given context
+- `client` — tracked client with no context
+
+---
+
+### `FluxGateContext`
+
+All fields are optional. Pass to `withContext()` to annotate tracked events.
+
+| Field            | Type                      | Description                                                                    |
+| ---------------- | ------------------------- | ------------------------------------------------------------------------------ |
+| `user`           | `string \| TrackedUser`   | End-user ID or a `TrackedUser` object (see below)                              |
+| `feature`        | `string`                  | Product feature name (e.g. `"chat"`, `"summarization"`)                        |
+| `step`           | `string`                  | Step within a feature pipeline (e.g. `"retrieval"`, `"generation"`)            |
+| `sessionId`      | `string`                  | Session identifier                                                             |
+| `conversationId` | `string`                  | Conversation identifier                                                        |
+| `openrouterCost` | `number`                  | Explicit cost in USD from a proxy (e.g. OpenRouter); skips server-side compute |
+| `costOverride`   | `CostOverride`            | Override per-token pricing for cost calculation (see below)                    |
+| `metadata`       | `Record<string, unknown>` | Arbitrary key-value pairs forwarded to the event metadata                      |
+
+> **Auto-captured fields** — `service_tier` and `region` are captured automatically and do not need to be passed in context. `service_tier` is read from the `.create()` request/response params. Region is detected from the client's `baseURL` (e.g. `eu.api.openai.com` → `"eu"`). Supported region prefixes: `us`, `eu`, `au`, `ca`, `jp`, `in`, `sg`, `kr`, `gb`, `ae`.
+
+---
+
+### `TrackedUser`
+
+Pass a `TrackedUser` object to the `user` field to associate identity and revenue data with every event.
+
+| Field            | Type                       | Description                           |
+| ---------------- | -------------------------- | ------------------------------------- |
+| `id`             | `string`                   | Required. Your internal user ID       |
+| `name`           | `string \| null`           | Display name                          |
+| `email`          | `string \| null`           | Email address                         |
+| `image`          | `string \| null`           | Avatar URL                            |
+| `monthlyRevenue` | `number \| string \| null` | Monthly revenue in USD (e.g. `49.99`) |
 
 ```typescript
-// Use client property for default tracking without metadata
-const completion = await openai.client.chat.completions.create({
-  model: "gpt-4",
-  messages: [{ role: "user", content: "Hello!" }],
-});
-```
-
-### Rich User Context
-
-```typescript
-const completion = await openai
+await openai
   .withContext({
-    feature: "premium-chat",
-    step: "initial-response",
+    feature: "chat",
     user: {
       id: "user-123",
-      name: "John Doe",
-      email: "john@example.com",
-      monthlyRevenue: 99.99,
+      name: "Alice",
+      email: "alice@example.com",
+      monthlyRevenue: 49.99,
     },
-    sessionId: "sess-abc123",
-    conversationId: "conv-xyz789",
   })
-  .chat.completions.create({
-    model: "gpt-4o",
-    messages: [{ role: "user", content: "Hello!" }],
-  });
+  .chat.completions.create({ ... });
 ```
 
-### Multiple Contexts
+---
+
+### `CostOverride`
+
+Supply custom per-token rates when FluxGate does not have pricing for a model (e.g. fine-tuned or self-hosted models). All rates are **per 1 million tokens**.
+
+| Field                       | Type             | Description                                           |
+| --------------------------- | ---------------- | ----------------------------------------------------- |
+| `inputCostPer1MTokens`      | `number`         | Required. Cost per 1M prompt/input tokens in USD      |
+| `outputCostPer1MTokens`     | `number`         | Required. Cost per 1M completion/output tokens in USD |
+| `cacheWriteCostPer1MTokens` | `number \| null` | Cost per 1M tokens written to prompt cache            |
+| `cacheReadCostPer1MTokens`  | `number \| null` | Cost per 1M tokens read from prompt cache             |
+| `reasoningCostPer1MTokens`  | `number \| null` | Cost per 1M reasoning/thinking tokens                 |
 
 ```typescript
-const openai = createOpenAICostTracker(client, fluxgate);
-
-// Create different contexts for different features
-const chatClient = openai.withContext({ feature: "chat" });
-const summaryClient = openai.withContext({ feature: "summary" });
-const codeClient = openai.withContext({ feature: "code-gen" });
-
-// Each maintains its own context
-await chatClient.chat.completions.create({...});
-await summaryClient.chat.completions.create({...});
-await codeClient.chat.completions.create({...});
+await openai
+  .withContext({
+    feature: "fine-tuned-chat",
+    costOverride: {
+      inputCostPer1MTokens: 3.00,
+      outputCostPer1MTokens: 6.00,
+    },
+  })
+  .chat.completions.create({ ... });
 ```
 
-## 🔧 Advanced Usage
+---
 
-### Error Tracking
+### Tracked Methods
 
-Errors are automatically tracked:
+Every call returns the standard OpenAI SDK response intersected with `fluxGateCostTrackingResponse`.
 
-```typescript
-try {
-  const completion = await openai
-    .withContext({ feature: "chat" })
-    .chat.completions.create({
-      model: "gpt-4",
-      messages: [{ role: "user", content: "Hello!" }],
-    });
-} catch (error) {
-  // Error was tracked automatically with status: "ERROR"
-  console.error(error);
-}
-```
+- `chat.completions.create()` — chat completions (streaming + non-streaming)
+- `completions.create()` — legacy completions (streaming + non-streaming)
+- `responses.create()` — Responses API (streaming + non-streaming)
+- `embeddings.create()` — embeddings
 
-### Stream Error Handling
+#### `fluxGateCostTrackingResponse`
 
-```typescript
-const stream = await openai
-  .withContext({ feature: "streaming" })
-  .chat.completions.create({
-    model: "gpt-4",
-    messages: [{ role: "user", content: "Hello!" }],
-    stream: true,
-  });
+| Field          | Type             | Description                                        |
+| -------------- | ---------------- | -------------------------------------------------- |
+| `status`       | `AiEventStatus`  | Outcome of the request (see values below)          |
+| `cost`         | `number \| null` | Total cost in USD; `null` if model pricing unknown |
+| `trackingId`   | `string \| null` | FluxGate event ID                                  |
+| `createdAt`    | `string \| null` | ISO timestamp of the recorded event                |
+| `errorMessage` | `string`         | Error message when `status` is `"ERROR"`           |
 
-try {
-  for await (const chunk of stream) {
-    console.log(chunk.choices[0]?.delta?.content);
-  }
-} catch (error) {
-  console.error("Stream error:", error);
-}
+**`AiEventStatus` values:**
 
-// Tracking data includes error information
-console.log(stream.fluxGateCostTrackingResponse);
-// { status: "ERROR", errorMessage: "...", ... }
-```
+| Value               | When it occurs                                         |
+| ------------------- | ------------------------------------------------------ |
+| `SUCCESS`           | Request completed normally                             |
+| `ERROR`             | Request or stream threw an exception                   |
+| `BLOCKED`           | Response stopped by a content filter                   |
+| `MAX_TOKENS`        | Generation stopped because the token limit was reached |
+| `CONTENT_FILTER`    | Provider flagged content mid-generation                |
+| `MALFORMED_REQUEST` | Request was rejected before inference                  |
 
-### Accessing the TrackedStream
+> **Streaming:** `fluxGateCostTrackingResponse` is populated only after the stream is fully consumed (i.e. after the `for await` loop completes or throws). Accessing it before that returns a pending promise.
 
-```typescript
-import { TrackedStream } from "@fluxgate/openai";
+---
 
-const stream = await openai.client.chat.completions.create({
-  model: "gpt-4",
-  messages: [{ role: "user", content: "Hello!" }],
-  stream: true,
-});
+## Examples
 
-// TrackedStream implements AsyncIterable
-if (stream instanceof TrackedStream) {
-  for await (const chunk of stream) {
-    // Process chunks
-  }
+Full runnable examples are available in the [repository](https://github.com/fluxgate/fluxgate-npm/tree/main/packages/openai/examples):
 
-  // Access tracking after completion
-  const tracking = stream.fluxGateCostTrackingResponse;
-}
-```
-
-## 📊 Tracking Data Structure
-
-Each response includes a `fluxGateCostTrackingResponse` property:
-
-```typescript
-interface FluxGateCostTrackingResponse {
-  status: AiEventStatus;
-  cost: number | null;
-  trackingId: string | null;
-  createdAt: string | null;
-  errorMessage?: string;
-}
-
-type AiEventStatus =
-  | "SUCCESS"
-  | "ERROR"
-  | "BLOCKED"
-  | "MAX_TOKENS"
-  | "CONTENT_FILTER"
-  | "RECITATION"
-  | "MALFORMED_REQUEST";
-```
-
-Tracked metrics include:
-
-- ✅ Input tokens (prompt)
-- ✅ Output tokens (completion)
-- ✅ Cached tokens (prompt caching)
-- ✅ Total tokens
-- ✅ Model name
-- ✅ Latency (milliseconds)
-- ✅ Stream duration (for streaming)
-- ✅ Finish reason (stop, length, content_filter, etc.)
-- ✅ Reasoning tokens (o1, o3, DeepSeek R1)
-
-## 🎯 Type Safety
-
-Full TypeScript support with enhanced types:
-
-```typescript
-import type {
-  TrackedOpenAI,
-  FluxGateContext,
-  WithTracking,
-  AiEventMetadata,
-  TrackedUser,
-  CostOverride,
-  FluxGateCostTrackingResponse,
-} from "@fluxgate/openai";
-
-// TrackedOpenAI includes all OpenAI methods with tracking
-const openai: TrackedOpenAI = trackedClient.client;
-
-// WithTracking adds fluxGateCostTrackingResponse to any type
-type Response = WithTracking<OpenAI.Chat.Completions.ChatCompletion>;
-```
-
-## 🔗 Related Packages
-
-- [@fluxgate/sdk](../sdk) - Core tracking library
-- [@fluxgate/gemini](../gemini) - Gemini SDK wrapper
-
-## 📖 Examples
-
-See the [examples directory](./examples) for complete working examples:
-
-- Basic chat completions
-- Streaming responses
-- Error handling
-- Multiple contexts
-
-## 📝 License
-
-MIT
+- `basic-chat.ts` — `chat.completions.create`, `responses.create`, no-context usage
+- `streaming.ts` — streaming `chat.completions.create` and `responses.create`
+- `embeddings.ts` — single and batch embeddings
+- `error-handling.ts` — error tracking, stream errors, legacy completions, regional endpoints
+- `multiple-contexts.ts` — feature isolation, `TrackedUser`, `serviceTier`, OpenRouter cost passthrough, `costOverride`

@@ -1,4 +1,5 @@
 import type {
+  GoogleGenAI,
   EmbedContentResponse,
   GenerateContentResponse,
   GenerateContentParameters,
@@ -13,7 +14,6 @@ import type {
   FluxGateCostTrackingResponse,
   WithTracking,
   TrackedUser,
-  AiEventMetadata,
   CostOverride,
 } from "@fluxgate/sdk";
 
@@ -21,20 +21,27 @@ export type WithStreamTracking<T> = T & {
   fluxGateCostTrackingResponse: FluxGateCostTrackingResponse | undefined;
 };
 
-export type TrackedGeminiClient = {
-  generateContent(
-    request: GenerateContentParameters,
-  ): Promise<WithTracking<GenerateContentResponse>>;
+export type TrackedGeminiClient = Omit<GoogleGenAI, "models" | "chats"> & {
+  models: Omit<
+    GoogleGenAI["models"],
+    "generateContent" | "generateContentStream" | "embedContent"
+  > & {
+    generateContent(
+      params: GenerateContentParameters,
+    ): Promise<WithTracking<GenerateContentResponse>>;
 
-  generateContentStream(
-    request: GenerateContentParameters,
-  ): Promise<TrackedStream<GenerateContentResponse>>;
+    generateContentStream(
+      params: GenerateContentParameters,
+    ): Promise<TrackedStream<GenerateContentResponse>>;
 
-  embedContent(
-    request: EmbedContentParameters,
-  ): Promise<WithTracking<EmbedContentResponse>>;
+    embedContent(
+      params: EmbedContentParameters,
+    ): Promise<WithTracking<EmbedContentResponse>>;
+  };
 
-  startChat(params: CreateChatParameters): TrackedChat;
+  chats: Omit<GoogleGenAI["chats"], "create"> & {
+    create(params: CreateChatParameters): TrackedChat;
+  };
 };
 
 /**
@@ -50,8 +57,6 @@ export type FluxGateContext = {
   conversationId?: string;
   /** Unix timestamp in milliseconds. Defaults to server ingest time if omitted. */
   timestamp?: number;
-  /** Service tiering mode affecting pricing multipliers */
-  serviceTier?: AiEventMetadata["serviceTier"];
   /** Explicit hosting region for regional price variance */
   region?: string;
   /** Explicit total cost in USD from an aggregator proxy. Skips server-side cost computation. */

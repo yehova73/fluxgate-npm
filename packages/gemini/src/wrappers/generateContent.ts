@@ -3,7 +3,11 @@ import type {
   GenerateContentParameters,
   GenerateContentResponse,
 } from "@google/genai";
-import { WithTracking, FluxGate } from "@fluxgate/sdk";
+import {
+  WithTracking,
+  FluxGate,
+  FluxGateCostTrackingResponse,
+} from "@fluxgate/sdk";
 import { extractGeminiUsage } from "../utils/extractUsage.js";
 import { finishReasonToStatus, recordUsage } from "../utils/recordUsage.js";
 import { FluxGateContext } from "../types/types.js";
@@ -24,17 +28,21 @@ export function createGenerateContentWrapper(
     try {
       result = await ai.models.generateContent(request);
     } catch (err) {
-      await recordUsage({
-        instance,
-        model,
-        latencyMs: performance.now() - start,
-        streaming: false,
-        context,
-        usage: extractGeminiUsage(undefined),
-        status: "ERROR",
-        errorMessage: (err as Error).message,
-        serviceTier,
-      });
+      try {
+        await recordUsage({
+          instance,
+          model,
+          latencyMs: performance.now() - start,
+          streaming: false,
+          context,
+          usage: extractGeminiUsage(undefined),
+          status: "ERROR",
+          errorMessage: (err as Error).message,
+          serviceTier,
+        });
+      } catch {
+        // Tracking failure must never surface as a user-facing error.
+      }
       throw err;
     }
 
@@ -49,17 +57,27 @@ export function createGenerateContentWrapper(
       errorMessage = `${finishReason}: ${finishMessage}`;
     }
 
-    const fluxGateCostTrackingResponse = await recordUsage({
-      instance,
-      model,
-      latencyMs: performance.now() - start,
-      streaming: false,
-      context,
-      usage: extractGeminiUsage(result),
+    let fluxGateCostTrackingResponse: FluxGateCostTrackingResponse = {
       status,
-      errorMessage,
-      serviceTier,
-    });
+      cost: null,
+      trackingId: null,
+      createdAt: null,
+    };
+    try {
+      fluxGateCostTrackingResponse = await recordUsage({
+        instance,
+        model,
+        latencyMs: performance.now() - start,
+        streaming: false,
+        context,
+        usage: extractGeminiUsage(result),
+        status,
+        errorMessage,
+        serviceTier,
+      });
+    } catch {
+      // Tracking failure must never surface as a user-facing error.
+    }
 
     return Object.assign(result, { fluxGateCostTrackingResponse });
   };

@@ -30,10 +30,10 @@ describe("createGeminiCostTracker", () => {
       const contextClient = tracker.withContext({ feature: "test-feature" });
 
       expect(contextClient).toBeDefined();
-      expect(contextClient.generateContent).toBeDefined();
-      expect(contextClient.generateContentStream).toBeDefined();
-      expect(contextClient.embedContent).toBeDefined();
-      expect(contextClient.startChat).toBeDefined();
+      expect(contextClient.models.generateContent).toBeDefined();
+      expect(contextClient.models.generateContentStream).toBeDefined();
+      expect(contextClient.models.embedContent).toBeDefined();
+      expect(contextClient.chats.create).toBeDefined();
     });
 
     it("should return wrapped client without context", () => {
@@ -41,10 +41,10 @@ describe("createGeminiCostTracker", () => {
       const defaultClient = tracker.client;
 
       expect(defaultClient).toBeDefined();
-      expect(defaultClient.generateContent).toBeDefined();
-      expect(defaultClient.generateContentStream).toBeDefined();
-      expect(defaultClient.embedContent).toBeDefined();
-      expect(defaultClient.startChat).toBeDefined();
+      expect(defaultClient.models.generateContent).toBeDefined();
+      expect(defaultClient.models.generateContentStream).toBeDefined();
+      expect(defaultClient.models.embedContent).toBeDefined();
+      expect(defaultClient.chats.create).toBeDefined();
     });
   });
 
@@ -93,32 +93,34 @@ describe("createGeminiCostTracker", () => {
       const tracker = createGeminiCostTracker(mockAi, mockFluxGate);
       const wrappedClient = tracker.client;
 
-      expect(wrappedClient.generateContent).toBeDefined();
-      expect(typeof wrappedClient.generateContent).toBe("function");
+      expect(wrappedClient.models.generateContent).toBeDefined();
+      expect(typeof wrappedClient.models.generateContent).toBe("function");
     });
 
     it("should have wrapped generateContentStream method", () => {
       const tracker = createGeminiCostTracker(mockAi, mockFluxGate);
       const wrappedClient = tracker.client;
 
-      expect(wrappedClient.generateContentStream).toBeDefined();
-      expect(typeof wrappedClient.generateContentStream).toBe("function");
+      expect(wrappedClient.models.generateContentStream).toBeDefined();
+      expect(typeof wrappedClient.models.generateContentStream).toBe(
+        "function",
+      );
     });
 
     it("should have wrapped embedContent method", () => {
       const tracker = createGeminiCostTracker(mockAi, mockFluxGate);
       const wrappedClient = tracker.client;
 
-      expect(wrappedClient.embedContent).toBeDefined();
-      expect(typeof wrappedClient.embedContent).toBe("function");
+      expect(wrappedClient.models.embedContent).toBeDefined();
+      expect(typeof wrappedClient.models.embedContent).toBe("function");
     });
 
-    it("should have wrapped startChat method", () => {
+    it("should have wrapped chats.create method", () => {
       const tracker = createGeminiCostTracker(mockAi, mockFluxGate);
       const wrappedClient = tracker.client;
 
-      expect(wrappedClient.startChat).toBeDefined();
-      expect(typeof wrappedClient.startChat).toBe("function");
+      expect(wrappedClient.chats.create).toBeDefined();
+      expect(typeof wrappedClient.chats.create).toBe("function");
     });
   });
 

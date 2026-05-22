@@ -79,7 +79,7 @@ describe("createOpenAICostTracker", () => {
       const contextClient = tracker.withContext({
         feature: "chat",
         step: "generation",
-        region: "us-east-1",
+        metadata: { environment: "production" },
       });
 
       expect(contextClient).toBeDefined();

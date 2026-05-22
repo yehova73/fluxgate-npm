@@ -37,7 +37,7 @@ export async function recordUsage(params: {
     serviceTier,
   } = params;
 
-  const resolvedServiceTier = (serviceTier ?? context?.serviceTier) as
+  const resolvedServiceTier = serviceTier as
     | AiEventMetadata["serviceTier"]
     | undefined;
 
@@ -50,11 +50,11 @@ export async function recordUsage(params: {
 
   const metadata: AiEventMetadata | undefined = hasMetadata
     ? {
+        ...context?.metadata, // user-supplied (lower priority)
         serviceTier: resolvedServiceTier,
         region: context?.region,
         openrouterCost: context?.openrouterCost,
         cacheTtl: context?.cacheTtl,
-        ...context?.metadata,
       }
     : undefined;
 

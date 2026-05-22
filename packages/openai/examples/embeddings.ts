@@ -3,57 +3,48 @@ import { FluxGate } from "@fluxgate/sdk";
 import { createOpenAICostTracker } from "@fluxgate/openai";
 
 async function main() {
-  // Initialize OpenAI client
-  const client = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY,
-  });
-
-  // Initialize FluxGate instance
+  const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
   const fluxgate = new FluxGate({
-    apiKey: process.env.FLUXGATE_API_KEY || "your-fluxgate-api-key",
+    apiKey: process.env.FLUXGATE_API_KEY!,
     debug: true,
   });
 
-  // Create tracked client
   const openai = createOpenAICostTracker(client, fluxgate);
 
-  console.log("=== Embeddings Example ===\n");
+  // --- Single Embedding ---
+  console.log("=== Single Embedding ===\n");
 
-  // Create embeddings
-  const embedding = await openai
-    .withContext({
-      feature: "semantic-search",
-      user: "demo-user",
-    })
+  const single = await openai
+    .withContext({ feature: "semantic-search", user: "user-123" })
     .embeddings.create({
-      model: "text-embedding-ada-002",
+      model: "text-embedding-3-small",
       input: "The quick brown fox jumps over the lazy dog",
     });
 
-  console.log("Embedding dimensions:", embedding.data[0].embedding.length);
-  console.log("First 10 values:", embedding.data[0].embedding.slice(0, 10));
-  console.log("\nTracking Data:", embedding.fluxGateCostTrackingResponse);
-  console.log("\nUsage:", embedding.usage);
+  console.log("Dimensions:", single.data[0].embedding.length);
+  console.log("Tracking:", single.fluxGateCostTrackingResponse);
 
-  console.log("\n=== Multiple Embeddings ===\n");
+  // --- Batch Embeddings ---
+  console.log("\n=== Batch Embeddings ===\n");
 
-  // Create multiple embeddings at once
-  const multiEmbeddings = await openai
+  const batch = await openai
     .withContext({
-      feature: "batch-embeddings",
+      feature: "semantic-search",
+      user: "user-123",
+      metadata: { searchType: "documents" },
     })
     .embeddings.create({
-      model: "text-embedding-ada-002",
+      model: "text-embedding-3-small",
       input: [
-        "Hello world",
-        "Machine learning is fascinating",
-        "TypeScript is great for large projects",
+        "TypeScript is a typed superset of JavaScript",
+        "Node.js is a JavaScript runtime built on Chrome's V8 engine",
+        "React is a library for building user interfaces",
       ],
     });
 
-  console.log("Number of embeddings created:", multiEmbeddings.data.length);
-  console.log("Tracking Data:", multiEmbeddings.fluxGateCostTrackingResponse);
-  console.log("Total tokens used:", multiEmbeddings.usage.total_tokens);
+  console.log("Embeddings created:", batch.data.length);
+  console.log("Total tokens:", batch.usage.total_tokens);
+  console.log("Tracking:", batch.fluxGateCostTrackingResponse);
 }
 
 main().catch(console.error);

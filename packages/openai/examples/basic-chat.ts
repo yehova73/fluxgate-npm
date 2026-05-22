@@ -3,40 +3,53 @@ import { FluxGate } from "@fluxgate/sdk";
 import { createOpenAICostTracker } from "@fluxgate/openai";
 
 async function main() {
-  // Initialize OpenAI client
-  const client = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY,
-  });
-
-  // Initialize FluxGate instance
+  const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
   const fluxgate = new FluxGate({
-    apiKey: process.env.FLUXGATE_API_KEY || "your-fluxgate-api-key",
+    apiKey: process.env.FLUXGATE_API_KEY!,
     debug: true,
   });
 
-  // Create tracked client
   const openai = createOpenAICostTracker(client, fluxgate);
 
-  console.log("=== Basic Chat Completion ===\n");
+  // --- Chat Completions ---
+  console.log("=== Chat Completions ===\n");
 
-  // Basic chat completion
-  const completion = await openai
-    .withContext({
-      feature: "example-chat",
-      user: "demo-user",
-    })
-
+  const chat = await openai
+    .withContext({ feature: "assistant", user: "user-123" })
     .chat.completions.create({
-      model: "gpt-3.5-turbo",
+      model: "gpt-4o-mini",
       messages: [
         { role: "system", content: "You are a helpful assistant." },
-        { role: "user", content: "What is TypeScript?" },
+        { role: "user", content: "What is TypeScript in one sentence?" },
       ],
     });
 
-  console.log("Response:", completion.choices[0].message.content);
-  console.log("\nTracking Data:", completion.fluxGateCostTrackingResponse);
-  console.log("\nUsage:", completion.usage);
+  console.log(chat.choices[0].message.content);
+  console.log("\nTracking:", chat.fluxGateCostTrackingResponse);
+
+  // --- Responses API ---
+  console.log("\n=== Responses API ===\n");
+
+  const response = await openai
+    .withContext({ feature: "assistant", user: "user-123" })
+    .responses.create({
+      model: "gpt-4o-mini",
+      input: "What is Node.js in one sentence?",
+    });
+
+  console.log(response.output_text);
+  console.log("\nTracking:", response.fluxGateCostTrackingResponse);
+
+  // --- No context (still tracked, no metadata) ---
+  console.log("\n=== No Context ===\n");
+
+  const simple = await openai.client.chat.completions.create({
+    model: "gpt-4o-mini",
+    messages: [{ role: "user", content: "Hello!" }],
+  });
+
+  console.log(simple.choices[0].message.content);
+  console.log("\nTracking:", simple.fluxGateCostTrackingResponse);
 }
 
 main().catch(console.error);

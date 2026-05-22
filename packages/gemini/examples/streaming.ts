@@ -26,7 +26,7 @@ async function main() {
       user: "demo-user",
       sessionId: "session-123",
     })
-    .generateContentStream({
+    .models.generateContentStream({
       model: "gemini-2.5-flash",
       contents: "Write a detailed explanation of how neural networks work",
     });

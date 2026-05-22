@@ -30,10 +30,14 @@ export class TrackedStream<
       streamError = err as Error;
       throw err;
     } finally {
-      this.fluxGateCostTrackingResponse = await this.onComplete(
-        lastChunk,
-        streamError,
-      );
+      try {
+        this.fluxGateCostTrackingResponse = await this.onComplete(
+          lastChunk,
+          streamError,
+        );
+      } catch {
+        // Tracking failure must never surface as a user-facing error.
+      }
     }
   }
 }

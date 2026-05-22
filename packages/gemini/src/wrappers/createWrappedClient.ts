@@ -11,14 +11,33 @@ export function withGeminiTracking(
   instance: FluxGate,
   context?: FluxGateContext,
 ): TrackedGeminiClient {
-  return {
-    generateContent: createGenerateContentWrapper(ai, instance, context),
-    generateContentStream: createGenerateContentStreamWrapper(
-      ai,
-      instance,
-      context,
-    ),
-    embedContent: createEmbedContentWrapper(ai, instance, context),
-    startChat: createStartChatWrapper(ai, instance, context),
-  };
+  const wrappedClient = Object.create(
+    Object.getPrototypeOf(ai),
+    Object.getOwnPropertyDescriptors(ai),
+  );
+
+  wrappedClient.models = Object.create(
+    Object.getPrototypeOf(ai.models),
+    Object.getOwnPropertyDescriptors(ai.models),
+  );
+  wrappedClient.chats = Object.create(
+    Object.getPrototypeOf(ai.chats),
+    Object.getOwnPropertyDescriptors(ai.chats),
+  );
+
+  wrappedClient.models.generateContent = createGenerateContentWrapper(
+    ai,
+    instance,
+    context,
+  );
+  wrappedClient.models.generateContentStream =
+    createGenerateContentStreamWrapper(ai, instance, context);
+  wrappedClient.models.embedContent = createEmbedContentWrapper(
+    ai,
+    instance,
+    context,
+  );
+  wrappedClient.chats.create = createStartChatWrapper(ai, instance, context);
+
+  return wrappedClient as unknown as TrackedGeminiClient;
 }

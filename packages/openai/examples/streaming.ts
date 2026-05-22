@@ -3,52 +3,53 @@ import { FluxGate } from "@fluxgate/sdk";
 import { createOpenAICostTracker } from "@fluxgate/openai";
 
 async function main() {
-  // Initialize OpenAI client
-  const client = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY,
-  });
-
-  // Initialize FluxGate instance
+  const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
   const fluxgate = new FluxGate({
-    apiKey: process.env.FLUXGATE_API_KEY || "your-fluxgate-api-key",
+    apiKey: process.env.FLUXGATE_API_KEY!,
     debug: true,
   });
 
-  // Create tracked client
   const openai = createOpenAICostTracker(client, fluxgate);
 
-  console.log("=== Streaming Chat Completion ===\n");
+  // --- Streaming Chat Completions ---
+  console.log("=== Streaming Chat Completions ===\n");
 
-  // Streaming chat completion
-  const stream = await openai
+  const chatStream = await openai
     .withContext({
-      feature: "streaming-example",
-      user: "demo-user",
-      sessionId: "session-123",
+      feature: "content-gen",
+      user: "user-123",
+      sessionId: "sess-abc",
     })
     .chat.completions.create({
-      model: "gpt-3.5-turbo",
-      messages: [
-        {
-          role: "user",
-          content: "Write a short poem about programming",
-        },
-      ],
+      model: "gpt-4o-mini",
+      messages: [{ role: "user", content: "Write a haiku about TypeScript." }],
       stream: true,
     });
 
-  console.log("Streaming response:\n");
-
-  // Process the stream
-  for await (const chunk of stream) {
-    const content = chunk.choices[0]?.delta?.content || "";
-    process.stdout.write(content);
+  for await (const chunk of chatStream) {
+    process.stdout.write(chunk.choices[0]?.delta?.content ?? "");
   }
 
-  console.log("\n\n=== Stream Complete ===\n");
+  console.log("\n\nTracking:", chatStream.fluxGateCostTrackingResponse);
 
-  // Access tracking data after stream completes
-  console.log("Tracking Data:", stream.fluxGateCostTrackingResponse);
+  // --- Streaming Responses API ---
+  console.log("\n=== Streaming Responses API ===\n");
+
+  const responseStream = await openai
+    .withContext({ feature: "content-gen", user: "user-123" })
+    .responses.create({
+      model: "gpt-4o-mini",
+      input: "Write a haiku about distributed systems.",
+      stream: true,
+    });
+
+  for await (const event of responseStream) {
+    if (event.type === "response.output_text.delta") {
+      process.stdout.write(event.delta);
+    }
+  }
+
+  console.log("\n\nTracking:", responseStream.fluxGateCostTrackingResponse);
 }
 
 main().catch(console.error);

@@ -1,5 +1,6 @@
 import {
   AiEventStatus,
+  CreateAiEventResponse,
   FluxGate,
   FluxGateCostTrackingResponse,
   AiEventUsage,
@@ -8,10 +9,35 @@ import {
 import type OpenAI from "openai";
 import { FluxGateContext } from "../types/types.js";
 
+const OPENAI_REGION_MAP: Record<string, string> = {
+  us: "us",
+  eu: "eu",
+  au: "au",
+  ca: "ca",
+  jp: "jp",
+  in: "in",
+  sg: "sg",
+  kr: "kr",
+  gb: "gb",
+  ae: "ae",
+};
+
+export function detectRegion(baseURL: string): string | undefined {
+  try {
+    const { hostname } = new URL(baseURL);
+    const match = hostname.match(/^([a-z]+)\.api\.openai\.com$/);
+    if (match) return OPENAI_REGION_MAP[match[1]];
+    return undefined;
+  } catch {
+    return undefined;
+  }
+}
+
 export function detectProvider(baseURL: string): string {
   try {
     const { hostname } = new URL(baseURL);
-    if (hostname === "api.openai.com") return "openai";
+    if (hostname === "api.openai.com" || hostname.endsWith(".api.openai.com"))
+      return "openai";
     if (hostname.endsWith(".azure.com")) return "azure";
     if (hostname === "api.groq.com") return "groq";
     if (hostname === "api.together.xyz") return "together";
@@ -42,10 +68,12 @@ export async function recordUsage(params: {
   status: AiEventStatus;
   errorMessage?: string;
   provider: string;
-  /** service_tier from the provider response; takes priority over context.serviceTier */
+  /** service_tier auto-captured from the provider response/request params */
   serviceTier?: string | null;
   /** user extracted from the request params (e.g. params.user). Used as fallback when context.user is not set. */
   requestUser?: string;
+  /** Region auto-detected from the client baseURL (e.g. "eu", "au") */
+  region?: string;
 }): Promise<FluxGateCostTrackingResponse> {
   const {
     context,
@@ -59,49 +87,54 @@ export async function recordUsage(params: {
     provider,
     serviceTier,
     requestUser,
+    region,
   } = params;
 
-  // Response service tier takes priority over user-supplied context value
-  const resolvedServiceTier = (serviceTier ?? context?.serviceTier) as
+  const resolvedServiceTier = serviceTier as
     | AiEventMetadata["serviceTier"]
     | undefined;
 
   const hasMetadata =
     resolvedServiceTier != null ||
-    context?.region != null ||
-    context?.openrouterCost != null ||
-    context?.cacheTtl != null ||
+    region != null ||
+    // context?.openrouterCost != null ||
     (context?.metadata != null && Object.keys(context.metadata).length > 0);
 
+  // User metadata is spread first so that auto-detected values (region, serviceTier)
+  // cannot be accidentally overridden by arbitrary metadata keys.
   const metadata: AiEventMetadata | undefined = hasMetadata
     ? {
-        serviceTier: resolvedServiceTier,
-        region: context?.region,
-        openrouterCost: context?.openrouterCost,
-        cacheTtl: context?.cacheTtl,
         ...context?.metadata,
+        openrouterCost: 0, // context?.openrouterCost,
+        serviceTier: resolvedServiceTier,
+        region,
       }
     : undefined;
 
-  const trackingData = await instance.recordEvent({
-    provider,
-    model,
-    user: context?.user ?? requestUser,
-    feature: context?.feature,
-    step: context?.step,
-    sessionId: context?.sessionId,
-    conversationId: context?.conversationId,
-    timestamp: context?.timestamp,
-    performance: {
-      latency: latencyMs,
-      status: toPerformanceStatus(status),
-      isStreamed: streaming,
-      errorMessage: errorMessage ?? null,
-    },
-    usage,
-    ...(metadata && { metadata }),
-    ...(context?.costOverride && { costOverride: context.costOverride }),
-  });
+  let trackingData: CreateAiEventResponse | null = null;
+  try {
+    trackingData = await instance.recordEvent({
+      provider,
+      model,
+      user: context?.user ?? requestUser,
+      feature: context?.feature,
+      step: context?.step,
+      sessionId: context?.sessionId,
+      conversationId: context?.conversationId,
+      performance: {
+        latency: latencyMs,
+        status: toPerformanceStatus(status),
+        isStreamed: streaming,
+        errorMessage: errorMessage ?? null,
+      },
+      usage,
+      ...(metadata && { metadata }),
+      ...(context?.costOverride && { costOverride: context.costOverride }),
+    });
+  } catch {
+    // Tracking failure must never surface as a user-facing error.
+    // Return a degraded response so the caller always gets a result.
+  }
 
   return {
     status,

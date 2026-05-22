@@ -67,12 +67,48 @@ npx tsx packages/gemini/examples/embeddings.ts
 
 Examples of creating embeddings and calculating semantic similarity.
 
+### Function Calling
+
+```bash
+npx tsx packages/gemini/examples/function-calling.ts
+```
+
+Manual function calling round-trip: declare tools, execute locally, send results back.
+
+### Multimodal (Vision)
+
+```bash
+npx tsx packages/gemini/examples/multimodal.ts
+```
+
+Inline image analysis, multi-turn vision chat, and the Files API upload pattern.
+
+### Structured Output
+
+```bash
+npx tsx packages/gemini/examples/structured-output.ts
+```
+
+System instructions, generation config, and JSON schema responses with `responseSchema`.
+
+### Error Handling
+
+```bash
+npx tsx packages/gemini/examples/error-handling.ts
+```
+
+ApiError inspection, streaming errors, and confirming tracking continues after failures.
+
 ## Example Files
 
 - **`basic-generation.ts`** - Simple text generation example
 - **`streaming.ts`** - Streaming responses with tracking
 - **`chat-session.ts`** - Multi-turn conversation with history
 - **`embeddings.ts`** - Creating embeddings and semantic search
+- **`function-calling.ts`** - Manual function calling round-trip with tracked `generateContent`
+- **`multimodal.ts`** - Inline image analysis, vision chat, and Files API upload pattern
+- **`structured-output.ts`** - System instructions and JSON schema responses
+- **`error-handling.ts`** - ApiError handling and automatic error tracking
 
 ## What Gets Tracked
 

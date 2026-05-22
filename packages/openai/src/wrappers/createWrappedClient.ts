@@ -5,7 +5,7 @@ import { createCompletionsWrapper } from "./completions.js";
 import { createChatWrapper } from "./chatCompletions.js";
 import { createResponsesWrapper } from "./responses.js";
 import { createEmbeddingsWrapper } from "./embeddings.js";
-import { detectProvider } from "../utils/recordUsage.js";
+import { detectProvider, detectRegion } from "../utils/recordUsage.js";
 
 export function withOpenAITracking(
   client: OpenAI,
@@ -13,6 +13,7 @@ export function withOpenAITracking(
   context?: FluxGateContext,
 ): TrackedOpenAI {
   const provider = detectProvider(client.baseURL);
+  const region = detectRegion(client.baseURL);
 
   // Create a new object that inherits from the client to avoid mutating the original
   const wrappedClient = Object.create(
@@ -47,24 +48,28 @@ export function withOpenAITracking(
     instance,
     context,
     provider,
+    region,
   );
   wrappedClient.chat.completions.create = createChatWrapper(
     client.chat.completions.create.bind(client.chat.completions),
     instance,
     context,
     provider,
+    region,
   );
   wrappedClient.responses.create = createResponsesWrapper(
     client.responses.create.bind(client.responses),
     instance,
     context,
     provider,
+    region,
   );
   wrappedClient.embeddings.create = createEmbeddingsWrapper(
     client.embeddings.create.bind(client.embeddings),
     instance,
     context,
     provider,
+    region,
   );
 
   return wrappedClient as unknown as TrackedOpenAI;

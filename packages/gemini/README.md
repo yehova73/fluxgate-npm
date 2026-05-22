@@ -10,6 +10,9 @@ Google Gemini SDK wrapper for FluxGate token tracking. Automatically track token
 npm install @fluxgate/sdk @fluxgate/gemini @google/genai
 ```
 
+> **ESM only** — this package ships as ESM (`"type": "module"`), matching `@google/genai` v2+.
+> Your project must use ESM. Node.js ≥ 18 is required.
+
 ## 🚀 Quick Start
 
 ```typescript
@@ -46,7 +49,7 @@ console.log(result.fluxGateCostTrackingResponse);
 //   status: "SUCCESS",
 //   cost: 0.0002,
 //   trackingId: "evt_...",
-//   createdAt: "2026-05-05T..."
+//   createdAt: null
 // }
 ```
 
@@ -70,20 +73,22 @@ Creates a tracked Gemini client with context support.
 
 Fields available when calling `withContext()`. The model is passed per-request, not here.
 
-| Field            | Type                                                         | Description                                                  |
-| ---------------- | ------------------------------------------------------------ | ------------------------------------------------------------ |
-| `user`           | `string \| TrackedUser`                                      | End-user ID or TrackedUser object                            |
-| `feature`        | `string`                                                     | Product feature name (e.g. `"chat"`, `"summarization"`)      |
-| `step`           | `string`                                                     | Step within a feature pipeline                               |
-| `sessionId`      | `string`                                                     | Session identifier                                           |
-| `conversationId` | `string`                                                     | Conversation identifier                                      |
-| `timestamp`      | `number`                                                     | Unix ms; defaults to server ingest time if omitted           |
-| `serviceTier`    | `"default" \| "standard" \| "batch" \| "flex" \| "priority"` | Pricing tier multiplier                                      |
-| `region`         | `string`                                                     | Hosting region for regional price variance                   |
-| `openrouterCost` | `number`                                                     | Explicit cost in USD from a proxy; skips server-side compute |
-| `cacheTtl`       | `string`                                                     | Provider cache expiration window (e.g. `"5m"`, `"1h"`)       |
-| `costOverride`   | `CostOverride`                                               | Override per-token pricing for cost calculation              |
-| `metadata`       | `Record<string, unknown>`                                    | Arbitrary key-value pairs forwarded to the event metadata    |
+> **Auto-captured fields** — `service_tier` is read automatically from `request.config.serviceTier`
+> on each call. It does not need to be (and cannot be) passed via context.
+
+| Field            | Type                      | Description                                                  |
+| ---------------- | ------------------------- | ------------------------------------------------------------ |
+| `user`           | `string \| TrackedUser`   | End-user ID or TrackedUser object                            |
+| `feature`        | `string`                  | Product feature name (e.g. `"chat"`, `"summarization"`)      |
+| `step`           | `string`                  | Step within a feature pipeline                               |
+| `sessionId`      | `string`                  | Session identifier                                           |
+| `conversationId` | `string`                  | Conversation identifier                                      |
+| `timestamp`      | `number`                  | Unix ms; defaults to server ingest time if omitted           |
+| `region`         | `string`                  | Hosting region for regional price variance                   |
+| `openrouterCost` | `number`                  | Explicit cost in USD from a proxy; skips server-side compute |
+| `cacheTtl`       | `string`                  | Provider cache expiration window (e.g. `"5m"`, `"1h"`)       |
+| `costOverride`   | `CostOverride`            | Override per-token pricing for cost calculation              |
+| `metadata`       | `Record<string, unknown>` | Arbitrary key-value pairs forwarded to the event metadata    |
 
 ### Tracked Methods
 
@@ -379,7 +384,7 @@ interface FluxGateCostTrackingResponse {
   status: AiEventStatus;
   cost: number | null;
   trackingId: string | null;
-  createdAt: string | null;
+  createdAt: null; // Gemini API does not return a server timestamp
   errorMessage?: string;
 }
 

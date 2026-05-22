@@ -14,6 +14,7 @@ export function createCompletionsWrapper(
   instance: FluxGate,
   context: FluxGateContext | undefined,
   provider: string,
+  region: string | undefined,
 ) {
   return async function wrappedCompletionsCreate(
     params: Parameters<OrigCreate>[0],
@@ -35,6 +36,7 @@ export function createCompletionsWrapper(
         status: "ERROR",
         errorMessage: (err as Error).message,
         provider,
+        region,
         requestUser: params.user ?? undefined,
       });
       throw err;
@@ -54,6 +56,7 @@ export function createCompletionsWrapper(
             : finishReasonToStatus(lastChunk?.choices?.[0]?.finish_reason),
           errorMessage: streamError?.message,
           provider,
+          region,
           requestUser: params.user ?? undefined,
         }),
       );
@@ -69,6 +72,7 @@ export function createCompletionsWrapper(
       usage: extractChatUsage(completion?.usage),
       status: finishReasonToStatus(completion?.choices?.[0]?.finish_reason),
       provider,
+      region,
       requestUser: params.user ?? undefined,
     });
     return Object.assign(completion, { fluxGateCostTrackingResponse });

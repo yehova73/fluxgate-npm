@@ -1,109 +1,32 @@
-# OpenAI Examples
-
-This directory contains example code demonstrating various features of the @fluxgate/openai package.
+# @fluxgate/openai — Examples
 
 ## Prerequisites
 
-- Node.js >= 18.0.0
-- npm or yarn
-- OpenAI API key
-- FluxGate API key
+- Node.js >= 18
+- `OPENAI_API_KEY` environment variable set
+- `FLUXGATE_API_KEY` environment variable set — get one at [fluxgate.app](https://fluxgate.app)
 
 ## Setup
 
-1. Install dependencies from the root of the monorepo:
-
-   ```bash
-   cd ../../..
-   npm install
-   ```
-
-2. Build all packages:
-
-   ```bash
-   npm run build
-   ```
-
-3. Set your environment variables:
-   ```bash
-   export OPENAI_API_KEY="your-openai-api-key"
-   export FLUXGATE_API_KEY="your-fluxgate-api-key"
-   ```
+```bash
+# From the monorepo root
+npm install && npm run build
+```
 
 ## Running Examples
 
-### Basic Chat
-
 ```bash
-npx tsx packages/openai/examples/basic-chat.ts
+npx tsx packages/openai/examples/<file>.ts
 ```
 
-Demonstrates basic chat completions with tracking.
+## Files
 
-### Streaming
-
-```bash
-npx tsx packages/openai/examples/streaming.ts
-```
-
-Shows how to use streaming responses with automatic tracking.
-
-### Embeddings
-
-```bash
-npx tsx packages/openai/examples/embeddings.ts
-```
-
-Examples of creating embeddings with tracking for semantic search.
-
-### Error Handling
-
-```bash
-npx tsx packages/openai/examples/error-handling.ts
-```
-
-Demonstrates error tracking and graceful degradation.
-
-### Multiple Contexts
-
-```bash
-npx tsx packages/openai/examples/multiple-contexts.ts
-```
-
-Shows how to use different contexts for different features in your app.
-
-## Example Files
-
-- **`basic-chat.ts`** - Simple chat completion example
-- **`streaming.ts`** - Streaming responses with tracking
-- **`embeddings.ts`** - Creating embeddings for semantic search
-- **`error-handling.ts`** - Error tracking and graceful degradation
-- **`multiple-contexts.ts`** - Using multiple contexts for different features
-
-## What Gets Tracked
-
-Each example automatically tracks:
-
-- ✅ Input tokens (prompt)
-- ✅ Output tokens (completion)
-- ✅ Cached tokens (if using prompt caching)
-- ✅ Total tokens
-- ✅ Model name
-- ✅ Latency in milliseconds
-- ✅ Whether the request was streamed
-- ✅ Stream duration (for streaming requests)
-- ✅ Finish reason (stop, length, content_filter, etc.)
-- ✅ Errors and error messages
-
-## Notes
-
-- All examples use environment variables for API keys
-- Debug mode is enabled to show detailed logging
-- Examples are written in TypeScript and use the `tsx` runner
-- Tracking failures never break your application
-
-## Learn More
-
-- [Package Documentation](../README.md)
-- [Core SDK](../../sdk/README.md)
-- [OpenAI API Documentation](https://platform.openai.com/docs/api-reference)
+| File                   | What it covers                                                                                                     |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| `basic-chat.ts`        | `chat.completions.create`, `responses.create`, no-context usage                                                    |
+| `chat-completions.ts`  | Multi-turn chat with message history, tool/function calling, structured JSON output                                |
+| `conversations.ts`     | Server-side conversation state via `conversations` API + multi-turn `responses.create` with `previous_response_id` |
+| `streaming.ts`         | Streaming `chat.completions.create`, streaming `responses.create`                                                  |
+| `embeddings.ts`        | Single and batch `embeddings.create`                                                                               |
+| `error-handling.ts`    | Automatic error tracking, stream error tracking, legacy `completions.create`, regional endpoint auto-detection     |
+| `multiple-contexts.ts` | Feature isolation, rich `TrackedUser`, `service_tier`, OpenRouter cost passthrough, `costOverride`                 |

@@ -28,17 +28,21 @@ export function createGenerateContentStreamWrapper(
     try {
       stream = await ai.models.generateContentStream(request);
     } catch (err) {
-      await recordUsage({
-        instance,
-        model,
-        latencyMs: performance.now() - start,
-        streaming: true,
-        context,
-        usage: extractGeminiUsage(undefined),
-        status: "ERROR",
-        errorMessage: (err as Error).message,
-        serviceTier,
-      });
+      try {
+        await recordUsage({
+          instance,
+          model,
+          latencyMs: performance.now() - start,
+          streaming: true,
+          context,
+          usage: extractGeminiUsage(undefined),
+          status: "ERROR",
+          errorMessage: (err as Error).message,
+          serviceTier,
+        });
+      } catch {
+        // Tracking failure must never surface as a user-facing error.
+      }
       throw err;
     }
 

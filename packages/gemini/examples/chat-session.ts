@@ -26,7 +26,7 @@ async function main() {
       user: "demo-user",
       conversationId: "conv-123",
     })
-    .startChat({
+    .chats.create({
       model: "gemini-2.5-flash",
       history: [
         {

@@ -96,16 +96,8 @@ export type FluxGateContext = {
   step?: string;
   sessionId?: string;
   conversationId?: string;
-  /** Unix timestamp in milliseconds. Defaults to server ingest time if omitted. */
-  timestamp?: number;
-  /** Service tiering mode affecting pricing multipliers */
-  serviceTier?: AiEventMetadata["serviceTier"];
-  /** Explicit hosting region for regional price variance */
-  region?: string;
-  /** Explicit total cost in USD from an aggregator proxy (e.g. OpenRouter). Skips server-side cost computation. */
-  openrouterCost?: number;
-  /** Provider cache expiration window. Accepts "5m", "1h", or a custom string. */
-  cacheTtl?: string;
+  // /** Explicit total cost in USD from an aggregator proxy (e.g. OpenRouter). Skips server-side cost computation. */
+  // openrouterCost?: number;
   /** Override per-token pricing used for cost calculation */
   costOverride?: CostOverride;
   /** Arbitrary key-value pairs forwarded to the metadata object (e.g. { language: "typescript", documentType: "article" }) */

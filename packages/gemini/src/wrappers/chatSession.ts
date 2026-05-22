@@ -4,7 +4,11 @@ import type {
   SendMessageParameters,
   Content,
 } from "@google/genai";
-import { WithTracking, FluxGate } from "@fluxgate/sdk";
+import {
+  WithTracking,
+  FluxGate,
+  FluxGateCostTrackingResponse,
+} from "@fluxgate/sdk";
 import {
   extractGeminiUsage,
   extractGeminiUsageFromChunk,
@@ -29,17 +33,21 @@ export function createSendMessageWrapper(
     try {
       result = await original(params);
     } catch (err) {
-      await recordUsage({
-        instance,
-        model: modelName,
-        latencyMs: performance.now() - start,
-        streaming: false,
-        context,
-        usage: extractGeminiUsage(undefined),
-        status: "ERROR",
-        errorMessage: (err as Error).message,
-        serviceTier,
-      });
+      try {
+        await recordUsage({
+          instance,
+          model: modelName,
+          latencyMs: performance.now() - start,
+          streaming: false,
+          context,
+          usage: extractGeminiUsage(undefined),
+          status: "ERROR",
+          errorMessage: (err as Error).message,
+          serviceTier,
+        });
+      } catch {
+        // Tracking failure must never surface as a user-facing error.
+      }
       throw err;
     }
 
@@ -53,17 +61,27 @@ export function createSendMessageWrapper(
       errorMessage = `${finishReason}: ${finishMessage}`;
     }
 
-    const fluxGateCostTrackingResponse = await recordUsage({
-      instance: instance,
-      model: modelName,
-      latencyMs: performance.now() - start,
-      streaming: false,
-      context,
-      usage: extractGeminiUsage(result),
+    let fluxGateCostTrackingResponse: FluxGateCostTrackingResponse = {
       status,
-      errorMessage,
-      serviceTier,
-    });
+      cost: null,
+      trackingId: null,
+      createdAt: null,
+    };
+    try {
+      fluxGateCostTrackingResponse = await recordUsage({
+        instance: instance,
+        model: modelName,
+        latencyMs: performance.now() - start,
+        streaming: false,
+        context,
+        usage: extractGeminiUsage(result),
+        status,
+        errorMessage,
+        serviceTier,
+      });
+    } catch {
+      // Tracking failure must never surface as a user-facing error.
+    }
 
     return Object.assign(result, { fluxGateCostTrackingResponse });
   };
@@ -85,17 +103,21 @@ export function createSendMessageStreamWrapper(
     try {
       stream = await original(params);
     } catch (err) {
-      await recordUsage({
-        instance,
-        model: modelName,
-        latencyMs: performance.now() - start,
-        streaming: true,
-        context,
-        usage: extractGeminiUsage(undefined),
-        status: "ERROR",
-        errorMessage: (err as Error).message,
-        serviceTier,
-      });
+      try {
+        await recordUsage({
+          instance,
+          model: modelName,
+          latencyMs: performance.now() - start,
+          streaming: true,
+          context,
+          usage: extractGeminiUsage(undefined),
+          status: "ERROR",
+          errorMessage: (err as Error).message,
+          serviceTier,
+        });
+      } catch {
+        // Tracking failure must never surface as a user-facing error.
+      }
       throw err;
     }
 

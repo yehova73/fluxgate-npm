@@ -15,6 +15,7 @@ export function createResponsesWrapper(
   instance: FluxGate,
   context: FluxGateContext | undefined,
   provider: string,
+  region: string | undefined,
 ) {
   return async function wrappedResponsesCreate(
     params: Parameters<OrigCreate>[0],
@@ -36,6 +37,7 @@ export function createResponsesWrapper(
         status: "ERROR",
         errorMessage: (err as Error).message,
         provider,
+        region,
         serviceTier: params.service_tier,
         requestUser: params.user ?? undefined,
       });
@@ -83,6 +85,7 @@ export function createResponsesWrapper(
             status,
             errorMessage,
             provider,
+            region,
             serviceTier: response?.service_tier ?? params.service_tier,
             requestUser: params.user ?? undefined,
           });
@@ -102,6 +105,7 @@ export function createResponsesWrapper(
       status,
       errorMessage,
       provider,
+      region,
       serviceTier: response?.service_tier ?? params.service_tier,
       requestUser: params.user ?? undefined,
     });
