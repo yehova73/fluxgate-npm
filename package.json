@@ -11,9 +11,9 @@
   "scripts": {
     "build": "npm run build --workspace=packages/sdk && npm run build --workspaces",
     "dev": "tsc -b --watch",
-    "test": "vitest run",
-    "test:watch": "vitest",
-    "test:coverage": "vitest run --coverage",
+    "test": "npm run build --workspace=packages/sdk && vitest run",
+    "test:watch": "npm run build --workspace=packages/sdk && vitest",
+    "test:coverage": "npm run build --workspace=packages/sdk && vitest run --coverage",
     "typecheck": "npm run build --workspace=packages/sdk && npm run typecheck -ws"
   },
   "engines": {
