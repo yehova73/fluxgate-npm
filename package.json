@@ -13,7 +13,8 @@
     "dev": "tsc -b --watch",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "typecheck": "npm run build --workspace=packages/sdk && npm run typecheck -ws"
   },
   "engines": {
     "node": ">=18.0.0"

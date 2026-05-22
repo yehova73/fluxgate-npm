@@ -26,6 +26,7 @@ jobs:
           registry-url: "https://registry.npmjs.org"
 
       - run: npm ci
+      - run: npm run build
       - run: npm run typecheck --workspace=packages/gemini
       - run: npm test --workspace=packages/gemini
       - run: npm run build --workspace=packages/gemini

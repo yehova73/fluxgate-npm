@@ -28,7 +28,7 @@ jobs:
         run: npm ci
 
       - name: Run type check
-        run: npm run typecheck -ws
+        run: npm run build --workspace=packages/sdk && npm run typecheck -ws
 
       - name: Run tests
         run: npm test
@@ -101,7 +101,7 @@ jobs:
         run: npm ci
 
       - name: Check TypeScript
-        run: npm run typecheck -ws
+        run: npm run build && npm run typecheck -ws
 
       - name: Clean untracked files
         run: git clean -fd

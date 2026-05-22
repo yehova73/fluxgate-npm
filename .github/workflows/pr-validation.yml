@@ -36,7 +36,7 @@ jobs:
           git diff origin/main -- packages/*/src/index.ts | grep -E "^-\s*(export|import)" || echo "✅ No export changes detected"
 
       - name: Run linting
-        run: npm run typecheck -ws
+        run: npm run build && npm run typecheck -ws
         continue-on-error: true
 
       - name: Run tests
